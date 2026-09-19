@@ -1,0 +1,139 @@
+/* ---------------------------------------------------------------------------
+   نظام تصميم "الوكالة الرقمية الفاخرة" (Apex Digital Agency) — لوحة ألوان وأنماط
+   مشتركة تستوردها App.js وHistory.js عبر import "./App.css"، وتُستخدم جنباً إلى
+   جنب مع الأنماط المضمّنة (inline styles) الموجودة أصلاً في كلا الملفين: هذه
+   الفئات (classes) تتكفّل تحديداً بما لا يمكن التعبير عنه بسهولة عبر style
+   المضمّن في React وحده — حالات :hover، والحركات @keyframes (النبض، التلاشي).
+   لا علاقة لهذا الملف بأي منطق برمجي أو بيانات؛ تصميم بصري بحت.
+--------------------------------------------------------------------------- */
+
+:root {
+  --agency-navy: #0a192f;
+  --agency-navy-light: #172a45;
+  --agency-pearl: #f8fafc;
+  --agency-gold: #d97706;
+  --agency-gold-dark: #b45309;
+  /* ذهب معدني فاتح (metallic gold) — لحدود شريط الإفصاح الفاخر (glassmorphism)، وأيقونات
+     القفل والشارات الذهبية في البطاقات المقفلة ونظام اختيار الباقات. مختلف عمداً عن
+     --agency-gold الأدفأ المستخدم في أزرار الفعل (CTA). */
+  --agency-metallic-gold: #d4af37;
+  --agency-royal: #2563eb;
+  --agency-border: #e2e8f0;
+  --agency-text-muted: #64748b;
+  --agency-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --agency-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* بطاقة عامة (نموذج التوليد، بطاقات النتائج، بطاقات السجل...): حواف دقيقة + ظل
+   "استوديو" ناعم وباهظ بدل الظل الافتراضي القديم (أو بلا ظل إطلاقاً). */
+.agency-card {
+  background: #ffffff;
+  border: 1px solid var(--agency-border);
+  box-shadow: var(--agency-shadow-lg);
+}
+
+/* الزر الأساسي (Commission Campaign Strategy وما شابهه من دعوات فعل رئيسية) —
+   لون الذهب الدافئ الموصى به كلون تحويل موثوق، مع تأثير Hover واضح وحركة رفع
+   خفيفة (translateY) تعطي إحساساً "باهظاً" بدل زر مسطّح عادي. */
+.agency-btn-primary {
+  background: var(--agency-gold);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.agency-btn-primary:hover:not(:disabled) {
+  background: var(--agency-gold-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--agency-shadow-sm);
+}
+.agency-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* زر ثانوي بحدود فقط (تصفح/إلغاء/روابط الترقية الثانوية) — تناغم مع نفس النظام
+   دون منافسة الزر الأساسي على الانتباه البصري. */
+.agency-btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--agency-navy);
+  color: var(--agency-navy);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.agency-btn-outline:hover:not(:disabled) {
+  background: var(--agency-navy);
+  color: #ffffff;
+}
+
+/* شارة "الحالة المباشرة" في الترويسة — نقطة خضراء نابضة (Pulsing) + نص "Agency
+   Strategy Team: Online"، لإيحاء الثقة والاحترافية (Trust Badge). */
+.agency-status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: agency-pulse 2s infinite;
+}
+@keyframes agency-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* نص خطوة التحميل النفسية المتعددة المراحل (Strategy Directors are analyzing...)
+   — تلاشٍ ناعم عند كل تبديل نصي كل 2.5 ثانية (يُعاد تشغيل الحركة تلقائياً في
+   React عبر تغيير الخاصية key على العنصر، ما يجعل المتصفح يتعامل معه كعنصر
+   جديد فيُعيد تشغيل الحركة من جديد في كل مرة). */
+.agency-loading-step {
+  animation: agency-fade-in 0.45s ease;
+}
+@keyframes agency-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* بطاقات الميزات المقفلة التفاعلية (Locked Feature Cards، TASK 2 من "VIP Lead Capture") —
+   رفعة خفيفة (lift) عند المرور بالماوس + مسح ذهبي لامع (shimmer sweep) يعطي إحساساً
+   "تفاعلياً فاخراً" بدل بطاقة ساكنة. .shimmer-sweep طبقة تراكبية شفافة إضافية (لا تحمل أي
+   بيانات، aria-hidden في JSX) تتحرك أفقياً فقط عند :hover عبر إعادة تشغيل الحركة. */
+.locked-feature-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.locked-feature-card:hover,
+.locked-feature-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--agency-shadow-lg), 0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+.locked-feature-card .shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(212, 175, 55, 0.35) 50%, transparent 70%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.locked-feature-card:hover .shimmer-sweep,
+.locked-feature-card:focus-visible .shimmer-sweep {
+  animation: locked-card-shimmer 1.1s ease forwards;
+}
+@keyframes locked-card-shimmer {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}

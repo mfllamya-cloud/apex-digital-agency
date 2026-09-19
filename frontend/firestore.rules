@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // كل مستخدم مسجّل الدخول يقرأ وثيقته فقط
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // إنشاء الوثيقة الأولى مسموح فقط عند التسجيل (ensureUserProfile)، وبقيم افتراضية آمنة فقط —
+      // لا يمكن لأحد إنشاء نفسه مباشرة بباقة مدفوعة أو رصيد توليد جاهز.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.plan == "free"
+        && request.resource.data.generationsUsed == 0;
+
+      // ممنوع أي تعديل مباشر من المتصفح على الوثيقة — هذا هو صلب الحماية:
+      // الباقة (plan) وعداد التوليد الشهري (generationsUsed) وتاريخ آخر تصفير (lastResetMonth)
+      // لا يعدّلها إلا الخادم عبر Firebase Admin SDK (الذي يتجاوز هذه القواعد أصلاً).
+      // بدون هذا السطر، يمكن لأي مستخدم فتح Console المتصفح واستدعاء setDoc/updateDoc مباشرة
+      // لتصفير عداده أو منح نفسه باقة premium، بغض النظر عمّا يفرضه الباكند.
+      allow update: if false;
+
+      allow delete: if false;
+    }
+
+    // سجل توليدات كل مستخدم — يكتبه الباكند فقط عبر Firebase Admin SDK في server.js بعد كل
+    // توليد ناجح (المسار الفعلي: generations/{uid}/documents/{docId}). {document=**} أدناه
+    // يطابق أي وثيقة/مجموعة فرعية تحت generations/{userId} بأي عمق، فيشمل هذا المسار وأي
+    // مسار مشابه يُضاف مستقبلاً.
+    //
+    // ملاحظة أمنية مهمة (سبب الاختلاف عمّا طُلب حرفياً): Firebase Admin SDK — الذي يستخدمه
+    // الباكند عبر serviceAccountKey.json — يتجاوز قواعد الأمان هذه بالكامل ودائماً. هذه
+    // القواعد تُطبَّق فقط على الوصول المباشر من تطبيقات العميل (المتصفح) عبر Firebase Client
+    // SDK، وليس على الباكند إطلاقاً. لذلك: (أ) لا حاجة لأي "allow write" لتمكين الباكند —
+    // كتابته ستنجح دوماً بغض النظر عمّا هو مكتوب أدناه، و(ب) القاعدة المطلوبة أصلاً
+    // "allow write: if request.auth == null" كانت ستفتح ثغرة خطيرة فعلية: أي شخص غير مسجّل
+    // الدخول إطلاقاً (متصفح بلا تسجيل دخول، أو طلب مباشر لواجهة Firestore) يستوفي شرط
+    // request.auth == null تلقائياً، فيقدر يكتب مباشرة في وثائق أي مستخدم آخر دون أي تحقق
+    // هوية على الإطلاق. لذلك استُبدلت هنا بـ "allow write: if false": الكتابة من جانب العميل
+    // ممنوعة كلياً (الباكند الموثوق فقط يكتب، وهو غير خاضع لهذه القاعدة أصلاً)، بينما القراءة
+    // مسموحة فقط لصاحب الحساب نفسه ليرى توليداته الخاصة فقط (المطلب 3 في الطلب الأصلي).
+    match /generations/{userId}/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // الإنشاء والتعديل يبقيان ممنوعين كلياً من طرف العميل (المتصفح) — فقط الباكند عبر
+      // Firebase Admin SDK هو من يُنشئ/يعدّل هذه الوثائق (وهو غير خاضع لهذه القواعد أصلاً،
+      // راجع الشرح أعلاه)، تماماً كما كانت الحال مع "allow write: if false" سابقاً.
+      allow create: if false;
+      allow update: if false;
+
+      // ⚠️ استثناء جديد مقصود: الحذف مسموح به هنا لصاحب الحساب فقط. شاشة "My Projects"
+      // الجديدة (frontend/src/History.js) تحتاج زر "حذف" يعمل مباشرة من المتصفح عبر
+      // Firebase Client SDK (deleteDoc) بدل المرور عبر الباكند — طلب صريح ضمن ميزة السجل.
+      // هذا آمن لأن الشرط request.auth.uid == userId يمنع أي مستخدم من حذف مشاريع مستخدم
+      // آخر؛ كل ما يمكن للمستخدم فعله هو حذف مشاريعه الخاصة فقط، وهو إجراء رجعي (destructive)
+      // يوافق عليه صراحة عبر نافذة تأكيد في الواجهة قبل الإرسال.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // مجموعة "VIP Lead Capture" — تُكتب مباشرة من المتصفح (Firebase Client SDK، addDoc) عند
+    // ضغط المستخدم على "الانضمام لقائمة كبار الشخصيات" في App.js (بدل التوجيه الفوري لصفحة
+    // دفع Lemon Squeezy). بدون هذه القاعدة، الكتابة كانت سترفض تلقائياً بخطأ "Missing or
+    // insufficient permissions" لأن أي مسار غير مذكور صراحة هنا مرفوض افتراضياً في Firestore.
+    match /vip_leads/{leadId} {
+      // لا قراءة من العميل إطلاقاً — هذه القائمة يراجعها فريق الوكالة فقط عبر Firebase Console
+      // أو الباكند مستقبلاً (عبر Admin SDK الذي يتجاوز هذه القواعد أصلاً على أي حال).
+      allow read: if false;
+
+      // الإنشاء فقط، ومقيَّد بأن uid المكتوب في الوثيقة يطابق صاحب الجلسة الحالية — يمنع أي
+      // مستخدم من تسجيل طلب VIP باسم مستخدم آخر منتحلاً هويته.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+
+      // ممنوع التعديل أو الحذف من طرف العميل كلياً — سجل ثابت بمجرد إنشائه.
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // أي مسار آخر غير مذكور أعلاه مرفوض بشكل افتراضي
+  }
+}

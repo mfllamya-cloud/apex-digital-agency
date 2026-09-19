@@ -1,0 +1,9 @@
+{
+  "marketing_business_owners_instagram": [
+    {"idea":"Product showcase","caption":"Just launched! 500+ businesses growing","hashtags":["#marketing","#business"],"bestTime":"9:00 AM","imageUrl":"https://images.unsplash.com/photo-1552664730-d307ca884978?w=500","videoIdea":"Before/after demo"},
+    {"idea":"Behind scenes","caption":"How we build products","hashtags":["#startup","#team"],"bestTime":"10:30 AM","imageUrl":"https://images.unsplash.com/photo-1552664730-d307ca884978?w=500","videoIdea":"Team working"},
+    {"idea":"Problem Solution","caption":"Problem: Hours wasted. Solution: Automation","hashtags":["#automation"],"bestTime":"2:00 PM","imageUrl":"https://images.unsplash.com/photo-1552664730-d307ca884978?w=500","videoIdea":"Problem reveal"},
+    {"idea":"Success story","caption":"Sales increased 300%","hashtags":["#success"],"bestTime":"9:00 AM","imageUrl":"https://images.unsplash.com/photo-1552664730-d307ca884978?w=500","videoIdea":"Testimonial"},
+    {"idea":"Limited offer","caption":"50% off! 48 hours only","hashtags":["#offer"],"bestTime":"11:00 AM","imageUrl":"https://images.unsplash.com/photo-1552664730-d307ca884978?w=500","videoIdea":"Countdown"}
+  ]
+}

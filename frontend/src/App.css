@@ -1,0 +1,221 @@
+/* ---------------------------------------------------------------------------
+   نظام تصميم "الوكالة الرقمية الفاخرة" (Apex Digital Agency) — لوحة ألوان وأنماط
+   مشتركة تستوردها App.js وHistory.js عبر import "./App.css"، وتُستخدم جنباً إلى
+   جنب مع الأنماط المضمّنة (inline styles) الموجودة أصلاً في كلا الملفين: هذه
+   الفئات (classes) تتكفّل تحديداً بما لا يمكن التعبير عنه بسهولة عبر style
+   المضمّن في React وحده — حالات :hover، والحركات @keyframes (النبض، التلاشي).
+   لا علاقة لهذا الملف بأي منطق برمجي أو بيانات؛ تصميم بصري بحت.
+--------------------------------------------------------------------------- */
+
+:root {
+  --agency-navy: #0a192f;
+  --agency-navy-light: #172a45;
+  --agency-pearl: #f8fafc;
+  --agency-gold: #d97706;
+  --agency-gold-dark: #b45309;
+  /* ذهب معدني فاتح (metallic gold) — لحدود شريط الإفصاح الفاخر (glassmorphism)، وأيقونات
+     القفل والشارات الذهبية في البطاقات المقفلة ونظام اختيار الباقات. مختلف عمداً عن
+     --agency-gold الأدفأ المستخدم في أزرار الفعل (CTA). */
+  --agency-metallic-gold: #d4af37;
+  --agency-royal: #2563eb;
+  --agency-border: #e2e8f0;
+  --agency-text-muted: #64748b;
+  /* نص عالي التباين (يعادل slate-800 في Tailwind) — للعناوين الفرعية ونصوص شرائط الزجاج
+     الفاخر (Glassmorphism)، بدل --agency-text-muted الباهت، ضمن معالجة "Typography &
+     Readability Overhaul" (TASK 1). */
+  --agency-text-strong: #1e293b;
+  /* خط العائلة العام للتطبيق بأكمله (TASK 1: "Global Typography Overhaul") — Plus Jakarta
+     Sans لكل النصوص اللاتينية (وزن بصري أكثف من الخط الافتراضي لنظام التشغيل، وهو سبب شكوى
+     "الخطوط الرفيعة/الباهتة" السابقة)، مع Cairo كخط احتياطي (fallback) للنصوص العربية — كلا
+     الخطين مُحمَّلان عبر Google Fonts في public/index.html. لا يوجد ملف tailwind.config.js
+     فعّال في هذا المشروع (راجع الشرح في App.js وفي رد المطوّر)، لذلك هذا المتغيّر هنا هو
+     التطبيق الفعلي لما كان مطلوباً ضبطه عبر "font-sans" في Tailwind. */
+  --agency-font-sans: "Plus Jakarta Sans", "Cairo", sans-serif;
+  --agency-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --agency-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* يُطبَّق بعد قاعدة body الافتراضية في src/index.css (نفس الخاصية، نفس الأسبقية CSS، لكن هذه
+   القاعدة تُحقن لاحقاً في الحزمة النهائية لأن index.js يستورد "./index.css" قبل استيراد
+   App الذي يستورد "./App.css" — فتفوز هذه القاعدة في المفاضلة النهائية دون الحاجة لـ
+   !important). يستبدل خط النظام الافتراضي (Segoe UI/system-ui) بخط Plus Jakarta Sans الأكثف
+   بصرياً، وهو جوهر إصلاح "الخطوط الرفيعة/الباهتة" المطلوب في TASK 1. */
+body {
+  font-family: var(--agency-font-sans);
+}
+
+/* العنوان الرئيسي "Apex Digital Agency" (TASK 1) — يعادل Tailwind:
+   font-extrabold text-2xl md:text-3xl tracking-tight. حجم متجاوب (2xl على الجوال، 3xl من
+   نقطة التوقف md فما فوق: 768px) بدل حجم ثابت 2.5rem سابقاً. */
+.agency-h1 {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+@media (min-width: 768px) {
+  .agency-h1 {
+    font-size: 1.875rem;
+  }
+}
+
+/* تسميات حقول النموذج الرئيسي (TASK 1) — تعادل Tailwind: font-semibold + text-slate-900،
+   بدل عدم وجود لون صريح سابقاً (اعتماد على اللون الموروث). فئة مشتركة بدل تكرار نفس الأنماط
+   المضمّنة (inline) في 8 حقول مختلفة، لضمان اتساقها جميعاً تلقائياً. */
+.agency-form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--agency-navy);
+  margin-bottom: 0.5rem;
+}
+
+/* زر "Elite Partner Program" في التذييل (TASK 2) — كبسولة (pill) فاخرة متوهجة بالذهبي/العنبري
+   بدل رابط نصي باهت صغير سابقاً. تُترجم هنا حرفياً فئات Tailwind الدقيقة التي طُلبت (mt-8 mb-4
+   mx-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r
+   from-amber-500/10 to-orange-500/10 border border-amber-500/40 text-amber-500 font-bold
+   text-base hover:bg-amber-500/20 hover:-translate-y-1 transition-all duration-300
+   cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.2)] backdrop-blur-md) إلى CSS عادي، لأن
+   هذا المشروع لا يملك تكامل Tailwind فعلياً مفعَّلاً في سلسلة بناء Create React App الحالية
+   (tailwindcss موجود في package.json كـ devDependency فقط، دون postcss.config.js ولا craco/
+   react-app-rewired لربطه فعلياً بـ react-scripts) — أي صنف Tailwind حرفي هنا كان سيُطبَع كنص
+   خام بلا أي تنسيق فعلي على جهاز المستخدم. راجع التعليق أعلى الزر في App.js لتفاصيل إضافية. */
+.agency-affiliate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to right, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.agency-affiliate-btn:hover {
+  background-color: rgba(245, 158, 11, 0.2);
+  transform: translateY(-0.25rem);
+}
+
+/* بطاقة عامة (نموذج التوليد، بطاقات النتائج، بطاقات السجل...): حواف دقيقة + ظل
+   "استوديو" ناعم وباهظ بدل الظل الافتراضي القديم (أو بلا ظل إطلاقاً). */
+.agency-card {
+  background: #ffffff;
+  border: 1px solid var(--agency-border);
+  box-shadow: var(--agency-shadow-lg);
+}
+
+/* الزر الأساسي (Commission Campaign Strategy وما شابهه من دعوات فعل رئيسية) —
+   لون الذهب الدافئ الموصى به كلون تحويل موثوق، مع تأثير Hover واضح وحركة رفع
+   خفيفة (translateY) تعطي إحساساً "باهظاً" بدل زر مسطّح عادي. */
+.agency-btn-primary {
+  background: var(--agency-gold);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.agency-btn-primary:hover:not(:disabled) {
+  background: var(--agency-gold-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--agency-shadow-sm);
+}
+.agency-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* زر ثانوي بحدود فقط (تصفح/إلغاء/روابط الترقية الثانوية) — تناغم مع نفس النظام
+   دون منافسة الزر الأساسي على الانتباه البصري. */
+.agency-btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--agency-navy);
+  color: var(--agency-navy);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.agency-btn-outline:hover:not(:disabled) {
+  background: var(--agency-navy);
+  color: #ffffff;
+}
+
+/* شارة "الحالة المباشرة" في الترويسة — نقطة خضراء نابضة (Pulsing) + نص "Agency
+   Strategy Team: Online"، لإيحاء الثقة والاحترافية (Trust Badge). */
+.agency-status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: agency-pulse 2s infinite;
+}
+@keyframes agency-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* نص خطوة التحميل النفسية المتعددة المراحل (Strategy Directors are analyzing...)
+   — تلاشٍ ناعم عند كل تبديل نصي كل 2.5 ثانية (يُعاد تشغيل الحركة تلقائياً في
+   React عبر تغيير الخاصية key على العنصر، ما يجعل المتصفح يتعامل معه كعنصر
+   جديد فيُعيد تشغيل الحركة من جديد في كل مرة). */
+.agency-loading-step {
+  animation: agency-fade-in 0.45s ease;
+}
+@keyframes agency-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* بطاقات الميزات المقفلة التفاعلية (Locked Feature Cards، TASK 2 من "VIP Lead Capture") —
+   رفعة خفيفة (lift) عند المرور بالماوس + مسح ذهبي لامع (shimmer sweep) يعطي إحساساً
+   "تفاعلياً فاخراً" بدل بطاقة ساكنة. .shimmer-sweep طبقة تراكبية شفافة إضافية (لا تحمل أي
+   بيانات، aria-hidden في JSX) تتحرك أفقياً فقط عند :hover عبر إعادة تشغيل الحركة. */
+.locked-feature-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.locked-feature-card:hover,
+.locked-feature-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--agency-shadow-lg), 0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+.locked-feature-card .shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(212, 175, 55, 0.35) 50%, transparent 70%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.locked-feature-card:hover .shimmer-sweep,
+.locked-feature-card:focus-visible .shimmer-sweep {
+  animation: locked-card-shimmer 1.1s ease forwards;
+}
+@keyframes locked-card-shimmer {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
