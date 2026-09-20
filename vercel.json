@@ -1,11 +1,9 @@
 {
-  "builds": [
-    { "src": "backend/server.js", "use": "@vercel/node" },
-    { "src": "frontend/package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "backend/server.js" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "frontend/build/index.html" }
+  "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
+  "outputDirectory": "frontend/build",
+  "installCommand": "npm install --prefix backend",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
