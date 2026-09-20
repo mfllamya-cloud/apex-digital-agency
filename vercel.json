@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd \"$(git rev-parse --show-toplevel)\" && npm install --prefix frontend && npm run build --prefix frontend",
-  "outputDirectory": "frontend/build",
+  "buildCommand": "cd \"$(git rev-parse --show-toplevel)\" && npm install --prefix frontend && npm run build --prefix frontend && rm -rf build && cp -r frontend/build build",
+  "outputDirectory": "build",
   "installCommand": "npm install",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
