@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto"; // مدمجة في Node.js (لا تحتاج npm install) — تُستخدم للتحقق من توقيع HMAC لويبهوك Lemon Squeezy أدناه.
+import crypto from "node:crypto"; // مدمجة في Node.js (لا تحتاج npm install) — جاهزة لاستخدامها لاحقاً في التحقق من توقيع HMAC لويبهوك Paddle.
 import Anthropic from "@anthropic-ai/sdk";
 // نستخدم واجهة firebase-admin الحديثة (modular imports من الحزم الفرعية) بدل الواجهة
 // القديمة المجمّعة (namespace) عبر import * as admin from "firebase-admin" مباشرة. السبب: في
@@ -36,8 +36,24 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
-// السماح فقط لمنافذ الفرونت إند المحلية المعروفة (3001 القديم و 3002 الحالي)
-const allowedOrigins = ["http://localhost:3001", "http://localhost:3002"];
+// السماح لمنافذ الفرونت إند المحلية المعروفة (3001 القديم و 3002 الحالي)، بالإضافة إلى دومين
+// الإنتاج الفعلي على Vercel، وأي دومين معاينة (preview) تلقائي يولّده Vercel لهذا المشروع.
+// ملاحظة: بما أن الفرونت إند والباكند الآن يُخدَّمان من نفس الدومين على Vercel (بعد توحيدهما
+// في مشروع واحد)، فإن معظم الطلبات الحقيقية ستكون "same-origin" أصلاً، لكن المتصفح لا يزال
+// يرسل ترويسة Origin معها، وكانت هذه القائمة (قبل هذا الإصلاح) تحتوي فقط على عنواني localhost
+// المحليين — ما كان يعني رفض CORS (403) لكل طلب حقيقي قادم من الموقع المنشور فعلياً، وهو
+// السبب الجذري وراء فشل نموذج "ابدأ مشروعك" وأداة توليد المحتوى في بيئة الإنتاج.
+const allowedOrigins = [
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "https://apex-digital-agency-dqir.vercel.app",
+];
+// VERCEL_URL متغيّر بيئة يُحقنه Vercel تلقائياً بعنوان *هذا التنفيذ (deployment)* بالذات (بدون
+// https://) — إضافته هنا تجعل CORS يعمل تلقائياً على كل معاينة (preview) جديدة ينشئها Vercel
+// لكل Pull Request/فرع، دون الحاجة لتحديث هذه القائمة يدوياً في كل مرة.
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push("https://" + process.env.VERCEL_URL);
+}
 
 app.use(
   cors({
@@ -53,178 +69,11 @@ app.use(
 );
 
 // ---------------------------------------------------------------------------
-// ⚠️ حاسم جداً ومقصود أن يكون هذا المسار مُعرَّفاً هنا بالضبط — قبل app.use(express.json())
-// أسفله مباشرة — وليس بجانب باقي المسارات (/api/generate-content، /api/micro-tool) لاحقاً في
-// الملف. Lemon Squeezy يشترط الجسم الخام (raw bytes) بالضبط كما وصل عبر الشبكة لحساب توقيع
-// HMAC والتحقق منه. express.json() أدناه يُطبَّق تلقائياً على *كل* الطلبات الواردة بمجرد
-// تسجيله عبر app.use() (بلا تحديد مسار)، ويستهلك تدفّق الطلب (stream) بالكامل ليحوّله لكائن
-// JS عادي — فلا يبقى أي جسم خام ليقرأه express.raw() لاحقاً لو عُرِّف هذا المسار بعده بدل قبله.
-// النتيجة لو حدث ذلك: فشل التحقق من التوقيع في كل مرة بصمت (لأن أي إعادة تسلسل JSON.stringify
-// للكائن المُحلَّل لاحقاً قد تُغيّر التباعد/ترتيب المفاتيح، فتعطي HMAC مختلفاً عن توقيع Lemon
-// Squeezy الأصلي المحسوب على البايتات الخام تحديداً)، حتى لو كان LEMON_WEBHOOK_SECRET صحيحاً 100%.
-//
-// express.raw({ type: "application/json" }) هنا خاص بهذا المسار فقط (مُمرَّر كمعامل ثانٍ
-// مباشرة لـ app.post، وليس عبر app.use() عام) — لا يؤثر على أي مسار آخر في الملف.
+// تمت إزالة تكامل Lemon Squeezy بالكامل (قرار عمل: التحويل الحصري إلى Paddle). مكان
+// ويبهوك الدفع القادم من Paddle سيكون هنا — يُعرَّف بنفس الترتيب (قبل app.use(express.json())
+// أدناه مباشرة) لو احتاج Paddle أيضاً الجسم الخام (raw body) للتحقق من توقيع HMAC، تماماً
+// كما كان الحال مع Lemon Squeezy.
 // ---------------------------------------------------------------------------
-app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
-  console.log("[server.js] [webhook] === طلب وارد على /api/webhook/lemonsqueezy ===");
-
-  try {
-    // 1) بدون LEMON_WEBHOOK_SECRET لا يمكن التحقق من أي توقيع إطلاقاً — نرفض كل شيء صراحة
-    //    بدل قبول الطلبات "لأن السر غير موجود على أي حال" (سيكون هذا الحال حتماً في مرحلة
-    //    الإعداد الحالية قبل إنشاء حساب Lemon Squeezy فعلي واستبدال القيمة الوهمية في .env).
-    if (!LEMON_WEBHOOK_SECRET || LEMON_WEBHOOK_SECRET === "placeholder_secret_here") {
-      console.error(
-        "[server.js] [webhook] ❌ رُفض الطلب: LEMON_WEBHOOK_SECRET غير مُعدّ بعد في .env " +
-        "(فارغ أو لا يزال القيمة الوهمية الافتراضية). لا يمكن التحقق من أي توقيع في هذه الحالة."
-      );
-      return res.status(500).json({ success: false, error: "Webhook secret not configured on server." });
-    }
-
-    const rawBody = req.body; // Buffer خام بفضل express.raw أعلاه — وليس كائناً مُحلَّلاً بعد.
-    if (!Buffer.isBuffer(rawBody) || rawBody.length === 0) {
-      console.error(
-        "[server.js] [webhook] ❌ رُفض الطلب: الجسم الخام فارغ أو من نوع غير متوقَّع (تحقق من " +
-        "ترتيب middleware أعلاه — يجب أن يكون هذا المسار مُعرَّفاً قبل app.use(express.json())، وأن " +
-        "Content-Type للطلب الوارد هو application/json)."
-      );
-      return res.status(400).json({ success: false, error: "Empty or missing raw request body." });
-    }
-
-    // 2) التحقق من التوقيع: HMAC-SHA256 hex، مقارنة آمنة زمنياً (timingSafeEqual) — بالضبط
-    //    كما توثّقه Lemon Squeezy رسمياً (docs.lemonsqueezy.com/help/webhooks/signing-requests).
-    const signatureHeader = req.get("X-Signature") || "";
-    const expectedDigest = crypto.createHmac("sha256", LEMON_WEBHOOK_SECRET).update(rawBody).digest("hex");
-    const digestBuffer = Buffer.from(expectedDigest, "utf8");
-    const signatureBuffer = Buffer.from(signatureHeader, "utf8");
-
-    // timingSafeEqual يرمي RangeError إن اختلف طول البَفرين بدل إرجاع false — نتحقق من الطول
-    // أولاً حتى لا يُعامَل "توقيع مشوَّه الشكل" على أنه خطأ برمجي غير متوقَّع (سيُمسَك على أي
-    // حال في try/catch الخارجي، لكن بفحص الطول هنا نُعيد 403 واضحة بدل 500 عامة في هذه الحالة).
-    const signatureIsValid =
-      digestBuffer.length === signatureBuffer.length && crypto.timingSafeEqual(digestBuffer, signatureBuffer);
-
-    if (!signatureIsValid) {
-      console.error(
-        "[server.js] [webhook] ❌ توقيع غير صالح (X-Signature لا يطابق الـ HMAC المحسوب من " +
-        "الجسم الخام). تم رفض الطلب. إن كنت متأكداً من صحة LEMON_WEBHOOK_SECRET، تحقق أيضاً من " +
-        "أن أي وسيط (proxy/CDN) أمام الخادم لا يُعدِّل جسم الطلب قبل وصوله إلى هنا."
-      );
-      return res.status(403).json({ success: false, error: "Invalid webhook signature." });
-    }
-    console.log("[server.js] [webhook] ✅ التوقيع صالح.");
-
-    // 3) الآن فقط، بعد التحقق من التوقيع، نحوّل الجسم الخام إلى JSON فعلي للاستخدام.
-    let payload;
-    try {
-      payload = JSON.parse(rawBody.toString("utf8"));
-    } catch (parseErr) {
-      console.error("[server.js] [webhook] ❌ فشل تحليل JSON بعد التحقق من التوقيع: " + parseErr.message);
-      return res.status(400).json({ success: false, error: "Invalid JSON payload." });
-    }
-
-    const eventName = payload && payload.meta && payload.meta.event_name;
-    // طباعة كامل الحمولة عمداً (كما طُلب صراحة: "clear console logging... to easily debug
-    // incoming payloads later") — لا يوجد فيها بيانات دخول أو أسرار، فقط تفاصيل الطلب/الاشتراك،
-    // وستكون ضرورية لضبط منطق استخراج الباقة (الخطوة 5 أدناه) بدقة أول مرة يصل فيها ويبهوك
-    // حقيقي من حساب Lemon Squeezy فعلي (لا يمكن تخمين الشكل الدقيق 100% قبل ذلك).
-    console.log("[server.js] [webhook] event_name = " + eventName);
-    console.log("[server.js] [webhook] الحمولة الكاملة:\n" + JSON.stringify(payload, null, 2));
-
-    if (eventName !== "order_created" && eventName !== "subscription_created") {
-      console.log(
-        "[server.js] [webhook] ℹ️ تم تجاهل الحدث (" + eventName + ") — لا نعالج سوى " +
-        "order_created و subscription_created حالياً. الرد بـ 200 مع ذلك حتى لا تُعيد Lemon " +
-        "Squeezy محاولة إرسال هذا الحدث دون داعٍ."
-      );
-      return res.status(200).json({ success: true, ignored: true, eventName: eventName || null });
-    }
-
-    // 4) استخراج uid من meta.custom_data.uid — يصل هذا الحقل فقط لأن رابط الدفع في الواجهة
-    //    (App.js → handleUpgradeClick) يُرسِله صراحة كـ ?checkout[custom][uid]=... عند إنشاء
-    //    رابط الدفع (راجع docs.lemonsqueezy.com/help/checkout/passing-custom-data).
-    const uid = payload && payload.meta && payload.meta.custom_data && payload.meta.custom_data.uid;
-    if (!uid) {
-      console.error(
-        "[server.js] [webhook] ❌ لا يوجد meta.custom_data.uid في الحمولة — لا يمكن معرفة أي " +
-        "حساب يجب ترقيته. تحقق أن رابط الدفع يحتوي فعلاً على ?checkout[custom][uid]=... (راجع " +
-        "الحمولة الكاملة المطبوعة أعلاه)."
-      );
-      // 200 مقصودة: الطلب صالح من ناحية Lemon Squeezy (توقيع صحيح، حدث معروف) — المشكلة في
-      // بياناتنا نحن (custom_data ناقص)، وليست خطأ يستحق إعادة محاولة من طرف Lemon Squeezy.
-      return res.status(200).json({ success: false, error: "Missing meta.custom_data.uid.", eventName });
-    }
-
-    if (!db) {
-      console.error(
-        "[server.js] [webhook] ❌ Firebase Admin SDK غير مُهيَّأ (db غير موجود) — تعذّر تحديث " +
-        "حساب uid=" + uid + ". راجع رسائل تهيئة Firebase Admin عند بدء تشغيل الخادم أعلاه."
-      );
-      return res.status(500).json({ success: false, error: "Server not ready (Firestore unavailable)." });
-    }
-
-    // 5) تحديد الباقة الجديدة من data.attributes.product_name (موثَّق رسمياً في نفس هذا الحقل
-    //    لكل من order_created وsubscription_created على حد سواء)، وليس من أي قيمة قد يرسلها
-    //    العميل. المطابقة جزئية (includes) بحروف صغيرة لتبقى مرنة أمام تسميات مثل "Pro Plan"
-    //    أو "PRO — Monthly" بدل مطابقة حرفية صارمة قد تفشل بصمت لأتفه اختلاف في التسمية.
-    //    ⚠️ عدّل هذا المنطق إن كانت أسماء منتجاتك الفعلية على Lemon Squeezy مختلفة جوهرياً —
-    //    الحمولة الكاملة المطبوعة أعلاه (الخطوة 3) تُظهر القيمة الحقيقية أول ويبهوك حقيقي يصل.
-    const productName = (payload.data && payload.data.attributes && payload.data.attributes.product_name) || "";
-    const productNameLower = productName.toLowerCase();
-
-    let newPlan = null;
-    if (productNameLower.includes("premium")) {
-      newPlan = "premium";
-    } else if (productNameLower.includes("pro")) {
-      newPlan = "pro";
-    }
-    // ⚠️ ملاحظة مهمة عن حالة الأحرف (Casing) — انحراف متعمَّد عن الصياغة الحرفية للطلب:
-    // طُلب تحديث plan إلى "PRO" أو "PREMIUM" (بأحرف كبيرة)، لكن بقية هذا المشروع بأكمله —
-    // PLAN_LIMITS أعلاه، isFree === "free"، ensureUserProfile في firestoreUser.js (plan:"free")،
-    // قواعد Firestore (request.resource.data.plan == "free")، وحتى ملف الترجمة i18n.js
-    // (tiers.free/pro/premium) — يستخدم دائماً أحرفاً صغيرة "free"/"pro"/"premium" حصراً.
-    // لو خُزِّنت "PRO" بأحرف كبيرة هنا، فإن getPlanLimits("PRO") كان سيفشل في إيجادها ويعود
-    // بصمت إلى PLAN_LIMITS.free (حد يوم واحد وتوليد واحد شهرياً فقط) — أي أن أي عميل يدفع
-    // فعلياً لباقة PRO كان سيبقى محصوراً بحدود الباقة المجانية إلى الأبد دون أي رسالة خطأ
-    // ظاهرة، وهو عكس الهدف الكامل لهذه الميزة تماماً. لذلك استخدمت هنا نفس القيم الصغيرة
-    // ("pro"/"premium") المستخدمة بالفعل في كل مكان آخر في المشروع.
-    if (!newPlan) {
-      console.error(
-        "[server.js] [webhook] ❌ تعذّر تحديد الباقة من اسم المنتج: \"" + productName + "\" (لا " +
-        "يحتوي على \"pro\" ولا \"premium\"). لم يتم تحديث أي شيء في Firestore لـ uid=" + uid + ". " +
-        "راجع الحمولة الكاملة المطبوعة أعلاه وعدّل منطق المطابقة أعلاه إن كانت تسمية منتجك الفعلية مختلفة."
-      );
-      return res.status(200).json({
-        success: false,
-        error: "Could not map product_name to a known plan.",
-        productName,
-        eventName,
-      });
-    }
-
-    // 6) تحديث Firestore: users/{uid} — ترقية الباقة وتصفير عداد التوليد الشهري فوراً، حتى
-    //    يبدأ المستخدم برصيده الجديد من صفر بدل انتظار التصفير التلقائي في بداية الشهر القادم.
-    //    (Admin SDK يتجاوز قواعد الأمان بالكامل — لا حاجة لأي تعديل في firestore.rules هنا.)
-    await db.collection("users").doc(uid).update({
-      plan: newPlan,
-      generationsUsed: 0,
-    });
-
-    console.log(
-      "[server.js] [webhook] ✅ تم ترقية uid=" + uid + " إلى الباقة \"" + newPlan + "\" وتصفير " +
-      "generationsUsed بنجاح (event=" + eventName + "، product_name=\"" + productName + "\")."
-    );
-
-    // 7) الرد فوراً بـ 200 بعد إتمام المعالجة بنجاح، كما طُلب صراحة.
-    return res.status(200).json({ success: true, uid, plan: newPlan, eventName });
-  } catch (err) {
-    console.error("[server.js] [webhook] ❌ خطأ غير متوقَّع أثناء معالجة الويبهوك: " + (err && err.message));
-    console.error(err && err.stack);
-    // 500 هنا (بدل 200) مقصودة: هذا خطأ حقيقي من جانبنا (باگ، انقطاع Firestore، إلخ)، ومن
-    // المفيد أن تُعيد Lemon Squeezy محاولة إرسال هذا الويبهوك لاحقاً بدل اعتباره "مُعالَجاً".
-    return res.status(500).json({ success: false, error: "Internal webhook processing error." });
-  }
-});
 
 app.use(express.json());
 
@@ -234,6 +83,48 @@ app.use((err, req, res, next) => {
     return res.status(403).json({ success: false, errorCode: "CORS_FORBIDDEN", error: err.message });
   }
   next(err);
+});
+
+// ---------------------------------------------------------------------------
+// نموذج تواصل الوكالة (Agency Inquiry Form) — يستقبل بيانات نموذج "تواصل معنا" من الواجهة
+// الأمامية عبر نفس الباكند الموجود على Vercel (بدل خدمة Firebase Functions منفصلة، حتى يبقى
+// كل شيء تحت دومين واحد بدون مشاكل CORS). حالياً يكتفي بتسجيل البيانات في السجلات (logs)؛
+// الحفظ في Firestore معلَّق أدناه كتعليق (TODO) جاهز للتفعيل عند الحاجة.
+// ---------------------------------------------------------------------------
+app.post("/api/submit-form", async (req, res) => {
+  try {
+    const formData = req.body;
+
+    if (!formData || typeof formData !== "object" || Object.keys(formData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        errorCode: "EMPTY_FORM",
+        error: "لم يتم استلام أي بيانات من النموذج.",
+      });
+    }
+
+    console.log("[server.js] بيانات نموذج تواصل الوكالة المستلمة:", formData);
+
+    // TODO: فعّل هذا عندما تريد حفظ الطلبات في Firestore (db وFieldValue مُهيَّآن أعلاه بالفعل):
+    // if (db) {
+    //   await db.collection("agencyInquiries").add({
+    //     ...formData,
+    //     receivedAt: FieldValue.serverTimestamp(),
+    //   });
+    // }
+
+    res.status(200).json({
+      success: true,
+      message: "تم استلام البيانات بنجاح، السيرفر يعمل!",
+    });
+  } catch (error) {
+    console.error("[server.js] خطأ أثناء معالجة نموذج تواصل الوكالة: " + error.message);
+    res.status(500).json({
+      success: false,
+      errorCode: "FORM_SUBMISSION_FAILED",
+      error: "حدث خطأ أثناء معالجة النموذج. حاول مرة أخرى.",
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -360,18 +251,11 @@ if (ANTHROPIC_API_KEY) {
 const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY || undefined });
 
 // ---------------------------------------------------------------------------
-// LEMON_WEBHOOK_SECRET — نفس آلية القراءة اليدوية لملف .env أعلاه بالضبط (decodeEnvBuffer +
-// cleanEnvToken)، معمَّمة الآن لأي اسم متغيّر وليس فقط ANTHROPIC_API_KEY.
-//
-// ⚠️ انحراف متعمَّد عن الصياغة الحرفية للطلب ("process.env.LEMON_WEBHOOK_SECRET"): هذا
-// المشروع لا يستخدم حزمة dotenv إطلاقاً (بقصد — انظر التعليق أعلى decodeEnvBuffer: يتعامل
-// خصيصاً مع مشاكل ترميز UTF-16/BOM التي تنتج عادة عن حفظ ملف .env من NotePad على ويندوز، وهي
-// مشاكل لا تتعامل معها حزمة dotenv تلقائياً). بما أن لا شيء آخر في هذا الملف يملأ process.env
-// فعلياً، فإن process.env.LEMON_WEBHOOK_SECRET كان سيبقى undefined دائماً مهما أضفنا للملف —
-// مما يجعل التحقق من توقيع الويبهوك يفشل بصمت في كل مرة (HMAC بمفتاح undefined لا معنى له).
-// الحل: عمّمت loadAnthropicApiKey() أعلاه إلى loadEnvVar(keyName) أدناه بنفس منطقها بالضبط،
-// واستخدمتها لقراءة LEMON_WEBHOOK_SECRET كثابت محلي عادي (وليس عبر process.env) — وهذا
-// الثابت (LEMON_WEBHOOK_SECRET) هو ما يُستخدم فعلياً في /api/webhook/lemonsqueezy أدناه.
+// loadEnvVar(keyName) — قراءة أي متغيّر بيئة: من process.env أولاً (كما تحقنه Vercel)، ثم من
+// ملف .env محلياً كاحتياطي (نفس آلية decodeEnvBuffer + cleanEnvToken المستخدمة أعلاه في
+// loadAnthropicApiKey). عامّة وقابلة لإعادة الاستخدام لأي متغيّر مستقبلي (مثل سر ويبهوك
+// Paddle القادم).
+// ---------------------------------------------------------------------------
 function loadEnvVar(keyName) {
   // نفس منطق process.env-أولاً المستخدم في loadAnthropicApiKey() أعلاه — ضروري لأن .env
   // لا يوجد إطلاقاً على Vercel (مستبعد عبر .gitignore)، والقيم هناك تأتي من متغيرات البيئة
@@ -403,21 +287,8 @@ function loadEnvVar(keyName) {
   return null;
 }
 
-const LEMON_WEBHOOK_SECRET = loadEnvVar("LEMON_WEBHOOK_SECRET");
-if (LEMON_WEBHOOK_SECRET && LEMON_WEBHOOK_SECRET !== "placeholder_secret_here") {
-  console.log("[server.js] ✅ تم تحميل LEMON_WEBHOOK_SECRET من .env بنجاح — /api/webhook/lemonsqueezy جاهز للتحقق من التوقيع.");
-} else if (LEMON_WEBHOOK_SECRET === "placeholder_secret_here") {
-  console.warn(
-    "[server.js] ⚠️ LEMON_WEBHOOK_SECRET لا يزال القيمة الوهمية الافتراضية (placeholder_secret_here). " +
-    "هذا متوقَّع تماماً طالما لم يُنشأ حساب Lemon Squeezy فعلياً بعد — استبدلها بالسر الحقيقي من " +
-    "Lemon Squeezy Dashboard → Settings → Webhooks قبل الإطلاق، وإلا سيرفض /api/webhook/lemonsqueezy كل ويبهوك حقيقي (500)."
-  );
-} else {
-  console.error(
-    "[server.js] ❌ LEMON_WEBHOOK_SECRET غير موجود إطلاقاً في .env. مسار /api/webhook/lemonsqueezy " +
-    "سيرفض كل الطلبات (500) حتى تضيف هذا المتغيّر."
-  );
-}
+// PADDLE_WEBHOOK_SECRET سيُقرأ هنا لاحقاً عبر نفس loadEnvVar("PADDLE_WEBHOOK_SECRET") أعلاه،
+// بمجرد إضافة تكامل Paddle الفعلي وويبهوكه.
 
 // ---------------------------------------------------------------------------
 // Firebase Admin SDK — ضروري للتحقق من هوية المستخدم (verifyIdToken) وللقراءة/
