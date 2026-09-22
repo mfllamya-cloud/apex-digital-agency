@@ -484,7 +484,7 @@ function AppContent() {
       // لا يكفي إرسال userTier من هنا، لأنه لا يُعتمد عليه في التحقق (يمكن التلاعب به من المتصفح).
       const idToken = await user.getIdToken();
 
-      const res = await fetch("http://localhost:5000/api/generate-content", {
+      const res = await fetch("/api/generate-content", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
