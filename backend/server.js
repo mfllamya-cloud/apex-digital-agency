@@ -55,18 +55,7 @@ if (process.env.VERCEL_URL) {
   allowedOrigins.push("https://" + process.env.VERCEL_URL);
 }
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error("[server.js] CORS: تم رفض طلب من مصدر غير مسموح به: " + origin);
-        callback(new Error("CORS: هذا المصدر غير مسموح به: " + origin));
-      }
-    },
-  })
-);
+app.use(cors());
 
 // ---------------------------------------------------------------------------
 // تمت إزالة تكامل Lemon Squeezy بالكامل (قرار عمل: التحويل الحصري إلى Paddle). مكان
