@@ -1,5 +1,21 @@
 {
-  "name": "content-calendar",
+  "name": "apex-digital-agency",
+  "version": "1.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "description": "Frontend (CRA) + Backend (Express) in one Vercel project.",
+  "scripts": {
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "start:backend": "node backend/server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.0",
+    "express": "^5.2.1",
+    "firebase-admin": "^14.4.0"
+  },
+  "overrides": {
+    "jose": "^5.10.0"
+  }
 }
