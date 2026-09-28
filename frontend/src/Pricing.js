@@ -348,16 +348,37 @@ export default function PricingSection() {
         }
       `}</style>
 
+      {/* عنوان القسم الثاني: خدمة الإنتاج الكاملة. نفس نمط العنوان المستعمل فوق قسم
+          المولّد في App.js (شارة + عنوان + سطر شرح) حتى يقرأ الزائر الصفحة كمسارين
+          واضحين لا كقائمة أسعار واحدة متضاربة. */}
       <div style={{ textAlign: "center", marginBottom: "36px" }}>
+        <span
+          style={{
+            display: "inline-block",
+            background: "rgba(212, 175, 55, 0.15)",
+            border: "1px solid rgba(212, 175, 55, 0.4)",
+            color: AGENCY_COLORS.goldDark,
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            padding: "0.35rem 0.95rem",
+            borderRadius: "999px",
+            marginBottom: "0.85rem",
+          }}
+        >
+          Full Agency Service
+        </span>
         <h2
           style={{
             margin: "0 0 10px",
-            fontSize: "32px",
+            fontSize: "1.75rem",
+            fontWeight: 800,
             color: AGENCY_COLORS.navy,
             letterSpacing: "-0.02em",
           }}
         >
-          Choose your campaign
+          Done-For-You Video Ads
         </h2>
         <p
           style={{
@@ -370,8 +391,8 @@ export default function PricingSection() {
             lineHeight: 1.6,
           }}
         >
-          Every package is produced from scratch for your offer — scripting, editing, voiceover
-          and copy included. Pick your delivery speed at checkout.
+          We produce the ads for you from scratch — scripting, editing, voiceover and copy
+          included. One-time payment, no subscription. Pick your delivery speed at checkout.
         </p>
       </div>
 
