@@ -8,6 +8,9 @@ import Auth from "./Auth";
 import SEOTool from "./SEOTool";
 import History from "./History";
 import PricingSection from "./Pricing";
+import Portfolio from "./Portfolio";
+import FAQ from "./FAQ";
+import Reveal from "./Reveal";
 import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
@@ -2024,7 +2027,15 @@ function AppContent() {
         {/* قسم الأسعار (Pricing) — باقتا الإنتاج مع خيارات التسليم السريع وأزرار الدفع.
             كل شيء معرَّف في Pricing.js: الأسعار، المزايا، وروابط PayPal/Crypto (ثابت
             PAYMENT_LINKS في أعلى ذلك الملف هو المكان الوحيد الذي تُملأ فيه الروابط). */}
-        <PricingSection />
+        <Reveal>
+          <PricingSection />
+        </Reveal>
+
+        {/* معرض الأعمال ثم الأسئلة الشائعة — بهذا الترتيب عمداً: الزائر يرى السعر، ثم
+            يرى شكل ما سيحصل عليه، ثم يجد جواب الاعتراض الأخير قبل الدفع. */}
+        <Portfolio />
+
+        <FAQ />
 
         {/* روابط الصفحات القانونية — مطلوبة من PayPal ومن معالجات الدفع عموماً، ووجودها
             الظاهر في التذييل هو أول ما يبحث عنه البنك عند أي نزاع (chargeback). */}
