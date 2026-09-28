@@ -7,6 +7,8 @@ import { ensureUserProfile, getUserProfile } from "./firestoreUser";
 import Auth from "./Auth";
 import SEOTool from "./SEOTool";
 import History from "./History";
+import PricingSection from "./Pricing";
+import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
 
@@ -44,6 +46,19 @@ const AGENCY_COLORS = {
 // مستخدم فقط (حجم شريط "عدد الأيام" في النموذج، والنص المعروض في quotaInfo/planLimitNote).
 const PLAN_MAX_DAYS = { free: 1, pro: 7, premium: 7 };
 const PLAN_MAX_GENERATIONS = { free: 1, pro: 5, premium: 12 };
+
+// ---------------------------------------------------------------------------
+// واجهة باقات المولّد القديمة (Free / Pro / Premium) — مخفية عن الزوار.
+//
+// الأسعار المعروضة للعموم أصبحت باقتي الوكالة فقط ($100 / $500) في Pricing.js. الباقات
+// القديمة لم تُحذف من الكود لأن المولّد والباكند ما زالا يعتمدان عليها فعلياً (الحصة
+// الشهرية، عدد الأيام، ميزات Premium — والمصدر الملزم هو PLAN_LIMITS في backend/server.js)،
+// لكن كل ما كان يعرضها أو يسوّق للترقية إليها في الصفحة العامة صار محكوماً بهذا الثابت:
+// مبدّل الباقات، بطاقة ميزات الباقة، شريط التشويق، البطاقات المقفلة، وصناديق الترقية.
+//
+// أعِدها للظهور بتغيير القيمة إلى true — لا يوجد أي تعديل آخر مطلوب.
+const SHOW_LEGACY_TIER_UI = false;
+// ---------------------------------------------------------------------------
 
 // خيارات "لغة المحتوى" الصريحة (ميزة PRO/PREMIUM) — منفصلة تماماً عن لغة الواجهة (i18n).
 // القيمة "" تعني: بدون إجبار، والخادم يكتشف لغة وصف المشروع تلقائياً كما كان يفعل دائماً.
@@ -699,6 +714,11 @@ export default function App() {
               لحالة تسجيل الدخول عبر onAuthStateChanged، تماماً كـ AppContent أدناه، لذا لا
               يحتاج أي بيانات مُمرَّرة إليه هنا. */}
           <Route path="/history" element={<History />} />
+          {/* الصفحات القانونية — مكوّنات مستقلة في Legal.js، مرتبطة من تذييل الموقع
+              ومن أزرار الدفع في Pricing.js. */}
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/refund" element={<RefundPolicy />} />
           <Route path="*" element={<AppContent />} />
         </Routes>
       </LanguageProvider>
@@ -1042,7 +1062,7 @@ function AppContent() {
               الإطلاق، بدل ظهوره سابقاً بعد النتائج فقط (ما كان يمثل عائقاً في مسار التحويل).
               badge بارز (pill شبه شفاف) + شرح أسفله. خلفية شبه شفافة + backdrop-filter blur
               لإحساس "زجاج فاخر" (glassmorphism)، مع حدّ ذهبي خفيف (rgba metallicGold) وظل ناعم. */}
-          {tier === "free" && (
+          {SHOW_LEGACY_TIER_UI && tier === "free" && (
             <div
               style={{
                 position: "relative",
@@ -1095,17 +1115,19 @@ function AppContent() {
           )}
 
           <div className="agency-card" style={{ borderRadius: "16px", padding: "2rem", marginBottom: "2rem" }}>
-            <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
-              {["free", "pro", "premium"].map((tierId) => (
-                <button
-                  key={tierId}
-                  onClick={() => handleSelectTier(tierId)}
-                  style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600", background: tier === tierId ? AGENCY_COLORS.navy : "#e5e7eb", color: tier === tierId ? "white" : "#374151" }}
-                >
-                  {t("tiers." + tierId)}
-                </button>
-              ))}
-            </div>
+            {SHOW_LEGACY_TIER_UI && (
+              <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
+                {["free", "pro", "premium"].map((tierId) => (
+                  <button
+                    key={tierId}
+                    onClick={() => handleSelectTier(tierId)}
+                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600", background: tier === tierId ? AGENCY_COLORS.navy : "#e5e7eb", color: tier === tierId ? "white" : "#374151" }}
+                  >
+                    {t("tiers." + tierId)}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* "Luxury Structured Tier Cards" — تُعرض ميزات الباقة المدفوعة كبنود مستقلة سهلة
                 المسح (scannable)، كل بند بعلامة ذهبية "✦" (Weekly Sprint Architecture: 5/12
@@ -1115,6 +1137,7 @@ function AppContent() {
                 (المأخوذة أصلاً من PLAN_LIMITS في backend/server.js) — لا حساب أو منطق جديد
                 هنا، فقط عرض. الباقة المجانية تبقى سطراً وصفياً واحداً لأنها ميزة واحدة فقط. */}
             {(() => {
+              if (!SHOW_LEGACY_TIER_UI) return null;
               const accentColor =
                 tier === "premium" ? AGENCY_COLORS.navy : tier === "pro" ? AGENCY_COLORS.metallicGold : AGENCY_COLORS.border;
               const features = t(`planFeatures.${tier}.features`);
@@ -1488,7 +1511,7 @@ function AppContent() {
                 <p style={{ margin: 0, color: "#b91c1c", fontSize: "0.9rem", fontWeight: "600" }}>
                   {quotaErrorMessage}
                 </p>
-                {tier !== "premium" && (
+                {SHOW_LEGACY_TIER_UI && tier !== "premium" && (
                   <button
                     onClick={() => handleUpgradeClick(tier === "free" ? "pro" : "premium")}
                     style={{
@@ -1526,7 +1549,7 @@ function AppContent() {
               حقيقي ومقروء + شارة الباقة المطلوبة، مع قفل ذهبي وطبقة تعتيم فوق محتوى زخرفي مموّه.
               الضغط على أي بطاقة يفتح نافذة "VIP Lead Capture" (نفس showVipModal المستخدمة في
               أزرار الترقية الأخرى) بدل أي توجيه مباشر لصفحة دفع. */}
-          {tier === "free" && (
+          {SHOW_LEGACY_TIER_UI && tier === "free" && (
             <div style={{ maxWidth: "1100px", margin: "0 auto", marginBottom: "2rem" }}>
               <h4
                 style={{
@@ -1870,7 +1893,7 @@ function AppContent() {
 
           {/* قسم التشويق (Upsell Teaser) — يظهر مباشرة بعد النتيجة، ويختلف حسب الباقة الحالية:
               FREE تُشوَّق لـ PRO، و PRO تُشوَّق لـ PREMIUM. لا يظهر أي شيء لباقة PREMIUM. */}
-          {results.length > 0 && (tier === "free" || tier === "pro") && (
+          {SHOW_LEGACY_TIER_UI && results.length > 0 && (tier === "free" || tier === "pro") && (
             <div style={{ maxWidth: "1100px", margin: "30px auto 0" }}>
               {tier === "free" && (
                 <div
@@ -1938,6 +1961,37 @@ function AppContent() {
               )}
             </div>
           )}
+        </div>
+
+        {/* قسم الأسعار (Pricing) — باقتا الإنتاج مع خيارات التسليم السريع وأزرار الدفع.
+            كل شيء معرَّف في Pricing.js: الأسعار، المزايا، وروابط PayPal/Crypto (ثابت
+            PAYMENT_LINKS في أعلى ذلك الملف هو المكان الوحيد الذي تُملأ فيه الروابط). */}
+        <PricingSection />
+
+        {/* روابط الصفحات القانونية — مطلوبة من PayPal ومن معالجات الدفع عموماً، ووجودها
+            الظاهر في التذييل هو أول ما يبحث عنه البنك عند أي نزاع (chargeback). */}
+        <div
+          style={{
+            maxWidth: "1100px",
+            margin: "3rem auto 0",
+            paddingTop: "1.5rem",
+            borderTop: `1px solid ${AGENCY_COLORS.border}`,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px 28px",
+            justifyContent: "center",
+            fontSize: "14px",
+          }}
+        >
+          <Link to="/terms" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
+            Terms of Service
+          </Link>
+          <Link to="/privacy" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
+            Privacy Policy
+          </Link>
+          <Link to="/refund" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
+            Refund Policy
+          </Link>
         </div>
 
         {/* تذييل فاخر (Luxury Footer) — زر "Elite Partner Program" (TASK 2: أُعيد تصميمه من رابط
