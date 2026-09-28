@@ -48,16 +48,19 @@ const PLAN_MAX_DAYS = { free: 1, pro: 7, premium: 7 };
 const PLAN_MAX_GENERATIONS = { free: 1, pro: 5, premium: 12 };
 
 // ---------------------------------------------------------------------------
-// واجهة باقات المولّد القديمة (Free / Pro / Premium) — مخفية عن الزوار.
+// واجهة باقات المولّد (Free / Pro / Premium) — ظاهرة للزوار.
 //
-// الأسعار المعروضة للعموم أصبحت باقتي الوكالة فقط ($100 / $500) في Pricing.js. الباقات
-// القديمة لم تُحذف من الكود لأن المولّد والباكند ما زالا يعتمدان عليها فعلياً (الحصة
-// الشهرية، عدد الأيام، ميزات Premium — والمصدر الملزم هو PLAN_LIMITS في backend/server.js)،
-// لكن كل ما كان يعرضها أو يسوّق للترقية إليها في الصفحة العامة صار محكوماً بهذا الثابت:
-// مبدّل الباقات، بطاقة ميزات الباقة، شريط التشويق، البطاقات المقفلة، وصناديق الترقية.
+// الموقع يبيع الآن مسارين مختلفين جنباً إلى جنب:
+//   • باقتا إنتاج الفيديو ($100 / $500) — معرَّفتان في Pricing.js أسفل الصفحة.
+//   • باقات المولّد (استراتيجية/نصوص فقط) — هذا الثابت هو ما يتحكم في ظهورها.
 //
-// أعِدها للظهور بتغيير القيمة إلى true — لا يوجد أي تعديل آخر مطلوب.
-const SHOW_LEGACY_TIER_UI = false;
+// هذا الثابت يتحكم في: مبدّل الباقات، بطاقة ميزات الباقة، شريط التشويق العلوي،
+// البطاقات المقفلة للباقة المجانية، وصناديق الترقية بعد النتيجة.
+//
+// القيمة false تخفيها بالكامل عن الصفحة العامة دون أي تعديل آخر — المولّد والباكند
+// يظلان يعملان على نفس الباقات في الحالتين (المصدر الملزم هو PLAN_LIMITS في
+// backend/server.js).
+const SHOW_LEGACY_TIER_UI = true;
 // ---------------------------------------------------------------------------
 
 // خيارات "لغة المحتوى" الصريحة (ميزة PRO/PREMIUM) — منفصلة تماماً عن لغة الواجهة (i18n).
@@ -1056,6 +1059,61 @@ function AppContent() {
               textMuted الباهت) ووزن 500 (font-medium)، ضمن معالجة "Readability Overhaul". */}
           <h1 className="agency-h1" style={{ color: AGENCY_COLORS.navy, textAlign: "center" }}>{t("app.title")}</h1>
           <p style={{ color: AGENCY_COLORS.textStrong, fontWeight: "500", textAlign: "center", marginBottom: "2rem", fontSize: "1.05rem" }}>{t("app.subtitle")}</p>
+
+          {/* ---------------------------------------------------------------------
+              عنوان القسم الأول: أداة التخطيط الذاتي (المولّد + باقاته).
+              الموقع يعرض الآن مسارين مختلفين تماماً في نفس الصفحة — أداة يشتغل بها العميل
+              بنفسه باشتراك شهري، وخدمة إنتاج فيديو تُنفَّذ له مقابل دفعة واحدة. بدون عنوان
+              صريح فوق كل مسار، الزائر يرى أسعاراً متضاربة (باقات اشتراك ثم $100/$500)
+              ولا يعرف أيّها يخصّه. هذا العنوان ونظيره فوق <PricingSection /> في Pricing.js
+              يفصلان المسارين بصرياً بنفس النمط (شارة صغيرة + عنوان + سطر شرح).
+
+              مربوط بـ SHOW_LEGACY_TIER_UI عمداً: لو أُخفيت باقات المولّد مستقبلاً، يختفي
+              عنوانها معها بدل أن يبقى عنوان معلّق فوق قسم غير موجود.
+              --------------------------------------------------------------------- */}
+          {SHOW_LEGACY_TIER_UI && (
+            <div style={{ maxWidth: "720px", margin: "0 auto 2rem", textAlign: "center" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "rgba(212, 175, 55, 0.15)",
+                  border: "1px solid rgba(212, 175, 55, 0.4)",
+                  color: AGENCY_COLORS.goldDark,
+                  fontSize: "0.72rem",
+                  fontWeight: "700",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  padding: "0.35rem 0.95rem",
+                  borderRadius: "999px",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                Self-Service
+              </span>
+              <h2
+                style={{
+                  margin: "0 0 0.5rem",
+                  fontSize: "1.75rem",
+                  fontWeight: "800",
+                  letterSpacing: "-0.02em",
+                  color: AGENCY_COLORS.navy,
+                }}
+              >
+                AI Content Planning &amp; Strategy
+              </h2>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "1rem",
+                  lineHeight: 1.6,
+                  color: AGENCY_COLORS.textMuted,
+                }}
+              >
+                Describe your business and get a ready-to-post content plan in minutes. Monthly
+                plans, you run the tool yourself.
+              </p>
+            </div>
+          )}
 
           {/* "Executive Teaser Banner" (Glassmorphism) — TASK 1 (إصلاح الظهور): نُقل هذا الشريط
               ليظهر دائماً أعلى نموذج الإدخال مباشرة لباقة "free" فقط، حتى قبل أي توليد على
