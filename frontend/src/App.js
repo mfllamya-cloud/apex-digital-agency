@@ -35,13 +35,13 @@ const AGENCY_COLORS = {
   // metallicGold: ذهب معدني فاتح مخصَّص لحدود شريط "الإفصاح الفاخر" وأيقونة القفل في البطاقات
   // المقفلة (لون مختلف عمداً عن gold/goldDark الأكثر دفئاً، المستخدمين في أزرار الفعل CTA).
   metallicGold: "#D4AF37",
-  border: "rgba(255, 255, 255, 0.10)",
-  textMuted: "#9AA3B2",
+  border: "rgba(255, 255, 255, 0.14)",
+  textMuted: "#C8CDD8",
   // textStrong: نص عالي التباين (يعادل slate-800 في Tailwind) — يُستخدم في العناوين الفرعية
   // ونص شرائط "الزجاج الفاخر" (Glassmorphism) بدل textMuted الباهت، ضمن معالجة "Typography &
   // Readability Overhaul" (خطوط رفيعة/باهتة سابقاً) — راجع app.subtitle وnص Executive Teaser
   // Banner في JSX أدناه.
-  textStrong: "#F4F1EA",
+  textStrong: "#F7F5F0",
 };
 
 // حدود الباقات — تُستخدم هنا فقط لضبط واجهة المستخدم (حجم شريط الأيام مثلاً).
