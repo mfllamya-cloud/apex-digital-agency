@@ -1,18 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { T, glassCard } from "./theme";
 import "./App.css";
 
-// نظام الألوان — نفس قيم AGENCY_COLORS في App.js و :root في App.css (مكرَّرة محلياً لأن
-// هذا الملف مستقل تماماً، تماماً كما في History.js و SEOTool.js و Pricing.js).
-const AGENCY_COLORS = {
-  navy: "#0A192F",
-  pearl: "#F8FAFC",
-  gold: "#D97706",
-  goldDark: "#B45309",
-  border: "#E2E8F0",
-  textMuted: "#64748B",
-  textStrong: "#1E293B",
-};
+// الألوان تأتي الآن من theme.js (مصدر واحد لكل المكوّنات) بدل نسخة محلية في كل ملف.
+// هذه الصفحات تبقى بالإنجليزية عمداً: نص قانوني مترجَم آلياً أسوأ من نص إنجليزي واضح،
+// والصياغة الملزمة يجب أن تبقى واحدة مهما كانت لغة واجهة الزائر.
 
 // ---------------------------------------------------------------------------
 // بيانات الشركة — المكان الوحيد الذي تُعرَّف فيه، وتُستعمل في الصفحات القانونية الثلاث.
@@ -36,18 +29,16 @@ const COMPANY = {
 
 function LegalLayout({ title, subtitle, children }) {
   return (
-    <div style={{ backgroundColor: AGENCY_COLORS.pearl, minHeight: "100vh", padding: "48px 20px" }}>
+    <div style={{ minHeight: "100vh", padding: "48px 20px" }}>
       <article
+        className="apex-glass-sheen"
         style={{
+          ...glassCard(),
           maxWidth: "820px",
           margin: "0 auto",
-          backgroundColor: "#FFFFFF",
-          border: `1px solid ${AGENCY_COLORS.border}`,
-          borderRadius: "16px",
           padding: "44px 40px",
-          boxShadow: "0 6px 24px rgba(10, 25, 47, 0.06)",
-          color: AGENCY_COLORS.textStrong,
-          lineHeight: 1.75,
+          color: T.textMuted,
+          lineHeight: 1.8,
           fontSize: "16px",
         }}
       >
@@ -58,27 +49,29 @@ function LegalLayout({ title, subtitle, children }) {
             marginBottom: "22px",
             fontSize: "14px",
             fontWeight: 600,
-            color: AGENCY_COLORS.goldDark,
+            color: T.gold,
             textDecoration: "none",
           }}
         >
           ← Back to {COMPANY.tradeName}
         </Link>
 
-        <h1 style={{ margin: "0 0 6px", fontSize: "32px", color: AGENCY_COLORS.navy }}>{title}</h1>
-        <p style={{ margin: "0 0 4px", color: AGENCY_COLORS.textMuted, fontSize: "14px" }}>
+        <h1 className="apex-display" style={{ margin: "0 0 8px", fontSize: "2.4rem" }}>
+          {title}
+        </h1>
+        <p style={{ margin: "0 0 4px", color: T.textFaint, fontSize: "14px" }}>
           {subtitle}
         </p>
-        <p style={{ margin: "0 0 32px", color: AGENCY_COLORS.textMuted, fontSize: "14px" }}>
+        <p style={{ margin: "0 0 32px", color: T.textFaint, fontSize: "14px" }}>
           Effective date: {COMPANY.effectiveDate}
         </p>
 
         {children}
 
         <hr
-          style={{ margin: "40px 0 20px", border: "none", borderTop: `1px solid ${AGENCY_COLORS.border}` }}
+          style={{ margin: "40px 0 20px", border: "none", borderTop: `1px solid ${T.glassBorder}` }}
         />
-        <p style={{ fontSize: "14px", color: AGENCY_COLORS.textMuted, margin: 0 }}>
+        <p style={{ fontSize: "14px", color: T.textFaint, margin: 0 }}>
           {COMPANY.legalName} (trading as {COMPANY.tradeName}) · {COMPANY.address} ·{" "}
           {COMPANY.email}
         </p>
@@ -90,12 +83,8 @@ function LegalLayout({ title, subtitle, children }) {
 function H2({ children }) {
   return (
     <h2
-      style={{
-        margin: "34px 0 10px",
-        fontSize: "20px",
-        color: AGENCY_COLORS.navy,
-        letterSpacing: "-0.01em",
-      }}
+      className="apex-display"
+      style={{ margin: "36px 0 10px", fontSize: "1.35rem" }}
     >
       {children}
     </h2>
@@ -108,10 +97,11 @@ function Callout({ children }) {
       style={{
         margin: "22px 0",
         padding: "18px 20px",
-        backgroundColor: "#FFFBEB",
-        borderLeft: `4px solid ${AGENCY_COLORS.gold}`,
+        background: "rgba(212, 175, 55, 0.07)",
+        borderInlineStart: `3px solid ${T.gold}`,
         borderRadius: "0 10px 10px 0",
         fontSize: "15px",
+        color: T.text,
       }}
     >
       {children}
@@ -221,7 +211,7 @@ export function TermsOfService() {
       <H2>11. Refunds</H2>
       <p>
         Refunds are governed by our{" "}
-        <Link to="/refund" style={{ color: AGENCY_COLORS.goldDark }}>
+        <Link to="/refund" style={{ color: T.gold }}>
           Refund Policy
         </Link>
         , which forms part of these Terms.
