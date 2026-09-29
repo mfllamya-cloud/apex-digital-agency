@@ -1,139 +1,35 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "./i18n";
+import { T } from "./theme";
 import Reveal from "./Reveal";
 import "./App.css";
 
-// نظام الألوان — نفس قيم AGENCY_COLORS في App.js و :root في App.css.
-const AGENCY_COLORS = {
-  navy: "#0A192F",
-  pearl: "#F8FAFC",
-  gold: "#D97706",
-  goldDark: "#B45309",
-  metallicGold: "#D4AF37",
-  border: "#E2E8F0",
-  textMuted: "#64748B",
-  textStrong: "#1E293B",
-};
+// بريد التواصل — نفس العنوان المستعمل في الصفحات القانونية (Legal.js). أي تغيير
+// هنا يجب أن يرافقه تغيير هناك، وإلا ظهر للعميل عنوانان مختلفان.
+const CONTACT_EMAIL = "contact@apexstudiopro.com";
 
 // ---------------------------------------------------------------------------
-// ⚠️ هذه الأجوبة مكتوبة لتطابق حرفياً ما في /terms و /refund (مدة التسليم تبدأ بعد
-// وصول الدفع والبريف كاملاً، عدد التعديلات 1 و 3، مهلة 7 أيام للمطالبة بالتعديل،
-// الاسترجاع كامل قبل بدء الإنتاج ولا استرجاع بعده، ولا ضمان لأي نتيجة إعلانية).
+// ترتيب الأسئلة. النصوص كلها في i18nAgency.js تحت agency.faq.items.
 //
-// أي تعديل هنا يجب أن يُنقل إلى الصفحتين القانونيتين في نفس الوقت: تناقض بين إجابة
-// في الأسئلة الشائعة وبين سياسة الاسترجاع هو أول ما يستشهد به العميل — وأول ما يقلب
-// نتيجة نزاع الدفع (chargeback) ضدّك.
+// ⚠️ تلك الأجوبة مكتوبة لتطابق حرفياً ما في /terms و /refund (بدء المدة بعد وصول
+// الدفع والبريف، 1 و 3 تعديلات، مهلة 7 أيام، استرجاع كامل قبل بدء الإنتاج ولا
+// استرجاع بعده، ولا ضمان لأي نتيجة إعلانية). أي تعديل هنا يجب أن يُنقل إلى
+// الصفحتين القانونيتين معاً: تناقض بين الأسئلة الشائعة وسياسة الاسترجاع هو أول
+// ما يستشهد به العميل، وأول ما يقلب نتيجة نزاع الدفع ضدّك.
+//
+// refunds هو السؤال الوحيد الذي ينتهي جوابه برابط سياسة الاسترجاع (linkToRefund).
 // ---------------------------------------------------------------------------
-const FAQ_ITEMS = [
-  {
-    id: "turnaround",
-    q: "How long does it take?",
-    a: (
-      <>
-        Apex Starter Campaign is delivered within 48 hours and Apex Conversion Pro within 3–5
-        days. The clock starts when two things have arrived: your payment has cleared and your
-        brief is complete, including any product photos, footage or brand assets we need. If you
-        need it sooner, the express and priority options on each package shorten that to 24 or 12
-        hours on Starter, and 48 or 24 hours on Pro.
-      </>
-    ),
-  },
-  {
-    id: "revisions",
-    q: "Do I get revisions?",
-    a: (
-      <>
-        Yes — one revision with Starter, three with Pro. A revision covers anything inside the
-        brief you approved: pacing, captions, music, the order of scenes, colour, small copy
-        changes. Changing the product, the offer, the audience or the whole concept is new work
-        and gets quoted separately. Send revision requests within 7 days of delivery.
-      </>
-    ),
-  },
-  {
-    id: "no-script",
-    q: "What if I don't have a script?",
-    a: (
-      <>
-        You don't need one. Writing the script is part of every package — that's what the
-        copywriting line covers. Tell us what you sell, who it's for, what you want the viewer to
-        do, and anything you already know works. We write the hook and the script from that and
-        send it with the first cut.
-      </>
-    ),
-  },
-  {
-    id: "no-footage",
-    q: "What if I don't have any footage?",
-    a: (
-      <>
-        We can work from product photos, your website, or licensed stock. For UGC-style ads,
-        simple phone footage of the product in use goes a long way, and we'll tell you exactly
-        what to shoot. If we use licensed stock, the licence covers the ads we deliver to you —
-        it isn't a separate stock licence for your other projects.
-      </>
-    ),
-  },
-  {
-    id: "formats",
-    q: "What do I actually receive?",
-    a: (
-      <>
-        MP4 video files ready to upload, plus the ad copy as text. Pro is delivered in both 9:16
-        and 1:1, so the same campaign runs on TikTok, Reels, Shorts and the Meta feed without
-        re-cropping. Starter is delivered in 9:16.
-      </>
-    ),
-  },
-  {
-    id: "rights",
-    q: "Who owns the ads?",
-    a: (
-      <>
-        You do, once payment is complete — full commercial rights, any market, no time limit. We
-        keep the project files and our own templates and methods. We may show the finished work
-        in our portfolio unless you tell us in writing that you'd rather we didn't.
-      </>
-    ),
-  },
-  {
-    id: "results",
-    q: "Do you guarantee results?",
-    a: (
-      <>
-        No, and be careful with anyone who does. We control the creative; your results also
-        depend on your offer, price, landing page, targeting and budget. What we do guarantee is
-        that the work matches the brief you approved, and we keep revising until it does.
-      </>
-    ),
-  },
-  {
-    id: "refunds",
-    q: "Can I get a refund?",
-    a: (
-      <>
-        Before production starts, yes — full refund, minus the payment processor's fee. Once
-        production has started the sale is final, because the work is made from scratch for you
-        and can't be resold. If something is wrong with the delivery, the included revisions are
-        how we fix it. Full details are in our{" "}
-        <Link to="/refund" style={{ color: AGENCY_COLORS.goldDark, fontWeight: 600 }}>
-          Refund Policy
-        </Link>
-        .
-      </>
-    ),
-  },
-  {
-    id: "payment",
-    q: "How do I pay?",
-    a: (
-      <>
-        PayPal or cryptocurrency, in full, before production begins. Prices are in US dollars.
-        Crypto payments can't be reversed once confirmed on-chain, so check the package and
-        delivery speed before sending.
-      </>
-    ),
-  },
+const FAQ_ORDER = [
+  { id: "turnaround" },
+  { id: "revisions" },
+  { id: "noScript" },
+  { id: "noFootage" },
+  { id: "formats" },
+  { id: "rights" },
+  { id: "results" },
+  { id: "refunds", linkToRefund: true },
+  { id: "payment" },
 ];
 
 function Chevron({ open }) {
@@ -145,11 +41,12 @@ function Chevron({ open }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.4"
+      strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
       style={{
         flexShrink: 0,
+        color: T.gold,
         transform: open ? "rotate(180deg)" : "rotate(0deg)",
         transition: "transform 340ms cubic-bezier(0.16, 1, 0.3, 1)",
       }}
@@ -160,22 +57,16 @@ function Chevron({ open }) {
 }
 
 function FaqRow({ item, isOpen, onToggle, index }) {
-  const panelId = `faq-panel-${item.id}`;
-  const buttonId = `faq-button-${item.id}`;
+  const { t } = useLanguage();
+  const panelId = "faq-panel-" + item.id;
+  const buttonId = "faq-button-" + item.id;
+  const base = "agency.faq.items." + item.id;
 
   return (
-    <Reveal delay={index * 60}>
+    <Reveal delay={index * 55}>
       <div
-        className="apex-faq-row"
-        style={{
-          background: "#FFFFFF",
-          border: `1px solid ${isOpen ? AGENCY_COLORS.metallicGold : AGENCY_COLORS.border}`,
-          borderRadius: "14px",
-          marginBottom: "12px",
-          overflow: "hidden",
-          transition: "border-color 320ms ease, box-shadow 320ms ease",
-          boxShadow: isOpen ? "0 10px 28px rgba(10, 25, 47, 0.10)" : "none",
-        }}
+        className={"apex-faq-row" + (isOpen ? " apex-faq-row-open" : "")}
+        style={{ marginBottom: "12px" }}
       >
         <button
           id={buttonId}
@@ -184,25 +75,8 @@ function FaqRow({ item, isOpen, onToggle, index }) {
           aria-expanded={isOpen}
           aria-controls={panelId}
           className="apex-faq-button"
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            padding: "18px 20px",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            textAlign: "left",
-            font: "inherit",
-            fontSize: "16px",
-            fontWeight: 700,
-            color: AGENCY_COLORS.navy,
-            lineHeight: 1.4,
-          }}
         >
-          {item.q}
+          <span>{t(base + ".q")}</span>
           <Chevron open={isOpen} />
         </button>
 
@@ -217,13 +91,22 @@ function FaqRow({ item, isOpen, onToggle, index }) {
             <p
               style={{
                 margin: 0,
-                padding: "0 20px 20px",
-                fontSize: "15px",
-                lineHeight: 1.75,
-                color: AGENCY_COLORS.textStrong,
+                padding: "0 22px 22px",
+                fontSize: "0.95rem",
+                lineHeight: 1.8,
+                color: T.textMuted,
               }}
             >
-              {item.a}
+              {t(base + ".a")}
+              {item.linkToRefund ? (
+                <>
+                  {" "}
+                  <Link to="/refund" style={{ color: T.gold, fontWeight: 600 }}>
+                    {t("agency.faq.refundLink")}
+                  </Link>
+                  .
+                </>
+              ) : null}
             </p>
           </div>
         </div>
@@ -233,24 +116,50 @@ function FaqRow({ item, isOpen, onToggle, index }) {
 }
 
 export default function FAQ() {
-  // أكورديون بفتح واحد في كل مرة: يبقي الصفحة قصيرة ويمنع الزائر من فقدان مكانه.
+  const { t } = useLanguage();
+
+  // أكورديون بفتح واحد في كل مرة: يُبقي الصفحة قصيرة ويمنع الزائر من فقدان مكانه.
   // إعادة الضغط على نفس السؤال تغلقه (openId = null).
   const [openId, setOpenId] = useState(null);
 
   return (
-    <section
-      id="faq"
-      style={{ maxWidth: "820px", margin: "4.5rem auto 0", padding: "0 20px" }}
-    >
+    <section id="faq" style={{ maxWidth: "820px", margin: "4.5rem auto 0", padding: "0 20px" }}>
       <style>{`
+        .apex-faq-row {
+          background: var(--apex-glass);
+          border: 1px solid var(--apex-glass-border);
+          border-radius: 14px;
+          overflow: hidden;
+          backdrop-filter: var(--apex-blur);
+          -webkit-backdrop-filter: var(--apex-blur);
+          transition: border-color 320ms ease, box-shadow 320ms ease, background 320ms ease;
+        }
+        .apex-faq-row:hover { border-color: rgba(212, 175, 55, 0.22); }
+        .apex-faq-row-open {
+          border-color: var(--apex-glass-border-gold);
+          background: var(--apex-glass-strong);
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+        .apex-faq-button {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 19px 22px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          text-align: start;
+          font-family: var(--apex-font-sans);
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--apex-text);
+          line-height: 1.45;
+        }
         .apex-faq-panel {
           display: grid;
-          transition: grid-template-rows 380ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .apex-faq-button:hover { background: rgba(212, 175, 55, 0.06); }
-        .apex-faq-button:focus-visible {
-          outline: 2px solid #D4AF37;
-          outline-offset: -2px;
+          transition: grid-template-rows 380ms var(--apex-ease);
         }
         @media (prefers-reduced-motion: reduce) {
           .apex-faq-panel { transition: none; }
@@ -258,50 +167,16 @@ export default function FAQ() {
       `}</style>
 
       <Reveal>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <span
-            style={{
-              display: "inline-block",
-              background: "rgba(212, 175, 55, 0.15)",
-              border: "1px solid rgba(212, 175, 55, 0.4)",
-              color: AGENCY_COLORS.goldDark,
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "0.35rem 0.95rem",
-              borderRadius: "999px",
-              marginBottom: "0.85rem",
-            }}
-          >
-            Before you order
-          </span>
-          <h2
-            style={{
-              margin: "0 0 10px",
-              fontSize: "1.75rem",
-              fontWeight: 800,
-              color: AGENCY_COLORS.navy,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Questions, answered
+        <div style={{ textAlign: "center", marginBottom: "38px" }}>
+          <span className="apex-eyebrow">{t("agency.faq.eyebrow")}</span>
+          <h2 className="apex-display apex-h2" style={{ marginBottom: "0.75rem" }}>
+            {t("agency.faq.title")}
           </h2>
-          <p
-            style={{
-              margin: "0 auto",
-              maxWidth: "560px",
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              color: AGENCY_COLORS.textMuted,
-            }}
-          >
-            If something here isn't clear, email us before you pay — not after.
-          </p>
+          <p className="apex-lede">{t("agency.faq.sub")}</p>
         </div>
       </Reveal>
 
-      {FAQ_ITEMS.map((item, index) => (
+      {FAQ_ORDER.map((item, index) => (
         <FaqRow
           key={item.id}
           item={item}
@@ -312,20 +187,10 @@ export default function FAQ() {
       ))}
 
       <Reveal delay={120}>
-        <p
-          style={{
-            margin: "26px 0 0",
-            textAlign: "center",
-            fontSize: "15px",
-            color: AGENCY_COLORS.textMuted,
-          }}
-        >
-          Still unsure?{" "}
-          <a
-            href="mailto:contact@apexstudiopro.com"
-            style={{ color: AGENCY_COLORS.goldDark, fontWeight: 600 }}
-          >
-            contact@apexstudiopro.com
+        <p style={{ margin: "28px 0 0", textAlign: "center", fontSize: "0.95rem", color: T.textFaint }}>
+          {t("agency.faq.stillUnsure")}{" "}
+          <a href={"mailto:" + CONTACT_EMAIL} style={{ color: T.gold, fontWeight: 600 }}>
+            {CONTACT_EMAIL}
           </a>
         </p>
       </Reveal>
