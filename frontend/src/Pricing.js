@@ -158,8 +158,10 @@ function PackageCard({ pkg, index }) {
         <p style={{ margin: "0 0 24px", fontSize: "0.8rem", color: T.textFaint, minHeight: "1.2em" }}>
           {speed.extra > 0
             ? t("agency.pricing.basePlus", {
-                base: pkg.basePrice,
-                extra: speed.extra,
+                // المبالغ تُنسَّق هنا بالرمز، لا داخل ملف الترجمة: رمز الدولار متبوعاً بقوس معقوف في سلسلة
+                // عادية هناك يُسقط بناء CRA (no-template-curly-in-string).
+                base: "$" + pkg.basePrice,
+                extra: "$" + speed.extra,
                 label: String(speedLabel).toLowerCase(),
               })
             : t("agency.pricing.noRush")}
