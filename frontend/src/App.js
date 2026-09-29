@@ -1159,7 +1159,7 @@ function AppContent() {
                   <button
                     key={tierId}
                     onClick={() => handleSelectTier(tierId)}
-                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600", background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)", color: tier === tierId ? "#1A1305" : T.textMuted, border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}` }}
+                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", cursor: "pointer", fontWeight: "600", background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)", color: tier === tierId ? "#1A1305" : T.textMuted, border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}` }}
                   >
                     {t("tiers." + tierId)}
                   </button>
@@ -1300,7 +1300,6 @@ function AppContent() {
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
                     background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_LANGUAGE_OPTIONS.map((opt) => (
@@ -1333,7 +1332,6 @@ function AppContent() {
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
                     background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_TONE_OPTIONS.map((opt) => (
@@ -1359,7 +1357,6 @@ function AppContent() {
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
                     background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_GOAL_OPTIONS.map((opt) => (
@@ -1385,7 +1382,6 @@ function AppContent() {
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
                     background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_PLATFORM_OPTIONS.map((opt) => (
@@ -1425,7 +1421,6 @@ function AppContent() {
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
                     background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                     opacity: tier === "premium" ? 1 : 0.55,
                   }}
                 >
@@ -1810,9 +1805,8 @@ function AppContent() {
                       onClick={() => handleUpgradeClick("pro")}
                       style={{
                         background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
                         color: AGENCY_COLORS.goldDark,
-                        border: "none",
+                        border: `1px solid ${T.gold}`,
                         borderRadius: "999px",
                         padding: "0.6rem 1.5rem",
                         fontSize: "0.9rem",
