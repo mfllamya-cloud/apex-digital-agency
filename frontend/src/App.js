@@ -11,6 +11,7 @@ import PricingSection from "./Pricing";
 import Portfolio from "./Portfolio";
 import FAQ from "./FAQ";
 import Reveal from "./Reveal";
+import { T } from "./theme";
 import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
@@ -20,21 +21,27 @@ import "./App.css";
 // بما لا يمكن التعبير عنه عبر style وحده: hover وanimations). قيم مطابقة تماماً لمتغيرات
 // CSS المعرَّفة في :root داخل App.css، حتى يبقى اللونان متطابقين دائماً من مصدر واحد فعلياً.
 const AGENCY_COLORS = {
-  navy: "#0A192F",
-  navyLight: "#172A45",
-  pearl: "#F8FAFC",
-  gold: "#D97706",
-  goldDark: "#B45309",
+  // ⚠️ أُعيد ضبط هذه اللوحة على النظام الداكن (theme.js / App.css). الأسماء بقيت كما
+  // هي لأن مئات الأنماط المضمّنة في هذا الملف تشير إليها، وتغيير الأسماء كان سيعني
+  // تعديل كل سطر منها. المعنى الجديد لكل اسم:
+  //   navy      = خلفية داكنة عميقة (شرائط، شارات)  ← لم تعد تُستخدم كلون نص
+  //   navyLight = سطح داكن مرتفع قليلاً
+  //   pearl     = خلفية الصفحة (شفافة الآن: الخلفية المتدرّجة يضبطها body في App.css)
+  navy: "#05070D",
+  navyLight: "#111726",
+  pearl: "transparent",
+  gold: "#D4AF37",
+  goldDark: "#9A7B22",
   // metallicGold: ذهب معدني فاتح مخصَّص لحدود شريط "الإفصاح الفاخر" وأيقونة القفل في البطاقات
   // المقفلة (لون مختلف عمداً عن gold/goldDark الأكثر دفئاً، المستخدمين في أزرار الفعل CTA).
   metallicGold: "#D4AF37",
-  border: "#E2E8F0",
-  textMuted: "#64748B",
+  border: "rgba(255, 255, 255, 0.10)",
+  textMuted: "#9AA3B2",
   // textStrong: نص عالي التباين (يعادل slate-800 في Tailwind) — يُستخدم في العناوين الفرعية
   // ونص شرائط "الزجاج الفاخر" (Glassmorphism) بدل textMuted الباهت، ضمن معالجة "Typography &
   // Readability Overhaul" (خطوط رفيعة/باهتة سابقاً) — راجع app.subtitle وnص Executive Teaser
   // Banner في JSX أدناه.
-  textStrong: "#1E293B",
+  textStrong: "#F4F1EA",
 };
 
 // حدود الباقات — تُستخدم هنا فقط لضبط واجهة المستخدم (حجم شريط الأيام مثلاً).
@@ -300,7 +307,8 @@ function VipModal({ open, planType, user, t, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="agency-card"
         style={{
-          background: "white",
+          background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
           borderRadius: "16px",
           padding: "2.25rem 2rem",
           maxWidth: "460px",
@@ -327,7 +335,7 @@ function VipModal({ open, planType, user, t, onClose }) {
             >
               ★
             </div>
-            <h2 style={{ margin: "0 0 0.85rem", color: AGENCY_COLORS.navy, fontWeight: "800", letterSpacing: "-0.01em" }}>
+            <h2 style={{ margin: "0 0 0.85rem", color: T.text, fontWeight: "800", letterSpacing: "-0.01em" }}>
               {t("vip.headline")}
             </h2>
             <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("vip.body")}</p>
@@ -377,7 +385,7 @@ function VipModal({ open, planType, user, t, onClose }) {
             >
               ✓
             </div>
-            <h2 style={{ margin: "0 0 0.85rem", color: AGENCY_COLORS.navy, fontWeight: "800" }}>{t("vip.headline")}</h2>
+            <h2 style={{ margin: "0 0 0.85rem", color: T.text, fontWeight: "800" }}>{t("vip.headline")}</h2>
             <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("vip.success")}</p>
             <button
               onClick={onClose}
@@ -661,7 +669,8 @@ function AmbassadorModal({ open, t, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="agency-card"
         style={{
-          background: "white",
+          background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
           borderRadius: "16px",
           padding: "2.25rem 2rem",
           maxWidth: "460px",
@@ -686,7 +695,7 @@ function AmbassadorModal({ open, t, onClose }) {
         >
           🤝
         </div>
-        <h2 style={{ margin: "0 0 0.85rem", color: AGENCY_COLORS.navy, fontWeight: "800", letterSpacing: "-0.01em" }}>
+        <h2 style={{ margin: "0 0 0.85rem", color: T.text, fontWeight: "800", letterSpacing: "-0.01em" }}>
           {t("ambassador.headline")}
         </h2>
         <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("ambassador.body")}</p>
@@ -1006,7 +1015,7 @@ function AppContent() {
   return (
     <>
       <LanguageSwitcher />
-      <div style={{ minHeight: "100vh", background: AGENCY_COLORS.pearl, padding: "2rem", fontFamily: "system-ui" }}>
+      <div style={{ minHeight: "100vh", padding: "2rem" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           {/* الترويسة الملاحية: شريط "Midnight Navy" غامق يحتضن شارة الثقة (Trust Badge) —
               نقطة خضراء نابضة + "Agency Strategy Team: Online" — وأزرار الحساب. */}
@@ -1060,7 +1069,7 @@ function AppContent() {
               الأحرف (يعادل font-extrabold text-2xl md:text-3xl tracking-tight في Tailwind)، بدل
               حجم ثابت 2.5rem سابقاً. العنوان الفرعي أدناه بلون textStrong عالي التباين (بدل
               textMuted الباهت) ووزن 500 (font-medium)، ضمن معالجة "Readability Overhaul". */}
-          <h1 className="agency-h1" style={{ color: AGENCY_COLORS.navy, textAlign: "center" }}>{t("app.title")}</h1>
+          <h1 className="agency-h1" style={{ textAlign: "center" }}>{t("app.title")}</h1>
           <p style={{ color: AGENCY_COLORS.textStrong, fontWeight: "500", textAlign: "center", marginBottom: "2rem", fontSize: "1.05rem" }}>{t("app.subtitle")}</p>
 
           {/* ---------------------------------------------------------------------
@@ -1075,47 +1084,15 @@ function AppContent() {
               عنوانها معها بدل أن يبقى عنوان معلّق فوق قسم غير موجود.
               --------------------------------------------------------------------- */}
           {SHOW_LEGACY_TIER_UI && (
-            <div style={{ maxWidth: "720px", margin: "0 auto 2rem", textAlign: "center" }}>
-              <span
-                style={{
-                  display: "inline-block",
-                  background: "rgba(212, 175, 55, 0.15)",
-                  border: "1px solid rgba(212, 175, 55, 0.4)",
-                  color: AGENCY_COLORS.goldDark,
-                  fontSize: "0.72rem",
-                  fontWeight: "700",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  padding: "0.35rem 0.95rem",
-                  borderRadius: "999px",
-                  marginBottom: "0.85rem",
-                }}
-              >
-                Self-Service
-              </span>
-              <h2
-                style={{
-                  margin: "0 0 0.5rem",
-                  fontSize: "1.75rem",
-                  fontWeight: "800",
-                  letterSpacing: "-0.02em",
-                  color: AGENCY_COLORS.navy,
-                }}
-              >
-                AI Content Planning &amp; Strategy
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "1rem",
-                  lineHeight: 1.6,
-                  color: AGENCY_COLORS.textMuted,
-                }}
-              >
-                Describe your business and get a ready-to-post content plan in minutes. Monthly
-                plans, you run the tool yourself.
-              </p>
-            </div>
+            <Reveal>
+              <div style={{ maxWidth: "720px", margin: "0 auto 2.5rem", textAlign: "center" }}>
+                <span className="apex-eyebrow">{t("agency.self.eyebrow")}</span>
+                <h2 className="apex-display apex-h2" style={{ marginBottom: "0.75rem" }}>
+                  {t("agency.self.title")}
+                </h2>
+                <p className="apex-lede">{t("agency.self.sub")}</p>
+              </div>
+            </Reveal>
           )}
 
           {/* "Executive Teaser Banner" (Glassmorphism) — TASK 1 (إصلاح الظهور): نُقل هذا الشريط
@@ -1182,7 +1159,7 @@ function AppContent() {
                   <button
                     key={tierId}
                     onClick={() => handleSelectTier(tierId)}
-                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600", background: tier === tierId ? AGENCY_COLORS.navy : "#e5e7eb", color: tier === tierId ? "white" : "#374151" }}
+                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600", background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)", color: tier === tierId ? "#1A1305" : T.textMuted, border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}` }}
                   >
                     {t("tiers." + tierId)}
                   </button>
@@ -1211,7 +1188,8 @@ function AppContent() {
                     marginBottom: "20px",
                     padding: "1.1rem 1.35rem",
                     borderRadius: "12px",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                     borderInlineStart: `4px solid ${accentColor}`,
                     transition: "0.3s",
                   }}
@@ -1220,7 +1198,7 @@ function AppContent() {
                     <span aria-hidden="true" style={{ color: AGENCY_COLORS.metallicGold, fontSize: "1.05rem", lineHeight: 1 }}>
                       ✦
                     </span>
-                    <b style={{ color: AGENCY_COLORS.navy, fontSize: "0.95rem" }}>{t(`planFeatures.${tier}.label`)}</b>
+                    <b style={{ color: T.text, fontSize: "0.95rem" }}>{t(`planFeatures.${tier}.label`)}</b>
                   </div>
 
                   {tier === "free" ? (
@@ -1286,7 +1264,7 @@ function AppContent() {
                 width: "100%",
                 padding: "0.75rem",
                 borderRadius: "8px",
-                border: isDescriptionValid ? "1px solid #d1d5db" : "1px solid #fca5a5",
+                border: isDescriptionValid ? `1px solid ${T.glassBorder}` : "1px solid rgba(239,68,68,0.55)",
                 marginBottom: "0.4rem",
                 fontFamily: "inherit",
                 fontSize: "1rem",
@@ -1316,12 +1294,13 @@ function AppContent() {
                     width: "100%",
                     padding: "0.65rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     marginBottom: "1rem",
                     fontFamily: "inherit",
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_LANGUAGE_OPTIONS.map((opt) => (
@@ -1348,12 +1327,13 @@ function AppContent() {
                     width: "100%",
                     padding: "0.65rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     marginBottom: "1rem",
                     fontFamily: "inherit",
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_TONE_OPTIONS.map((opt) => (
@@ -1373,12 +1353,13 @@ function AppContent() {
                     width: "100%",
                     padding: "0.65rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     marginBottom: "1rem",
                     fontFamily: "inherit",
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_GOAL_OPTIONS.map((opt) => (
@@ -1398,12 +1379,13 @@ function AppContent() {
                     width: "100%",
                     padding: "0.65rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     marginBottom: "1rem",
                     fontFamily: "inherit",
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                   }}
                 >
                   {CONTENT_PLATFORM_OPTIONS.map((opt) => (
@@ -1438,11 +1420,12 @@ function AppContent() {
                     width: "100%",
                     padding: "0.65rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     fontFamily: "inherit",
                     fontSize: "0.95rem",
                     boxSizing: "border-box",
-                    background: "white",
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                     opacity: tier === "premium" ? 1 : 0.55,
                   }}
                 >
@@ -1496,7 +1479,7 @@ function AppContent() {
                     width: "100%",
                     padding: "0.75rem",
                     borderRadius: "8px",
-                    border: "1px solid #d1d5db",
+                    border: `1px solid ${T.glassBorder}`,
                     marginBottom: "1rem",
                     fontFamily: "inherit",
                     fontSize: "1rem",
@@ -1545,7 +1528,7 @@ function AppContent() {
                   className="agency-loading-step"
                   style={{
                     margin: 0,
-                    color: AGENCY_COLORS.navy,
+                    color: T.text,
                     fontWeight: "600",
                     fontSize: "0.95rem",
                   }}
@@ -1564,12 +1547,12 @@ function AppContent() {
                   marginTop: "0.85rem",
                   padding: "0.9rem 1rem",
                   borderRadius: "8px",
-                  background: "#fef2f2",
-                  border: "1px solid #fecaca",
+                  background: "rgba(239,68,68,0.10)",
+                  border: "1px solid rgba(239,68,68,0.35)",
                   textAlign: "center",
                 }}
               >
-                <p style={{ margin: 0, color: "#b91c1c", fontSize: "0.9rem", fontWeight: "600" }}>
+                <p style={{ margin: 0, color: "#FCA5A5", fontSize: "0.9rem", fontWeight: "600" }}>
                   {quotaErrorMessage}
                 </p>
                 {SHOW_LEGACY_TIER_UI && tier !== "premium" && (
@@ -1615,7 +1598,7 @@ function AppContent() {
               <h4
                 style={{
                   textAlign: "center",
-                  color: AGENCY_COLORS.navy,
+                  color: T.text,
                   fontWeight: "700",
                   fontSize: "1rem",
                   marginBottom: "1.1rem",
@@ -1644,7 +1627,8 @@ function AppContent() {
                       position: "relative",
                       overflow: "hidden",
                       borderRadius: "12px",
-                      background: "white",
+                      background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                       padding: "1.75rem 1.25rem",
                       cursor: "pointer",
                       textAlign: "center",
@@ -1716,7 +1700,7 @@ function AppContent() {
               <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
                 <h2
                   style={{
-                    color: AGENCY_COLORS.navy,
+                    color: T.text,
                     fontWeight: "800",
                     letterSpacing: "-0.01em",
                     marginBottom: "1.25rem",
@@ -1727,7 +1711,8 @@ function AppContent() {
                 </h2>
 
                 <div style={{ maxWidth: "620px", margin: "0 auto" }}>
-                  <div className="agency-card" style={{ background: "white", borderRadius: "12px", padding: "2rem", marginBottom: "1rem" }}>
+                  <div className="agency-card" style={{ background: T.glass,
+                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "2rem", marginBottom: "1rem" }}>
                     <div style={{ background: AGENCY_COLORS.navy, color: "white", padding: "0.4rem 1rem", borderRadius: "8px", display: "inline-block", fontWeight: "bold", marginBottom: "1rem" }}>
                       {t("free.yourIdea")}
                     </div>
@@ -1739,13 +1724,13 @@ function AppContent() {
                       </div>
                     )}
 
-                    <p style={{ background: "#f3f4f6", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem", whiteSpace: "pre-wrap" }}>
+                    <p style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem", whiteSpace: "pre-wrap" }}>
                       {freeIdea.caption}
                     </p>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
                       {freeIdea.hashtags.map((tag, j) => (
-                        <span key={j} style={{ background: "#ddd6fe", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>
+                        <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>
                           {tag}
                         </span>
                       ))}
@@ -1757,7 +1742,7 @@ function AppContent() {
                       </div>
                     )}
 
-                    <div style={{ background: "#f3f4f6", padding: "0.75rem", borderRadius: "8px" }}>
+                    <div style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px" }}>
                       {t("content.bestTime", { time: freeIdea.bestTime })}
                     </div>
                   </div>
@@ -1780,14 +1765,15 @@ function AppContent() {
                     }}
                   >
                     {[0, 1, 2].map((i) => (
-                      <div key={i} style={{ background: "white", borderRadius: "12px", padding: "1.5rem" }}>
+                      <div key={i} style={{ background: T.glass,
+                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.5rem" }}>
                         <div style={{ width: "72px", height: "22px", borderRadius: "6px", background: AGENCY_COLORS.navy, marginBottom: "1rem" }} />
-                        <div style={{ width: "80%", height: "16px", borderRadius: "4px", background: "#d1d5db", marginBottom: "0.85rem" }} />
-                        <div style={{ width: "100%", height: "56px", borderRadius: "8px", background: "#f3f4f6", marginBottom: "1rem" }} />
+                        <div style={{ width: "80%", height: "16px", borderRadius: "4px", background: "rgba(255,255,255,0.10)", marginBottom: "0.85rem" }} />
+                        <div style={{ width: "100%", height: "56px", borderRadius: "8px", background: "rgba(255,255,255,0.05)", marginBottom: "1rem" }} />
                         <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "#ddd6fe" }} />
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "#ddd6fe" }} />
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "#ddd6fe" }} />
+                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
+                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
+                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
                         </div>
                       </div>
                     ))}
@@ -1823,7 +1809,8 @@ function AppContent() {
                     <button
                       onClick={() => handleUpgradeClick("pro")}
                       style={{
-                        background: "white",
+                        background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
                         color: AGENCY_COLORS.goldDark,
                         border: "none",
                         borderRadius: "999px",
@@ -1840,14 +1827,15 @@ function AppContent() {
 
                 {/* صندوق المقارنة التسويقي (القهوة) — زر الترقية هنا أخضر بارز مع تأثير hover
                     (عبر كلاس CSS مُعرَّف أدناه في <style>، لأن أنماط hover لا تُكتب inline في React). */}
-                <div style={{ background: "white", borderRadius: "12px", padding: "1.75rem", marginTop: "1.5rem", textAlign: "center" }}>
+                <div style={{ background: T.glass,
+                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.75rem", marginTop: "1.5rem", textAlign: "center" }}>
                   <h4 style={{ margin: "0 0 0.75rem 0", color: "#1f2937", fontSize: "1.15rem" }}>
                     {t("freeUpsell.coffee.title")}
                   </h4>
                   <p style={{ margin: "0 0 0.75rem 0", color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.6 }}>
                     {t("freeUpsell.coffee.description")}
                   </p>
-                  <p style={{ margin: "0 0 1.25rem 0", color: "#374151", fontSize: "0.95rem", fontWeight: "600" }}>
+                  <p style={{ margin: "0 0 1.25rem 0", color: T.textMuted, fontSize: "0.95rem", fontWeight: "600" }}>
                     {t("freeUpsell.coffee.cta")}
                   </p>
                   <button
@@ -1890,7 +1878,7 @@ function AppContent() {
             <>
               <h2
                 style={{
-                  color: AGENCY_COLORS.navy,
+                  color: T.text,
                   fontWeight: "800",
                   letterSpacing: "-0.01em",
                   marginBottom: "1.25rem",
@@ -1918,16 +1906,17 @@ function AppContent() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
                 {results.map((item, i) => (
-                  <div key={i} className="agency-card" style={{ background: "white", borderRadius: "12px", padding: "1.5rem" }}>
+                  <div key={i} className="agency-card" style={{ background: T.glass,
+                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.5rem" }}>
                     <div style={{ background: AGENCY_COLORS.navy, color: "white", padding: "0.4rem 1rem", borderRadius: "8px", display: "inline-block", fontWeight: "bold", marginBottom: "1rem" }}>
                       {t("common.dayLabel", { n: item.day })}
                     </div>
                     <h3 style={{ marginBottom: "0.5rem" }}>{item.idea}</h3>
-                    <p style={{ background: "#f3f4f6", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>{item.caption}</p>
+                    <p style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>{item.caption}</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-                      {item.hashtags.map((tag, j) => <span key={j} style={{ background: "#ddd6fe", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>{tag}</span>)}
+                      {item.hashtags.map((tag, j) => <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>{tag}</span>)}
                     </div>
-                    <div style={{ background: "#f3f4f6", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+                    <div style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
                       {t("content.bestTime", { time: item.bestTime })}
                     </div>
                     {item.imageIdea && (
@@ -1992,22 +1981,22 @@ function AppContent() {
                 <div
                   style={{
                     padding: "20px",
-                    backgroundColor: "#fdf4ff",
+                    backgroundColor: "rgba(212,175,55,0.07)",
                     borderRadius: "8px",
-                    border: "2px dashed #d946ef",
+                    border: `1px dashed ${T.gold}`,
                     textAlign: "center",
                   }}
                 >
-                  <h4 style={{ margin: "0 0 10px 0", color: "#701a75" }}>
+                  <h4 style={{ margin: "0 0 10px 0", color: T.goldLight }}>
                     {t("upsell.pro.title")}
                   </h4>
-                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: "#86198f" }}>
+                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: T.textMuted }}>
                     {renderWithBold(t("upsell.pro.description"))}
                   </p>
                   <button
                     onClick={() => handleUpgradeClick("premium")}
                     style={{
-                      backgroundColor: "#d946ef",
+                      background: T.goldGradient,
                       color: "white",
                       padding: "10px 20px",
                       border: "none",
@@ -2052,14 +2041,14 @@ function AppContent() {
             fontSize: "14px",
           }}
         >
-          <Link to="/terms" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
-            Terms of Service
+          <Link to="/terms" style={{ color: T.textFaint, textDecoration: "none" }}>
+            {t("agency.footer.terms")}
           </Link>
-          <Link to="/privacy" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
-            Privacy Policy
+          <Link to="/privacy" style={{ color: T.textFaint, textDecoration: "none" }}>
+            {t("agency.footer.privacy")}
           </Link>
-          <Link to="/refund" style={{ color: AGENCY_COLORS.textMuted, textDecoration: "none" }}>
-            Refund Policy
+          <Link to="/refund" style={{ color: T.textFaint, textDecoration: "none" }}>
+            {t("agency.footer.refund")}
           </Link>
         </div>
 
