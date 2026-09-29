@@ -17,9 +17,9 @@ import "./App.css";
 // ---------------------------------------------------------------------------
 export const PAYMENT_LINKS = {
   starter: {
-    standard: { paypal: "", crypto: "" }, // $100
-    express: { paypal: "", crypto: "" }, // $129  ($100 + $29)
-    priority: { paypal: "", crypto: "" }, // $149  ($100 + $49)
+    standard: { paypal: "", crypto: "" }, // $150
+    express: { paypal: "", crypto: "" }, // $179  ($150 + $29)
+    priority: { paypal: "", crypto: "" }, // $199  ($150 + $49)
   },
   pro: {
     standard: { paypal: "", crypto: "" }, // $500
@@ -36,7 +36,7 @@ export const PAYMENT_LINKS = {
 const PACKAGES = [
   {
     id: "starter",
-    basePrice: 100,
+    basePrice: 150,
     featured: false,
     speeds: [
       { id: "standard", extra: 0 },
