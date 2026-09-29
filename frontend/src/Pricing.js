@@ -1,32 +1,39 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useLanguage } from "./i18n";
 import { T, glassCard } from "./theme";
 import Reveal from "./Reveal";
+import PaymentModal from "./PaymentModal";
 import "./App.css";
 
 // ---------------------------------------------------------------------------
 // 💳 روابط الدفع — املأي هنا فقط، ولا تعدّلي أي شيء آخر في هذا الملف.
 //
 // كل باقة لها ثلاث سرعات تسليم (standard / express / priority)، وكل سرعة لها ثمن
-// مختلف، إذن كل واحدة تحتاج رابط دفع خاصاً بها عند PayPal وعند مزوّد الكريبتو.
+// مختلف، إذن كل واحدة تحتاج رابطين: paddle للبطاقة/PayPal، و crypto للعملات الرقمية.
 // السعر النهائي لكل مفتاح مكتوب في التعليق بجانبه حتى لا يقع خلط عند إنشاء الروابط.
 //
-// اتركي "" لأي خيار لم يُنشأ له رابط بعد: الزر يظهر معطّلاً بدل أن يُعيد تحميل
-// الصفحة، فلا يضيع أي عميل على رابط فارغ.
+// اتركي "" لأي خيار لم يُنشأ له رابط بعد: يظهر ذلك الخيار معطّلاً داخل نافذة الدفع
+// بدل أن يقود العميل إلى صفحة مكسورة.
+//
+// ⚠️ GENERATOR_CHECKOUT_UID_PARAM في App.js ونظيره هنا يجب أن يحملا اسم الحقل الذي
+// يقبله مزوّدك (Paddle: passthrough، Stripe Payment Link: client_reference_id،
+// PayPal: custom_id) وإلا وصلك الدفع بلا أي إشارة إلى حساب المشتري.
 // ---------------------------------------------------------------------------
 export const PAYMENT_LINKS = {
   starter: {
-    standard: { paypal: "", crypto: "" }, // $150
-    express: { paypal: "", crypto: "" }, // $179  ($150 + $29)
-    priority: { paypal: "", crypto: "" }, // $199  ($150 + $49)
+    standard: { paddle: "", crypto: "" }, // $150
+    express: { paddle: "", crypto: "" }, // $179  ($150 + $29)
+    priority: { paddle: "", crypto: "" }, // $199  ($150 + $49)
   },
   pro: {
-    standard: { paypal: "", crypto: "" }, // $500
-    express: { paypal: "", crypto: "" }, // $579  ($500 + $79)
-    priority: { paypal: "", crypto: "" }, // $649  ($500 + $149)
+    standard: { paddle: "", crypto: "" }, // $500
+    express: { paddle: "", crypto: "" }, // $579  ($500 + $79)
+    priority: { paddle: "", crypto: "" }, // $649  ($500 + $149)
   },
 };
+
+// اسم حقل تمرير معرّف المستخدم إلى صفحة الدفع. "" = لا يُضاف شيء إلى الرابط.
+export const AGENCY_CHECKOUT_UID_PARAM = "";
 
 // ---------------------------------------------------------------------------
 // الأرقام فقط هنا. كل النصوص (الأسماء، المزايا، تسميات السرعات) تأتي من ملف
@@ -56,39 +63,10 @@ const PACKAGES = [
   },
 ];
 
-// زر دفع واحد. الرابط الفارغ ("") يعني "لم يُضبط بعد": نعرض <button> معطّلاً بدل
-// <a href=""> الذي كان سيُعيد تحميل الصفحة (ويُسقط بناء CRA على قاعدة
-// jsx-a11y/anchor-is-valid لأن CI=true على Vercel يحوّل التحذيرات إلى أخطاء بناء).
-function PayButton({ href, label, variant, icon, soonLabel }) {
-  const ready = typeof href === "string" && href.trim() !== "";
-  const className = variant === "paypal" ? "apex-btn-gold" : "apex-btn-ghost";
-  const style = { width: "100%", boxSizing: "border-box" };
-
-  const inner = (
-    <>
-      <span aria-hidden="true">{icon}</span>
-      {label}
-    </>
-  );
-
-  if (!ready) {
-    return (
-      <button type="button" disabled className={className} style={style} title={soonLabel}>
-        {inner}
-      </button>
-    );
-  }
-
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className} style={style}>
-      {inner}
-    </a>
-  );
-}
-
 function PackageCard({ pkg, index }) {
   const { t } = useLanguage();
   const [speedId, setSpeedId] = useState("standard");
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const speed = pkg.speeds.find((s) => s.id === speedId) || pkg.speeds[0];
   const total = pkg.basePrice + speed.extra;
@@ -248,39 +226,29 @@ function PackageCard({ pkg, index }) {
           ))}
         </fieldset>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "auto" }}>
-          <PayButton
-            href={links.paypal}
-            label={t("agency.pricing.paypal")}
-            variant="paypal"
-            icon="🅿"
-            soonLabel={t("agency.pricing.soon")}
-          />
-          <PayButton
-            href={links.crypto}
-            label={t("agency.pricing.crypto")}
-            variant="crypto"
-            icon="₿"
-            soonLabel={t("agency.pricing.soon")}
-          />
+        {/* زر واحد يفتح نافذة اختيار وسيلة الدفع. سطر الموافقة انتقل إلى داخل
+            النافذة: هناك يراه العميل مع الاسم والسعر في اللحظة التي يقرر فيها
+            فعلاً، لا في أسفل بطاقة قد يمرّ عليها دون قراءة. */}
+        <div style={{ marginTop: "auto" }}>
+          <button
+            type="button"
+            className="apex-btn-gold"
+            onClick={() => setCheckoutOpen(true)}
+            style={{ width: "100%", boxSizing: "border-box", padding: "16px 18px", fontSize: "1rem" }}
+          >
+            {t("agency.checkout.orderNow")} — ${total}
+          </button>
         </div>
-
-        <p
-          style={{
-            margin: "16px 0 0",
-            fontSize: "0.74rem",
-            lineHeight: 1.7,
-            color: T.textFaint,
-            textAlign: "center",
-          }}
-        >
-          {t("agency.pricing.consent")}{" "}
-          <Link to="/refund" style={{ color: T.gold }}>
-            {t("agency.pricing.consentLink")}
-          </Link>
-          .
-        </p>
       </div>
+
+      <PaymentModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        planName={t(base + ".name")}
+        priceLabel={"$" + total}
+        links={links}
+        uidParam={AGENCY_CHECKOUT_UID_PARAM}
+      />
     </Reveal>
   );
 }
