@@ -19,11 +19,12 @@
   --apex-bg-soft: #0a0e18;
   --apex-bg-elevated: #111726;
 
-  /* الزجاج */
-  --apex-glass: rgba(255, 255, 255, 0.045);
-  --apex-glass-strong: rgba(255, 255, 255, 0.075);
-  --apex-glass-border: rgba(255, 255, 255, 0.1);
-  --apex-glass-border-gold: rgba(212, 175, 55, 0.32);
+  /* الزجاج — رُفعت الشفافية قليلاً (0.045 ← 0.06) ليكون للبطاقة حضور فعلي فوق
+     الخلفية الداكنة بدل أن تذوب فيها. */
+  --apex-glass: rgba(255, 255, 255, 0.06);
+  --apex-glass-strong: rgba(255, 255, 255, 0.09);
+  --apex-glass-border: rgba(255, 255, 255, 0.14);
+  --apex-glass-border-gold: rgba(212, 175, 55, 0.45);
   --apex-blur: blur(18px);
 
   /* الذهب المعدني */
@@ -32,10 +33,18 @@
   --apex-gold-deep: #9a7b22;
   --apex-gold-gradient: linear-gradient(135deg, #ebd07a 0%, #d4af37 45%, #a8842a 100%);
 
-  /* النصوص */
-  --apex-text: #f4f1ea;
-  --apex-text-muted: #9aa3b2;
-  --apex-text-faint: #6b7382;
+  /* النصوص — ثلاث درجات، كلها مقروءة فعلياً على الداكن.
+     القيم السابقة (#9aa3b2 و #6b7382) كانت خافتة: الثانية تحديداً تعطي تبايناً
+     3.9:1 فقط فوق بطاقة زجاجية، أي أقل من الحد الأدنى WCAG AA (4.5:1) — وهي
+     المستعملة في النص المساعد وnص العنصر النائب (placeholder) وسطر الموافقة.
+     القيم الجديدة مقاسة فوق الخلفية والبطاقة معاً:
+       text       18.5 : 1
+       textMuted  11.4 : 1
+       textFaint   8.4 : 1
+     مع إبقاء ثلاث درجات متمايزة بوضوح حتى لا يضيع تدرّج الأهمية. */
+  --apex-text: #f7f5f0;
+  --apex-text-muted: #c8cdd8;
+  --apex-text-faint: #aab1bf;
 
   /* الخطوط */
   --apex-font-display: "Cormorant Garamond", "Cairo", Georgia, serif;
@@ -57,8 +66,8 @@
   --agency-metallic-gold: #d4af37;
   --agency-royal: #2563eb;
   --agency-border: rgba(255, 255, 255, 0.1);
-  --agency-text-muted: #9aa3b2;
-  --agency-text-strong: #f4f1ea;
+  --agency-text-muted: #c8cdd8;
+  --agency-text-strong: #f7f5f0;
   --agency-font-sans: var(--apex-font-sans);
   --agency-shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.55);
   --agency-shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -74,12 +83,37 @@ body {
   font-family: var(--apex-font-sans);
   color: var(--apex-text);
   background-color: var(--apex-bg);
+  /* أربع طبقات ضوء بدل لون مسطّح: هالة ذهبية علوية، وهج أزرق يمين، وهج بنفسجي
+     خافت أسفل اليسار، ثم تعتيم أطراف (vignette) يشدّ العين نحو المنتصف. هذا هو
+     الفرق بين "خلفية سوداء" و"غرفة مضاءة". */
   background-image:
-    radial-gradient(90rem 45rem at 50% -18rem, rgba(212, 175, 55, 0.1), transparent 60%),
-    radial-gradient(70rem 40rem at 85% 5%, rgba(37, 99, 235, 0.08), transparent 55%);
+    radial-gradient(100rem 50rem at 50% -20rem, rgba(212, 175, 55, 0.16), transparent 62%),
+    radial-gradient(70rem 45rem at 88% 8%, rgba(56, 116, 255, 0.11), transparent 58%),
+    radial-gradient(60rem 45rem at 6% 78%, rgba(150, 90, 220, 0.08), transparent 60%),
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* حبيبات فيلم خفيفة فوق كل شيء. التدرّجات الكبيرة على خلفية داكنة تُظهر حلقات
+   تدرّج (banding) على الشاشات ذات 8-bit؛ الحبيبات تكسرها وتعطي الإحساس المطبوع.
+   pointer-events: none حتى لا تعترض أي نقرة. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+}
+
+/* كل المحتوى فوق طبقة الحبيبات. */
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 ::selection {
@@ -147,12 +181,17 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--apex-gold);
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: var(--apex-gold-light);
+  background: linear-gradient(
+    180deg,
+    rgba(212, 175, 55, 0.16),
+    rgba(212, 175, 55, 0.06)
+  );
+  border: 1px solid rgba(212, 175, 55, 0.42);
   padding: 0.4rem 1rem;
   border-radius: 999px;
   margin-bottom: 1rem;
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 [dir="rtl"] .apex-eyebrow {
@@ -185,9 +224,10 @@ body {
   background: linear-gradient(
     to right,
     transparent,
-    rgba(212, 175, 55, 0.35) 50%,
+    rgba(212, 175, 55, 0.65) 50%,
     transparent
   );
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
 }
 
 /* ---------------------------------------------------------------------------
@@ -199,7 +239,11 @@ body {
   border-radius: 18px;
   backdrop-filter: var(--apex-blur);
   -webkit-backdrop-filter: var(--apex-blur);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  /* ظل خارجي + حدّ داخلي فاتح من الأعلى (يحاكي انكسار الضوء على حافة الزجاج)
+     + وهج ذهبي خافت جداً حول البطاقة. الثلاثة معاً هي ما يفصل البطاقة عن
+     الخلفية بدل أن تبدو مستطيلاً شفافاً. */
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .apex-glass-gold {
@@ -523,6 +567,108 @@ input[type="range"] {
   to {
     transform: translateX(100%);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   العمق البصري (Ambient depth)
+
+   كل ما يلي زخرفي بحت ولا يغيّر أي بنية HTML: نستهدف المعرّفات الموجودة أصلاً
+   في المكوّنات (#pricing من Pricing.js، #work من Portfolio.js، #faq من FAQ.js)
+   بدل إضافة أصناف جديدة، حتى لا يحتاج أي ملف .js إلى تعديل من أجل الشكل.
+--------------------------------------------------------------------------- */
+
+#pricing,
+#work,
+#faq {
+  position: relative;
+}
+
+/* هالة ضوء خلف كل قسم — تجعل البطاقات تبدو مضاءة من الخلف بدل أن تطفو فوق
+   لون مسطّح. z-index سالب يبقيها خلف محتوى القسم وأمام خلفية الصفحة. */
+#pricing::before,
+#work::before,
+#faq::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset-inline: -8%;
+  top: -6%;
+  height: 58%;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+#pricing::before {
+  background: radial-gradient(50% 100% at 50% 40%, rgba(212, 175, 55, 0.2), transparent 70%);
+}
+
+#work::before {
+  background: radial-gradient(50% 100% at 50% 40%, rgba(56, 116, 255, 0.16), transparent 70%);
+}
+
+#faq::before {
+  background: radial-gradient(50% 100% at 50% 40%, rgba(212, 175, 55, 0.13), transparent 70%);
+}
+
+/* حلقة ذهبية رفيعة حول البطاقات الزجاجية: تدرّج حقيقي على الحافة (وليس لوناً
+   واحداً) عبر قناع يُظهر الإطار فقط. تسقط بهدوء إلى الحدّ العادي في المتصفحات
+   التي لا تدعم mask-composite. */
+.apex-glass-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgba(235, 208, 122, 0.55),
+    rgba(212, 175, 55, 0.12) 35%,
+    transparent 60%,
+    rgba(212, 175, 55, 0.22)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.75;
+}
+
+/* البطاقات القديمة (المولّد) تحصل على نفس المعالجة: وهج محيطي + حدّ علوي فاتح. */
+.agency-card {
+  position: relative;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.agency-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(235, 208, 122, 0.5) 50%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* بطاقات الأعمال وصفوف الأسئلة: وهج ذهبي عند المرور بدل تغيّر الحدّ وحده. */
+.apex-work-card:hover {
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65), 0 0 46px rgba(212, 175, 55, 0.18);
+}
+
+.apex-faq-row-open {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 34px rgba(212, 175, 55, 0.12);
+}
+
+/* أزرار الذهب: وهج دائم خافت حتى قبل المرور، حتى تُقرأ كعنصر الفعل الأساسي. */
+.apex-btn-gold,
+.agency-btn-primary {
+  box-shadow: 0 10px 26px rgba(212, 175, 55, 0.18);
 }
 
 /* ---------------------------------------------------------------------------
