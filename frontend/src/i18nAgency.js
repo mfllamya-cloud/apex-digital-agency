@@ -25,6 +25,12 @@ export const agencyTranslations = {
       title: "AI Content Planning & Strategy",
       sub: "Describe your business and get a ready-to-post content plan in minutes. Monthly plans, you run the tool yourself.",
     },
+    // تسميات أسعار باقات المولّد. الأرقام نفسها معرَّفة في PLAN_PRICES داخل App.js
+    // (مكان واحد فقط)، وهذه النصوص هي ما يُترجم.
+    plans: {
+      free: "Free",
+      perMonth: "/mo",
+    },
     pricing: {
       eyebrow: "Full Agency Service",
       title: "Done-For-You Video Ads",
@@ -148,6 +154,10 @@ export const agencyTranslations = {
       title: "تخطيط المحتوى والاستراتيجية بالذكاء الاصطناعي",
       sub: "صِف مشروعك واحصل على خطة محتوى جاهزة للنشر في دقائق. اشتراك شهري، وأنت من يشغّل الأداة بنفسك.",
     },
+    plans: {
+      free: "مجاناً",
+      perMonth: "/شهرياً",
+    },
     pricing: {
       eyebrow: "خدمة الوكالة الكاملة",
       title: "إعلانات فيديو تُنفَّذ لك بالكامل",
@@ -267,6 +277,10 @@ export const agencyTranslations = {
       eyebrow: "En autonomie",
       title: "Planification de contenu & stratégie par IA",
       sub: "Décrivez votre activité et obtenez un plan de contenu prêt à publier en quelques minutes. Abonnement mensuel, vous pilotez l'outil vous-même.",
+    },
+    plans: {
+      free: "Gratuit",
+      perMonth: "/mois",
     },
     pricing: {
       eyebrow: "Service agence complet",
@@ -392,6 +406,10 @@ export const agencyTranslations = {
       title: "Planificación de contenido y estrategia con IA",
       sub: "Describe tu negocio y obtén un plan de contenido listo para publicar en minutos. Planes mensuales; la herramienta la manejas tú.",
     },
+    plans: {
+      free: "Gratis",
+      perMonth: "/mes",
+    },
     pricing: {
       eyebrow: "Servicio de agencia completo",
       title: "Anuncios en vídeo llave en mano",
@@ -515,6 +533,10 @@ export const agencyTranslations = {
       eyebrow: "In autonomia",
       title: "Pianificazione dei contenuti e strategia con l'IA",
       sub: "Descrivi la tua attività e ottieni un piano editoriale pronto da pubblicare in pochi minuti. Piani mensili, lo strumento lo usi tu.",
+    },
+    plans: {
+      free: "Gratuito",
+      perMonth: "/mese",
     },
     pricing: {
       eyebrow: "Servizio agenzia completo",
