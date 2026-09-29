@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { agencyTranslations, LANGUAGE_LABELS } from "./i18nAgency";
 
 // ---------------------------------------------------------------------------
 // ملف الترجمة المركزي (i18n) — كل نصوص واجهة التطبيق مُعرَّفة هنا في مكان واحد فقط.
@@ -864,6 +865,20 @@ export const translations = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// دمج قاموس صفحات الوكالة (i18nAgency.js) داخل الترجمات تحت المفتاح "agency".
+//
+// اللغتان الموجودتان هناك فقط (الإسبانية والإيطالية) تصبحان لغتين كاملتي الوجود:
+// تظهران تلقائياً في مبدّل اللغة (availableLanguages = Object.keys(translations))،
+// وأي مفتاح من واجهة المولّد غير مترجَم إليهما ترجع فيه translate() إلى الإنجليزية.
+// ---------------------------------------------------------------------------
+Object.keys(agencyTranslations).forEach((code) => {
+  translations[code] = {
+    ...(translations[code] || {}),
+    agency: agencyTranslations[code],
+  };
+});
+
 const STORAGE_KEY = "contentCalendarAI.language";
 const RTL_LANGUAGES = ["ar"]; // أي لغة تُضاف هنا مستقبلاً وتحتاج RTL (مثل الأردية أو الفارسية) تُذكر في هذه القائمة فقط.
 const DEFAULT_LANGUAGE = "en";
@@ -958,9 +973,9 @@ export function useLanguage() {
   return ctx;
 }
 
-// أسماء العرض داخل زر التبديل نفسه — تبقى بصيغة رمز اللغة (EN/AR) بغض النظر عن
-// اللغة الحالية للواجهة، حتى يتعرّف المستخدم على لغته حتى لو كانت الواجهة الحالية بلغة أخرى.
-const LANGUAGE_DISPLAY_NAMES = { en: "EN", ar: "AR", fr: "FR" };
+// أسماء العرض داخل زر التبديل معرَّفة في i18nAgency.js (LANGUAGE_LABELS) حتى تُضاف أي
+// لغة جديدة من ملف واحد فقط. تبقى برموزها الأصلية دائماً (EN/AR/FR/ES/IT) حتى يتعرّف
+// الزائر على لغته ولو كانت الواجهة الحالية بلغة لا يقرؤها.
 
 // زر تبديل اللغة — ثابت أعلى الصفحة (fixed)، ويظهر في كل الشاشات (تسجيل الدخول والتطبيق
 // الرئيسي على حد سواء) لأن اختيار اللغة يجب أن يكون متاحاً دائماً بغض النظر عن حالة الدخول.
@@ -969,17 +984,12 @@ export function LanguageSwitcher() {
 
   return (
     <div
+      className="apex-lang"
       style={{
         position: "fixed",
         top: "1rem",
         [isRtl ? "left" : "right"]: "1rem",
         zIndex: 1000,
-        display: "flex",
-        gap: "0.25rem",
-        background: "rgba(0,0,0,0.25)",
-        padding: "0.3rem",
-        borderRadius: "999px",
-        backdropFilter: "blur(6px)",
       }}
     >
       {availableLanguages.map((code) => (
@@ -988,20 +998,9 @@ export function LanguageSwitcher() {
           type="button"
           onClick={() => setLang(code)}
           aria-pressed={lang === code}
-          style={{
-            padding: "0.35rem 0.85rem",
-            borderRadius: "999px",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 700,
-            fontSize: "0.75rem",
-            letterSpacing: "0.03em",
-            background: lang === code ? "#ffffff" : "transparent",
-            color: lang === code ? "#3b82f6" : "#ffffff",
-            transition: "background 0.15s ease, color 0.15s ease",
-          }}
+          aria-label={code.toUpperCase()}
         >
-          {LANGUAGE_DISPLAY_NAMES[code] || code.toUpperCase()}
+          {LANGUAGE_LABELS[code] || code.toUpperCase()}
         </button>
       ))}
     </div>
