@@ -1,73 +1,30 @@
 import React from "react";
+import { useLanguage } from "./i18n";
+import { T } from "./theme";
 import Reveal from "./Reveal";
 import "./App.css";
 
-// نظام الألوان — نفس قيم AGENCY_COLORS في App.js و :root في App.css (مكرَّرة محلياً لأن
-// هذا الملف مستقل، تماماً كما في History.js و SEOTool.js و Pricing.js و Legal.js).
-const AGENCY_COLORS = {
-  navy: "#0A192F",
-  navyLight: "#172A45",
-  pearl: "#F8FAFC",
-  gold: "#D97706",
-  goldDark: "#B45309",
-  metallicGold: "#D4AF37",
-  border: "#E2E8F0",
-  textMuted: "#64748B",
-  textStrong: "#1E293B",
-};
-
 // ---------------------------------------------------------------------------
-// 🎬 أعمالك — املئي هذه القائمة فقط، والباقي يشتغل وحده.
+// 🎬 أعمالك — املئي هذه القائمة فقط.
 //
-// كل بطاقة:
-//   title   : اسم الإعلان كما تريدين عرضه.
-//   format  : المنصة والنسبة، تظهر كشارة صغيرة (مثال: "TikTok · 9:16").
-//   poster  : رابط صورة الغلاف (ضعي الملف في frontend/public/ ثم "/mon-image.jpg").
-//   video   : رابط ملف mp4 اختياري — إن وُجد يُشغَّل صامتاً في حلقة عند مرور الفأرة.
-//   result  : ⚠️ اتركيه فارغاً حتى تحصلي على رقم حقيقي من حساب إعلانات العميل.
+//   key    : مفتاح الترجمة في i18nAgency.js تحت agency.portfolio.items (العنوان والصيغة).
+//   poster : رابط صورة الغلاف (ضعي الملف في frontend/public/ ثم "/mon-image.jpg").
+//   video  : رابط ملف mp4 اختياري — إن وُجد يُشغَّل صامتاً عند مرور الفأرة.
+//   result : ⚠️ اتركيه فارغاً حتى تحصلي على رقم حقيقي من حساب إعلانات العميل.
 //
-// ⚠️ بخصوص result تحديداً: لا تكتبي أي نسبة أو رقم أداء لم يحدث فعلاً. أرقام مثل
-// "+340% ROAS" مخترعة على صفحة تبيع بـ $500 تُعتبر ادعاءً تجارياً كاذباً: هي سبب
-// مباشر لخسارة أي نزاع دفع (chargeback)، ولإغلاق حساب PayPal، وهي مخالفة صريحة
-// لقواعد الإعلان في الأسواق التي تستهدفينها. البطاقة مصمَّمة لتبدو كاملة وأنيقة
-// بدون هذا الحقل، فلا حاجة لملئه قبل أوانه.
+// ⚠️ بخصوص result تحديداً: لا تكتبي أي نسبة أو رقم أداء لم يحدث فعلاً. رقم مثل
+// "+340% ROAS" مخترع على صفحة تبيع بـ $500 هو ادعاء تجاري كاذب: سبب مباشر لخسارة
+// أي نزاع دفع (chargeback)، ولإغلاق حساب PayPal، ومخالفة لقواعد الإعلان في الأسواق
+// التي تستهدفينها. البطاقة مصمَّمة لتبدو كاملة بدون هذا الحقل.
 //
-// البطاقة التي لا تحتوي poster ولا video تظهر كخانة فارغة أنيقة مكتوب عليها
-// "Sample slot" — محترمة بصرياً، وصادقة: لا توهم الزائر بعمل غير موجود.
+// البطاقة بلا poster ولا video تظهر كخانة فارغة أنيقة مكتوب عليها "Sample slot"
+// بلغة الزائر — أنيقة بصرياً، وصادقة: لا توهم بعمل غير موجود.
 // ---------------------------------------------------------------------------
 const PORTFOLIO_ITEMS = [
-  {
-    id: "hook-demo",
-    title: "Hook-first product demo",
-    format: "TikTok · 9:16",
-    poster: "",
-    video: "",
-    result: "",
-  },
-  {
-    id: "ugc-testimonial",
-    title: "UGC testimonial style",
-    format: "Reels · 9:16",
-    poster: "",
-    video: "",
-    result: "",
-  },
-  {
-    id: "problem-solution",
-    title: "Problem → solution",
-    format: "Meta Feed · 1:1",
-    poster: "",
-    video: "",
-    result: "",
-  },
-  {
-    id: "offer-close",
-    title: "Offer & urgency close",
-    format: "Shorts · 9:16",
-    poster: "",
-    video: "",
-    result: "",
-  },
+  { id: "hookDemo", poster: "", video: "", result: "" },
+  { id: "ugc", poster: "", video: "", result: "" },
+  { id: "problem", poster: "", video: "", result: "" },
+  { id: "offer", poster: "", video: "", result: "" },
 ];
 
 function PlayGlyph() {
@@ -75,17 +32,17 @@ function PlayGlyph() {
     <span
       aria-hidden="true"
       style={{
-        width: "46px",
-        height: "46px",
+        width: "48px",
+        height: "48px",
         borderRadius: "999px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(255, 255, 255, 0.16)",
-        border: "1px solid rgba(255, 255, 255, 0.45)",
+        background: "rgba(212, 175, 55, 0.12)",
+        border: "1px solid rgba(212, 175, 55, 0.45)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
-        color: "#FFFFFF",
+        color: T.goldLight,
         fontSize: "15px",
         paddingLeft: "3px",
       }}
@@ -96,11 +53,13 @@ function PlayGlyph() {
 }
 
 function WorkCard({ item, index }) {
+  const { t } = useLanguage();
   const hasMedia = Boolean(item.poster) || Boolean(item.video);
+  const title = t("agency.portfolio.items." + item.id + ".title");
 
   return (
     <Reveal delay={index * 110}>
-      <figure className="apex-work-card" style={{ margin: 0 }}>
+      <figure className="apex-work-card apex-glass-sheen" style={{ margin: 0 }}>
         <div className="apex-work-media">
           {item.video ? (
             <video
@@ -118,22 +77,21 @@ function WorkCard({ item, index }) {
               onMouseLeave={(e) => e.currentTarget.pause()}
             />
           ) : item.poster ? (
-            <img className="apex-work-video" src={item.poster} alt={item.title} loading="lazy" />
+            <img className="apex-work-video" src={item.poster} alt={title} loading="lazy" />
           ) : (
-            // خانة فارغة: تدرّج + شبكة خفيفة، بلا أي ادعاء بوجود عمل.
             <div className="apex-work-empty">
               <PlayGlyph />
               <span
                 style={{
-                  marginTop: "12px",
-                  fontSize: "11px",
+                  marginTop: "14px",
+                  fontSize: "0.62rem",
                   fontWeight: 700,
-                  letterSpacing: "0.12em",
+                  letterSpacing: "0.16em",
                   textTransform: "uppercase",
-                  color: "rgba(255, 255, 255, 0.55)",
+                  color: T.textFaint,
                 }}
               >
-                Sample slot
+                {t("agency.portfolio.sampleSlot")}
               </span>
             </div>
           )}
@@ -144,34 +102,27 @@ function WorkCard({ item, index }) {
             </div>
           )}
 
-          {item.result ? (
-            <span className="apex-work-result">{item.result}</span>
-          ) : null}
+          {item.result ? <span className="apex-work-result">{item.result}</span> : null}
 
           <figcaption className="apex-work-caption">
             <span
-              style={{
-                fontSize: "15px",
-                fontWeight: 700,
-                color: "#FFFFFF",
-                lineHeight: 1.35,
-                display: "block",
-              }}
+              className="apex-display"
+              style={{ fontSize: "1.15rem", color: T.text, display: "block", lineHeight: 1.25 }}
             >
-              {item.title}
+              {title}
             </span>
             <span
               style={{
-                marginTop: "6px",
+                marginTop: "7px",
                 display: "inline-block",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.06em",
+                fontSize: "0.62rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: AGENCY_COLORS.metallicGold,
+                color: T.gold,
               }}
             >
-              {item.format}
+              {t("agency.portfolio.items." + item.id + ".format")}
             </span>
           </figcaption>
         </div>
@@ -181,29 +132,30 @@ function WorkCard({ item, index }) {
 }
 
 export default function Portfolio() {
+  const { t } = useLanguage();
+
   return (
-    <section
-      id="work"
-      style={{ maxWidth: "1100px", margin: "4.5rem auto 0", padding: "0 20px" }}
-    >
+    <section id="work" style={{ maxWidth: "1100px", margin: "4.5rem auto 0", padding: "0 20px" }}>
       <style>{`
         .apex-work-card {
           border-radius: 18px;
           overflow: hidden;
-          box-shadow: 0 10px 30px rgba(10, 25, 47, 0.10);
-          transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
-                      box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1);
+          border: 1px solid var(--apex-glass-border);
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+          transition: transform 420ms var(--apex-ease), box-shadow 420ms var(--apex-ease),
+                      border-color 420ms var(--apex-ease);
         }
         .apex-work-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 22px 48px rgba(10, 25, 47, 0.22);
+          transform: translateY(-7px);
+          border-color: var(--apex-glass-border-gold);
+          box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(212, 175, 55, 0.10);
         }
         .apex-work-media {
           position: relative;
           aspect-ratio: 9 / 16;
           background:
-            radial-gradient(120% 80% at 50% 0%, #21395c 0%, rgba(33, 57, 92, 0) 60%),
-            linear-gradient(160deg, #172A45 0%, #0A192F 100%);
+            radial-gradient(120% 70% at 50% 0%, rgba(212, 175, 55, 0.14) 0%, transparent 62%),
+            linear-gradient(165deg, #131A29 0%, #05070D 100%);
           overflow: hidden;
         }
         .apex-work-video {
@@ -211,7 +163,7 @@ export default function Portfolio() {
           height: 100%;
           object-fit: cover;
           display: block;
-          transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 620ms var(--apex-ease);
         }
         .apex-work-card:hover .apex-work-video { transform: scale(1.05); }
         .apex-work-empty {
@@ -222,9 +174,9 @@ export default function Portfolio() {
           align-items: center;
           justify-content: center;
           background-image:
-            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-          background-size: 28px 28px;
+            linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+          background-size: 30px 30px;
         }
         .apex-work-play {
           position: absolute;
@@ -239,75 +191,36 @@ export default function Portfolio() {
         .apex-work-result {
           position: absolute;
           top: 12px;
-          left: 12px;
+          inset-inline-start: 12px;
           padding: 5px 12px;
           border-radius: 999px;
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 800;
           letter-spacing: 0.04em;
-          color: #0A192F;
-          background: #D4AF37;
+          color: #1A1305;
+          background: var(--apex-gold-gradient);
         }
         .apex-work-caption {
           position: absolute;
-          left: 0;
-          right: 0;
+          inset-inline: 0;
           bottom: 0;
-          padding: 40px 16px 16px;
-          background: linear-gradient(to top, rgba(6, 16, 30, 0.92) 30%, rgba(6, 16, 30, 0) 100%);
-          text-align: left;
+          padding: 46px 18px 18px;
+          background: linear-gradient(to top, rgba(3, 6, 12, 0.95) 28%, rgba(3, 6, 12, 0) 100%);
+          text-align: start;
         }
         @media (prefers-reduced-motion: reduce) {
-          .apex-work-card,
-          .apex-work-video,
-          .apex-work-play { transition: none; }
           .apex-work-card:hover { transform: none; }
           .apex-work-card:hover .apex-work-video { transform: none; }
         }
       `}</style>
 
       <Reveal>
-        <div style={{ textAlign: "center", marginBottom: "36px" }}>
-          <span
-            style={{
-              display: "inline-block",
-              background: "rgba(212, 175, 55, 0.15)",
-              border: "1px solid rgba(212, 175, 55, 0.4)",
-              color: AGENCY_COLORS.goldDark,
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "0.35rem 0.95rem",
-              borderRadius: "999px",
-              marginBottom: "0.85rem",
-            }}
-          >
-            Recent Work
-          </span>
-          <h2
-            style={{
-              margin: "0 0 10px",
-              fontSize: "1.75rem",
-              fontWeight: 800,
-              color: AGENCY_COLORS.navy,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            The formats we build
+        <div style={{ textAlign: "center", marginBottom: "42px" }}>
+          <span className="apex-eyebrow">{t("agency.portfolio.eyebrow")}</span>
+          <h2 className="apex-display apex-h2" style={{ marginBottom: "0.75rem" }}>
+            {t("agency.portfolio.title")}
           </h2>
-          <p
-            style={{
-              margin: "0 auto",
-              maxWidth: "620px",
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              color: AGENCY_COLORS.textMuted,
-            }}
-          >
-            Short-form ads written and edited to stop the scroll in the first two seconds, then
-            carry the viewer to the offer.
-          </p>
+          <p className="apex-lede">{t("agency.portfolio.sub")}</p>
         </div>
       </Reveal>
 
