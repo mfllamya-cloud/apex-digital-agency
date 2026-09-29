@@ -58,6 +58,28 @@ const PLAN_MAX_DAYS = { free: 1, pro: 7, premium: 7 };
 const PLAN_MAX_GENERATIONS = { free: 1, pro: 5, premium: 12 };
 
 // ---------------------------------------------------------------------------
+// 💵 أسعار باقات المولّد — بالدولار شهرياً. 0 تعني مجانية.
+//
+// ⚠️⚠️ هذه القيم مؤقتة وتحتاج تأكيدك ⚠️⚠️
+// لم يكن في المشروع أي سعر مخزَّن لهذه الباقات إطلاقاً (تكامل الدفع القديم حُذف
+// بالكامل)، فالرقمان 29 و 99 هما المثالان اللذان ذكرتِهما في طلبك، لا قيمتان
+// مستخرجتان من الكود. غيّريهما هنا قبل النشر — هذا هو المكان الوحيد الذي
+// يقرأ منه الموقع، فتغيير الرقم هنا يغيّره في الأزرار وفي بطاقة الميزات معاً.
+//
+// ⚠️ تنبيه تجاري: أزرار الترقية لهذه الباقات لا تؤدي حالياً إلى أي صفحة دفع —
+// handleUpgradeClick يفتح نافذة "قائمة الانتظار" فقط. عرض سعر بجانب زر لا
+// يقبل الدفع يعني وعداً لا يمكن للزائر تنفيذه.
+// ---------------------------------------------------------------------------
+const PLAN_PRICES = { free: 0, pro: 29, premium: 99 };
+
+// "Free" / "$29/mo" حسب لغة الواجهة. النصوص من agency.plans في i18nAgency.js.
+function planPriceLabel(tierId, t) {
+  const amount = PLAN_PRICES[tierId];
+  if (!amount) return t("agency.plans.free");
+  return "$" + amount + t("agency.plans.perMonth");
+}
+
+// ---------------------------------------------------------------------------
 // واجهة باقات المولّد (Free / Pro / Premium) — ظاهرة للزوار.
 //
 // الموقع يبيع الآن مسارين مختلفين جنباً إلى جنب:
@@ -340,7 +362,7 @@ function VipModal({ open, planType, user, t, onClose }) {
             </h2>
             <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("vip.body")}</p>
 
-            {error && <p style={{ color: "#dc2626", fontSize: "0.9rem", marginBottom: "1rem" }}>{error}</p>}
+            {error && <p style={{ color: "#FCA5A5", fontSize: "0.9rem", marginBottom: "1rem" }}>{error}</p>}
 
             <button
               onClick={handleJoinWaitlist}
@@ -1159,9 +1181,37 @@ function AppContent() {
                   <button
                     key={tierId}
                     onClick={() => handleSelectTier(tierId)}
-                    style={{ padding: "0.5rem 1.5rem", borderRadius: "8px", cursor: "pointer", fontWeight: "600", background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)", color: tier === tierId ? "#1A1305" : T.textMuted, border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}` }}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "0.15rem",
+                      padding: "0.6rem 1rem",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontWeight: "700",
+                      lineHeight: 1.3,
+                      background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)",
+                      color: tier === tierId ? "#1A1305" : T.text,
+                      border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}`,
+                      transition: "background 0.25s ease, color 0.25s ease",
+                    }}
                   >
-                    {t("tiers." + tierId)}
+                    <span style={{ fontSize: "0.9rem" }}>{t("tiers." + tierId)}</span>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.02em",
+                        // على الزر المختار (خلفية ذهبية) نستخدم لوناً داكناً شبه شفاف؛
+                        // على غير المختار نستخدم الذهب الفاتح ليبقى السعر مقروءاً.
+                        color: tier === tierId ? "rgba(26,19,5,0.75)" : T.goldLight,
+                      }}
+                    >
+                      {planPriceLabel(tierId, t)}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -1199,10 +1249,23 @@ function AppContent() {
                       ✦
                     </span>
                     <b style={{ color: T.text, fontSize: "0.95rem" }}>{t(`planFeatures.${tier}.label`)}</b>
+                    {/* السعر في أقصى الجهة المقابلة من نفس السطر — marginInlineStart
+                        وليس marginLeft، حتى يبقى في المكان الصحيح في الواجهة العربية. */}
+                    <span
+                      className="apex-gold-text"
+                      style={{
+                        marginInlineStart: "auto",
+                        fontSize: "1.05rem",
+                        fontWeight: 800,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {planPriceLabel(tier, t)}
+                    </span>
                   </div>
 
                   {tier === "free" ? (
-                    <p style={{ margin: "0.4rem 0 0 1.55rem", color: "#475569", fontSize: "0.88rem", textAlign: "start" }}>
+                    <p style={{ margin: "0.4rem 0 0 1.55rem", color: T.textMuted, fontSize: "0.88rem", textAlign: "start" }}>
                       {t("planFeatures.free.description")}
                     </p>
                   ) : (
@@ -1212,7 +1275,7 @@ function AppContent() {
                           key={i}
                           style={{
                             fontSize: "0.88rem",
-                            color: "#334155",
+                            color: T.textMuted,
                             textAlign: "start",
                           }}
                         >
@@ -1241,7 +1304,7 @@ function AppContent() {
                   onChange={(e) => setDays(e.target.value)}
                   style={{ width: "100%", marginBottom: "0.4rem" }}
                 />
-                <p style={{ color: "#6b7280", fontSize: "0.8rem", marginTop: 0, marginBottom: "1.5rem" }}>
+                <p style={{ color: T.textFaint, fontSize: "0.8rem", marginTop: 0, marginBottom: "1.5rem" }}>
                   {t("app.planLimitNote", {
                     plan: t("plans." + (profile?.plan || "free")),
                     maxDays: PLAN_MAX_DAYS[profile?.plan] || 1,
@@ -1572,7 +1635,7 @@ function AppContent() {
             )}
 
             {quotaInfo && (
-              <p style={{ textAlign: "center", color: "#6b7280", fontSize: "0.85rem", marginTop: "0.75rem", marginBottom: 0 }}>
+              <p style={{ textAlign: "center", color: T.textFaint, fontSize: "0.85rem", marginTop: "0.75rem", marginBottom: 0 }}>
                 {t("app.quotaUsed", {
                   used: quotaInfo.generationsUsed,
                   max: quotaInfo.maxGenerationsPerMonth,
@@ -1637,9 +1700,9 @@ function AppContent() {
                       style={{ filter: "blur(3px)", opacity: 0.6, pointerEvents: "none", userSelect: "none" }}
                     >
                       <div style={{ width: "55%", height: "13px", borderRadius: "4px", background: AGENCY_COLORS.border, margin: "0 auto 0.75rem" }} />
-                      <div style={{ width: "85%", height: "9px", borderRadius: "4px", background: "#f1f5f9", margin: "0 auto 0.5rem" }} />
-                      <div style={{ width: "70%", height: "9px", borderRadius: "4px", background: "#f1f5f9", margin: "0 auto 0.5rem" }} />
-                      <div style={{ width: "45%", height: "9px", borderRadius: "4px", background: "#f1f5f9", margin: "0 auto" }} />
+                      <div style={{ width: "85%", height: "9px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", margin: "0 auto 0.5rem" }} />
+                      <div style={{ width: "70%", height: "9px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", margin: "0 auto 0.5rem" }} />
+                      <div style={{ width: "45%", height: "9px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", margin: "0 auto" }} />
                     </div>
 
                     {/* طبقة تعتيم زجاجية (frosted glass overlay) — نصف شفافة + backdrop-filter
@@ -1714,7 +1777,7 @@ function AppContent() {
                     <h3 style={{ marginBottom: "0.75rem" }}>{freeIdea.idea}</h3>
 
                     {freeIdea.shotAngle && (
-                      <div style={{ background: "#eef2ff", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+                      <div style={{ background: "rgba(56,116,255,0.12)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
                         {t("free.shotAngle", { value: freeIdea.shotAngle })}
                       </div>
                     )}
@@ -1725,14 +1788,14 @@ function AppContent() {
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
                       {freeIdea.hashtags.map((tag, j) => (
-                        <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>
+                        <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: T.goldLight, padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>
                           {tag}
                         </span>
                       ))}
                     </div>
 
                     {freeIdea.imageIdea && (
-                      <div style={{ background: "#fef3c7", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
                         {t("content.imageIdea", { value: freeIdea.imageIdea })}
                       </div>
                     )}
@@ -1823,10 +1886,10 @@ function AppContent() {
                     (عبر كلاس CSS مُعرَّف أدناه في <style>، لأن أنماط hover لا تُكتب inline في React). */}
                 <div style={{ background: T.glass,
                     border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.75rem", marginTop: "1.5rem", textAlign: "center" }}>
-                  <h4 style={{ margin: "0 0 0.75rem 0", color: "#1f2937", fontSize: "1.15rem" }}>
+                  <h4 style={{ margin: "0 0 0.75rem 0", color: T.text, fontSize: "1.15rem" }}>
                     {t("freeUpsell.coffee.title")}
                   </h4>
-                  <p style={{ margin: "0 0 0.75rem 0", color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  <p style={{ margin: "0 0 0.75rem 0", color: T.textMuted, fontSize: "0.95rem", lineHeight: 1.6 }}>
                     {t("freeUpsell.coffee.description")}
                   </p>
                   <p style={{ margin: "0 0 1.25rem 0", color: T.textMuted, fontSize: "0.95rem", fontWeight: "600" }}>
@@ -1908,24 +1971,24 @@ function AppContent() {
                     <h3 style={{ marginBottom: "0.5rem" }}>{item.idea}</h3>
                     <p style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>{item.caption}</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-                      {item.hashtags.map((tag, j) => <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: "#6d28d9", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>{tag}</span>)}
+                      {item.hashtags.map((tag, j) => <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: T.goldLight, padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>{tag}</span>)}
                     </div>
                     <div style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
                       {t("content.bestTime", { time: item.bestTime })}
                     </div>
                     {item.imageIdea && (
-                      <div style={{ background: "#fef3c7", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
                         {t("content.imageIdea", { value: item.imageIdea })}
                       </div>
                     )}
                     {item.videoIdea && (
-                      <div style={{ background: "#fef3c7", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
                         {t("content.video", { value: item.videoIdea })}
                       </div>
                     )}
                     {/* أمر توليد الصورة بالذكاء الاصطناعي — PREMIUM فقط (imagePrompt فارغ لغير بريميوم) */}
                     {item.imagePrompt && (
-                      <div style={{ background: "#ede9fe", color: "#5b21b6", padding: "0.75rem", borderRadius: "8px", fontSize: "0.85rem" }}>
+                      <div style={{ background: "rgba(212,175,55,0.12)", color: T.goldLight, padding: "0.75rem", borderRadius: "8px", fontSize: "0.85rem" }}>
                         {t("pro.imagePrompt", { value: item.imagePrompt })}
                       </div>
                     )}
@@ -1943,16 +2006,16 @@ function AppContent() {
                 <div
                   style={{
                     padding: "20px",
-                    backgroundColor: "#f1f5f9",
+                    backgroundColor: "rgba(255,255,255,0.06)",
                     borderRadius: "8px",
                     border: "2px dashed #94a3b8",
                     textAlign: "center",
                   }}
                 >
-                  <h4 style={{ margin: "0 0 10px 0", color: "#334155" }}>
+                  <h4 style={{ margin: "0 0 10px 0", color: T.textMuted }}>
                     {t("upsell.free.title")}
                   </h4>
-                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: "#475569" }}>
+                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: T.textMuted }}>
                     {renderWithBold(t("upsell.free.description"))}
                   </p>
                   <button
