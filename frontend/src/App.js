@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { auth } from "./firebase";
 import { ensureUserProfile, getUserProfile } from "./firestoreUser";
 import Auth from "./Auth";
 import SEOTool from "./SEOTool";
@@ -12,6 +11,7 @@ import Portfolio from "./Portfolio";
 import FAQ from "./FAQ";
 import Reveal from "./Reveal";
 import { T } from "./theme";
+import PaymentModal from "./PaymentModal";
 import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
@@ -72,9 +72,9 @@ const PLAN_PRICES = { free: 0, pro: 29, premium: 59 };
 // ---------------------------------------------------------------------------
 // 💳 روابط الدفع لباقات المولّد (اشتراك شهري) — نفس فكرة PAYMENT_LINKS في Pricing.js.
 //
-// املئي paypal و/أو crypto لكل باقة. الزر يستعمل paypal إن وُجد، وإلا crypto.
-// ما دام الرابطان فارغين، يعود زر الترقية إلى نافذة "قائمة الانتظار" القديمة بدل
-// أن يصبح زراً ميتاً — أي أن الموقع يبقى صالحاً للاستعمال قبل ضبط الدفع وبعده.
+// paddle = رابط الدفع بالبطاقة/PayPal (Paddle أو Stripe)، crypto = رابط مزوّد
+// العملات الرقمية. الضغط على "ترقية" يفتح PaymentModal الذي يعرض الخيارين معاً؛
+// أي رابط فارغ يظهر خياره معطّلاً بوضوح بدل أن يقود إلى صفحة مكسورة.
 //
 // ⚠️ uidParam: اسم الحقل الذي يُمرَّر فيه معرّف المستخدم (uid) إلى صفحة الدفع.
 // بدونه لن تعرفي أي حساب دفع: الويبهوك سيصلك بإيميل المشتري فقط، وقد يكون مختلفاً
@@ -83,8 +83,8 @@ const PLAN_PRICES = { free: 0, pro: 29, premium: 59 };
 // اتركيه "" لعدم إضافة أي شيء إلى الرابط.
 // ---------------------------------------------------------------------------
 const GENERATOR_PAYMENT_LINKS = {
-  pro: { paypal: "", crypto: "" }, // $29/mo
-  premium: { paypal: "", crypto: "" }, // $59/mo
+  pro: { paddle: "", crypto: "" }, // $29/mo
+  premium: { paddle: "", crypto: "" }, // $59/mo
 };
 
 const GENERATOR_CHECKOUT_UID_PARAM = "";
@@ -276,167 +276,6 @@ function LockIcon({ size = 26, color = AGENCY_COLORS.metallicGold }) {
       />
       <circle cx="12" cy="15.5" r="1.6" fill={AGENCY_COLORS.navy} />
     </svg>
-  );
-}
-
-// نافذة "VIP Lead Capture" — تظهر بدل التوجيه الفعلي لصفحة دفع Lemon Squeezy عند الضغط على
-// أي زر ترقية (راجع handleUpgradeClick في AppContent أدناه). بدل بيع مباشر، نسجّل اهتمام
-// العميل في مجموعة Firestore جديدة (vip_leads) — لأغراض تصنيف/تسويق (Segmentation) — ثم نعرض
-// له رسالة "قائمة الانتظار" الفاخرة. روابط Lemon Squeezy (REACT_APP_LEMON_PRO_URL/PREMIUM_URL)
-// تبقى محفوظة كما هي في frontend/.env دون أي حذف، جاهزة لإعادة تفعيل التوجيه الفعلي لاحقاً.
-//
-// مكوّن مستقل بحالته الداخلية الخاصة (submitting/submitted/error) بنفس نمط ProjectDetailsModal
-// في History.js، حتى لا نُثقل AppContent بحالة إضافية لا تخصّه مباشرة.
-function VipModal({ open, planType, user, t, onClose }) {
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
-
-  // يعيد ضبط حالة النافذة الداخلية في كل مرة تُفتح فيها من جديد، حتى لا تظهر رسالة نجاح أو
-  // خطأ متبقّية من طلب ترقية سابق (ربما لباقة مختلفة) قبل أن يضغط المستخدم على أي شيء هذه المرة.
-  useEffect(() => {
-    if (open) {
-      setSubmitting(false);
-      setSubmitted(false);
-      setError("");
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  const handleJoinWaitlist = async () => {
-    if (!user) {
-      setError(t("vip.loginRequired"));
-      return;
-    }
-    setSubmitting(true);
-    setError("");
-    try {
-      // تسجيل الطلب في Firestore — مجموعة مستقلة (vip_leads) عن generations/users، بقصد
-      // الفصل الواضح بين "من طلب توليد محتوى" و"من أبدى اهتماماً بالترقية" لأغراض تسويقية.
-      await addDoc(collection(db, "vip_leads"), {
-        uid: user.uid,
-        email: user.email,
-        requestedPlan: planType,
-        timestamp: serverTimestamp(),
-      });
-      setSubmitted(true);
-    } catch (e) {
-      console.error("[App.js] فشل تسجيل طلب VIP في Firestore:", e.code || "", e.message);
-      setError(t("vip.submitError"));
-    }
-    setSubmitting(false);
-  };
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(10, 25, 47, 0.6)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 3000,
-        padding: "1rem",
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="agency-card"
-        style={{
-          background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
-          borderRadius: "16px",
-          padding: "2.25rem 2rem",
-          maxWidth: "460px",
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        {!submitted ? (
-          <>
-            <div
-              aria-hidden="true"
-              style={{
-                width: "52px",
-                height: "52px",
-                borderRadius: "50%",
-                background: AGENCY_COLORS.navy,
-                color: AGENCY_COLORS.gold,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.4rem",
-                margin: "0 auto 1.25rem",
-              }}
-            >
-              ★
-            </div>
-            <h2 style={{ margin: "0 0 0.85rem", color: T.text, fontWeight: "800", letterSpacing: "-0.01em" }}>
-              {t("vip.headline")}
-            </h2>
-            <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("vip.body")}</p>
-
-            {error && <p style={{ color: "#FCA5A5", fontSize: "0.9rem", marginBottom: "1rem" }}>{error}</p>}
-
-            <button
-              onClick={handleJoinWaitlist}
-              disabled={submitting}
-              className="agency-btn-primary"
-              style={{
-                width: "100%",
-                padding: "0.9rem",
-                borderRadius: "8px",
-                fontSize: "1rem",
-                marginBottom: "0.75rem",
-                cursor: submitting ? "not-allowed" : "pointer",
-                opacity: submitting ? 0.7 : 1,
-              }}
-            >
-              {submitting ? t("vip.sending") : t("vip.button")}
-            </button>
-            <button
-              onClick={onClose}
-              className="agency-btn-outline"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem" }}
-            >
-              {t("vip.closeBtn")}
-            </button>
-          </>
-        ) : (
-          <>
-            <div
-              aria-hidden="true"
-              style={{
-                width: "52px",
-                height: "52px",
-                borderRadius: "50%",
-                background: "#22c55e",
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.6rem",
-                margin: "0 auto 1.25rem",
-              }}
-            >
-              ✓
-            </div>
-            <h2 style={{ margin: "0 0 0.85rem", color: T.text, fontWeight: "800" }}>{t("vip.headline")}</h2>
-            <p style={{ color: AGENCY_COLORS.textMuted, lineHeight: 1.6, marginBottom: "1.5rem" }}>{t("vip.success")}</p>
-            <button
-              onClick={onClose}
-              className="agency-btn-primary"
-              style={{ width: "100%", padding: "0.9rem", borderRadius: "8px", fontSize: "1rem" }}
-            >
-              {t("vip.closeBtn")}
-            </button>
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -686,7 +525,7 @@ function LoginModal({ open, t, onClose, onMockSuccess }) {
 // في التذييل (footer) أدناه في AppContent. لا يوجد أي تكامل فعلي حالياً: لا كتابة
 // في Firestore ولا استدعاء أي API — فقط نص تعريفي ثابت بانتظار إطلاق برنامج الشركاء الفعلي عبر
 // Lemon Squeezy (نفس مزوّد الدفع المستخدم في upgradeUrls أعلاه)، تماماً كما طُلب صراحة. تصميم
-// النافذة نفسه يتبع نفس بنية VipModal (خلفية شبه شفافة + بطاقة بيضاء مركزية) دون أي منطق تقديم.
+// النافذة نفسه يتبع نفس بنية PaymentModal (خلفية معتمة + بطاقة زجاجية مركزية) دون أي منطق تقديم.
 function AmbassadorModal({ open, t, onClose }) {
   if (!open) return null;
 
@@ -810,10 +649,10 @@ function AppContent() {
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [quotaErrorMessage, setQuotaErrorMessage] = useState(""); // رسالة نفاد الرصيد مترجمة بلغة الواجهة الحالية
 
-  // حالة نافذة "VIP Lead Capture" — showVipModal يتحكم في ظهورها، وvipRequestedPlan يحفظ
+  // حالة نافذة الدفع — showPaymentModal يتحكم في ظهورها، وcheckoutPlan يحفظ
   // الباقة التي ضغط المستخدم على زر ترقيتها ("pro" أو "premium") لتُسجَّل مع الطلب في Firestore.
-  const [showVipModal, setShowVipModal] = useState(false);
-  const [vipRequestedPlan, setVipRequestedPlan] = useState("pro");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState("pro");
 
   // ⚠️ سقالة "Authentication UI" (مموَّهة/mock بالكامل حالياً — راجع التعليق الطويل أعلى
   // LoginModal لكل التفاصيل والمخاطر). isAuthenticated منفصل عمداً عن `user` الحقيقي القادم
@@ -895,11 +734,8 @@ function AppContent() {
   // بإعادة استخدام نفس الدالة بدل تكرار المنطق.
   //
   // ⚠️ "VIP Lead Capture" (قرار عمل جديد): بدل التوجيه الفعلي الفوري لصفحة دفع Lemon Squeezy،
-  // هذه الدالة الآن تفتح نافذة VipModal فقط، وتُسجَّل نية الترقية في Firestore (vip_leads) من
-  // داخل تلك النافذة عند ضغط المستخدم على "الانضمام لقائمة كبار الشخصيات". منطق بناء رابط الدفع
-  // (checkoutUrl + custom_data uid بصيغة Lemon Squeezy الموثَّقة) والويبهوك في backend/server.js
-  // (POST /api/webhook/lemonsqueezy) يبقيان كما هما تماماً دون أي حذف — فقط غير مُستخدَمين مؤقتاً
-  // من هنا — وroutine إعادة التفعيل موثَّقة أدناه لو احتجنا الرجوع للتوجيه المباشر لاحقاً:
+  // هذه الدالة تفتح نافذة اختيار وسيلة الدفع (PaymentModal): الروابط الفعلية في
+  // GENERATOR_PAYMENT_LINKS أعلى الملف، والنافذة هي من تنقل المستخدم إلى المزوّد.
   //
   //   const checkoutUrl =
   //     targetTier === "premium" ? process.env.REACT_APP_LEMON_PREMIUM_URL : process.env.REACT_APP_LEMON_PRO_URL;
@@ -919,25 +755,10 @@ function AppContent() {
       return;
     }
 
-    const plan = targetTier || "pro";
-    const links = GENERATOR_PAYMENT_LINKS[plan] || {};
-    const checkoutUrl = (links.paypal || "").trim() || (links.crypto || "").trim();
-
-    // رابط مضبوط → إلى صفحة الدفع مباشرة. لا رابط → نافذة قائمة الانتظار كما كان،
-    // حتى لا يتحوّل الزر إلى زر لا يفعل شيئاً قبل ضبط الدفع.
-    if (checkoutUrl) {
-      let finalUrl = checkoutUrl;
-      if (GENERATOR_CHECKOUT_UID_PARAM) {
-        const separator = finalUrl.includes("?") ? "&" : "?";
-        finalUrl =
-          finalUrl + separator + GENERATOR_CHECKOUT_UID_PARAM + "=" + encodeURIComponent(user.uid);
-      }
-      window.location.href = finalUrl;
-      return;
-    }
-
-    setVipRequestedPlan(plan);
-    setShowVipModal(true);
+    // فتح نافذة اختيار وسيلة الدفع. ضغطة واحدة لا يمكن أن تذهب إلى بوابتين، لذلك
+    // اختيار الباقة هنا واختيار الوسيلة داخل النافذة.
+    setCheckoutPlan(targetTier || "pro");
+    setShowPaymentModal(true);
   };
 
   const isDescriptionValid = businessDescription.trim().length > 0;
@@ -1537,9 +1358,9 @@ function AppContent() {
                     role="button"
                     tabIndex={0}
                     aria-label={t("pro.visualStyleLabel")}
-                    onClick={() => setShowVipModal(true)}
+                    onClick={() => handleUpgradeClick("pro")}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") setShowVipModal(true);
+                      if (e.key === "Enter" || e.key === " ") handleUpgradeClick("pro");
                     }}
                     style={{
                       position: "absolute",
@@ -1683,7 +1504,7 @@ function AppContent() {
               دائماً أسفل نموذج الإدخال مباشرة لباقة "free" فقط، حتى قبل أي توليد، بدل انتظار
               النتائج أولاً. تُسمّي بوضوح ما هو محجوب عمداً عن الباقة المجانية، لكل بطاقة عنوان
               حقيقي ومقروء + شارة الباقة المطلوبة، مع قفل ذهبي وطبقة تعتيم فوق محتوى زخرفي مموّه.
-              الضغط على أي بطاقة يفتح نافذة "VIP Lead Capture" (نفس showVipModal المستخدمة في
+              الضغط على أي بطاقة يفتح نافذة الدفع على باقة Pro (نفس handleUpgradeClick المستخدمة في
               أزرار الترقية الأخرى) بدل أي توجيه مباشر لصفحة دفع. */}
           {SHOW_LEGACY_TIER_UI && tier === "free" && (
             <div style={{ maxWidth: "1100px", margin: "0 auto", marginBottom: "2rem" }}>
@@ -1708,11 +1529,11 @@ function AppContent() {
                 {["conversionArchitecture", "competitorGap", "omnichannelGrowth"].map((cardKey) => (
                   <div
                     key={cardKey}
-                    onClick={() => setShowVipModal(true)}
+                    onClick={() => handleUpgradeClick("pro")}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") setShowVipModal(true);
+                      if (e.key === "Enter" || e.key === " ") handleUpgradeClick("pro");
                     }}
                     className="agency-card locked-feature-card"
                     style={{
@@ -2175,12 +1996,13 @@ function AppContent() {
         </div>
       </div>
 
-      <VipModal
-        open={showVipModal}
-        planType={vipRequestedPlan}
-        user={user}
-        t={t}
-        onClose={() => setShowVipModal(false)}
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        planName={t("tiers." + checkoutPlan)}
+        priceLabel={planPriceLabel(checkoutPlan, t)}
+        links={GENERATOR_PAYMENT_LINKS[checkoutPlan]}
+        uidParam={GENERATOR_CHECKOUT_UID_PARAM}
       />
 
       <LoginModal
