@@ -101,18 +101,18 @@ export const translations = {
     planFeatures: {
       free: { emoji: "✅", label: "Strategic Consultation:", description: "A complimentary preview of your custom campaign direction." },
       // pro/premium: "features" مصفوفة تُعرَض كبطاقة مبنية ببنود واضحة (راجع App.js، قسم
-      // "Luxury Structured Tier Cards"). بنية "Weekly Sprint": كل حملة/سبرنت أسبوعي بحد أقصى
-      // 7 أيام (وليس مخططاً متصلاً لمدة 30/90 يوماً كما كان سابقاً)، تتكرر عدة مرات شهرياً
-      // (5 مرات لـ Pro، 12 مرة لـ Premium) لتغطية الشهر كاملاً. الأرقام هنا (7 أيام/سبرنت،
-      // 5 أو 12 سبرنت/شهر) مطابقة تماماً لـ PLAN_LIMITS.pro/premium في backend/server.js
-      // (maxDays:7 للاثنين، maxGenerationsPerMonth:5/12) ولـ PLAN_MAX_DAYS/PLAN_MAX_GENERATIONS
+      // "Luxury Structured Tier Cards"). تسعير 2026:
+      //   Pro      29$/شهر — 3 حملات شهرياً، حتى 7 أيام لكل حملة.
+      //   Premium  59$/شهر — 8 حملات شهرياً، حتى 7 أيام لكل حملة.
+      // ⚠️ الأرقام في هذه النصوص وصفية فقط، لكنها يجب أن تبقى مطابقة حرفياً لـ
+      // PLAN_LIMITS في backend/server.js (وهو الملزم فعلياً) ولـ PLAN_MAX_DAYS/PLAN_MAX_GENERATIONS
       // في frontend/src/App.js. نص وصفي بحت، لا يغيّر أي منطق أو حد فعلي في التطبيق. كل بند
       // يبدأ بعلامة "✦" ذهبية مضمَّنة في النص نفسه (بدل رسمها منفصلة في App.js كما كان سابقاً
       // مع ◆)، ويُعرض بلونها الذهبي عبر تقسيم النص في App.js (renderBulletFeature).
       pro: {
         label: "Boutique Campaign:",
         features: [
-          "✦ Full Month Coverage: 5 Weekly Sprints (Up to 7 days each)",
+          "✦ 3 Weekly Sprints per month (Up to 7 days each)",
           "✦ Multi-Language Support",
           "✦ CSV Strategy Export",
         ],
@@ -120,7 +120,7 @@ export const translations = {
       premium: {
         label: "Full Agency Retainer:",
         features: [
-          "✦ 360° Monthly Coverage: 12 Sprints (Up to 7 days each)",
+          "✦ 8 Sprints per month (Up to 7 days each)",
           "✦ Omnichannel Strategy",
           "✦ Creative Direction & Repurposing",
         ],
@@ -398,7 +398,7 @@ export const translations = {
       pro: {
         label: "حملة مخصصة:",
         features: [
-          "✦ تغطية شهرية كاملة: 5 حملات أسبوعية (تصل لـ 7 أيام لكل حملة)",
+          "✦ 3 حملات أسبوعية شهرياً (تصل لـ 7 أيام لكل حملة)",
           "✦ دعم لغات متعددة",
           "✦ تصدير الخطة بصيغة CSV",
         ],
@@ -406,7 +406,7 @@ export const translations = {
       premium: {
         label: "إدارة تسويقية شاملة:",
         features: [
-          "✦ تغطية شهرية 360 درجة: 12 حملة (تصل لـ 7 أيام لكل حملة)",
+          "✦ 8 حملات شهرياً (تصل لـ 7 أيام لكل حملة)",
           "✦ استراتيجية متعددة المنصات",
           "✦ توجيه إبداعي وإعادة صياغة المحتوى",
         ],
@@ -669,7 +669,7 @@ export const translations = {
       pro: {
         label: "Campagne Sur Mesure :",
         features: [
-          "✦ Couverture Mensuelle : 5 Sprints Hebdomadaires (Jusqu'à 7 jours chacun)",
+          "✦ 3 Sprints Hebdomadaires par mois (Jusqu'à 7 jours chacun)",
           "✦ Support Multilingue",
           "✦ Exportation CSV",
         ],
@@ -677,7 +677,7 @@ export const translations = {
       premium: {
         label: "Forfait Agence Complet :",
         features: [
-          "✦ Couverture Mensuelle 360° : 12 Sprints (Jusqu'à 7 jours chacun)",
+          "✦ 8 Sprints par mois (Jusqu'à 7 jours chacun)",
           "✦ Stratégie Omnicanal",
           "✦ Direction Créative et Recyclage",
         ],
