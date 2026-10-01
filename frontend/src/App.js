@@ -911,7 +911,7 @@ function AppContent() {
   return (
     <>
       <LanguageSwitcher />
-      <div style={{ minHeight: "100vh", padding: "2rem" }}>
+      <div className="apex-page">
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           {/* الترويسة الملاحية: شريط "Midnight Navy" غامق يحتضن شارة الثقة (Trust Badge) —
               نقطة خضراء نابضة + "Agency Strategy Team: Online" — وأزرار الحساب. */}
@@ -1048,29 +1048,21 @@ function AppContent() {
             </div>
           )}
 
-          <div className="agency-card" style={{ borderRadius: "16px", padding: "2rem", marginBottom: "2rem" }}>
+          <div className="agency-card apex-main-card" style={{ borderRadius: "16px", marginBottom: "2rem" }}>
             {SHOW_LEGACY_TIER_UI && (
-              <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div className="apex-tier-tabs">
                 {["free", "pro", "premium"].map((tierId) => (
                   <button
                     key={tierId}
                     onClick={() => handleSelectTier(tierId)}
+                    className="apex-tier-tab"
+                    aria-pressed={tier === tierId}
                     style={{
-                      flex: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "0.15rem",
-                      padding: "0.6rem 1rem",
-                      borderRadius: "10px",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontWeight: "700",
-                      lineHeight: 1.3,
+                      // يبقى هنا ما يتغيّر حسب الباقة المختارة فقط؛ التخطيط كله
+                      // (الشبكة، الحشو، الاتجاه) في App.css ليستجيب لحجم الشاشة.
                       background: tier === tierId ? T.goldGradient : "rgba(255,255,255,0.06)",
                       color: tier === tierId ? "#1A1305" : T.text,
                       border: `1px solid ${tier === tierId ? "transparent" : T.glassBorder}`,
-                      transition: "background 0.25s ease, color 0.25s ease",
                     }}
                   >
                     <span style={{ fontSize: "0.9rem" }}>{t("tiers." + tierId)}</span>
