@@ -370,7 +370,18 @@ input[type="range"] {
    مبدّل اللغة (يُستخدم في i18n.js)
 --------------------------------------------------------------------------- */
 .apex-lang {
+  /* الموضع كان مكتوباً inline داخل i18n.js، فكان يتفوّق على أي استعلام وسائط.
+     inset-inline-end تنقلب تلقائياً إلى اليسار عندما يكون dir="rtl"، فلا حاجة
+     لحساب left/right في JavaScript. */
+  position: fixed;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 1000;
+
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: calc(100% - 2rem);
   gap: 0.15rem;
   padding: 0.25rem;
   border-radius: 999px;
@@ -686,5 +697,132 @@ input[type="range"] {
   }
   .agency-status-dot {
     animation: none;
+  }
+}
+
+/* ===========================================================================
+   التجاوب (Responsive)
+   ---------------------------------------------------------------------------
+   قبل هذا القسم لم يكن في الملف أي استعلام وسائط قائم على العرض إطلاقاً — فقط
+   prefers-reduced-motion. السبب الحقيقي لتكسّر الواجهة على الهاتف لم يكن غياب
+   نقاط التوقف وحده، بل أن تخطيط العنصرين المتضرّرين كان مكتوباً كأنماط مضمّنة
+   (inline) داخل i18n.js و App.js، والأنماط المضمّنة تتفوّق على ملف الأنماط مهما
+   بلغت دقّة المحدِّد. لذلك نُقل التخطيط إلى الفئات أدناه أولاً، ثم أصبحت نقاط
+   التوقف قادرة على تغييره فعلاً.
+
+   نقاط التوقف:
+     ≤ 767px   هاتف
+     ≤ 1024px  لوحي
+     > 1024px  حاسوب (القيم الأساسية أعلاه)
+   =========================================================================== */
+
+/* --- حاوية الصفحة -------------------------------------------------------
+   الحشو العلوي 4.25rem وليس 2rem: على الحاسوب يبقى مبدّل اللغة ثابتاً (fixed)
+   عند الحافة اليمنى للنافذة، بينما المحتوى محصور في 1100px موسَّطة. عند عرض
+   1280 أو 1440 بكسل تحديداً تلتقي الحافتان ويجلس المبدّل فوق شريط الترويسة.
+   هذا الحشو يحجز له المساحة الرأسية فينزل الشريط تحته. (استعلامات الوسائط
+   أدناه تعيد ضبط الحشو كاملاً، لأن المبدّل هناك ليس ثابتاً أصلاً.) */
+.apex-page {
+  min-height: 100vh;
+  padding: 4.25rem 2rem 2rem;
+}
+
+/* --- البطاقة الرئيسية التي تحتضن المولّد -------------------------------- */
+.apex-main-card {
+  padding: 2rem;
+}
+
+/* --- تبويبات الباقات الثلاث ---------------------------------------------
+   شبكة بثلاثة أعمدة minmax(0, 1fr) وليس 1fr المجرّدة: القيمة 1fr وحدها تساوي
+   minmax(auto, 1fr)، وحدّها الأدنى هو عرض المحتوى، فلا ينكمش العمود تحت طول
+   "Full Agency Retainer" ويطفح الصف أفقياً — وهو عين العطل المُبلَّغ عنه. */
+.apex-tier-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.apex-tier-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0; /* يسمح للزر بالانكماش داخل الشبكة بدل دفعها للطفح */
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* =========================== لوحي: ≤ 1024px ============================= */
+@media (max-width: 1024px) {
+  /* المبدّل يخرج من position: fixed ويعود إلى سياق الصفحة العادي. بهذا يستحيل
+     عليه أن يغطّي أي محتوى مهما طال النص أو صغرت الشاشة — وهو أمتن من محاولة
+     ترك هامش علوي كافٍ تحته وتخمين ارتفاعه. */
+  .apex-lang {
+    position: static;
+    display: flex;
+    width: fit-content;
+    margin: 0.9rem auto 0;
+    max-width: calc(100% - 1.5rem);
+  }
+
+  .apex-page {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .apex-main-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .apex-tier-tabs {
+    gap: 0.6rem;
+  }
+
+  .apex-tier-tab {
+    padding: 0.55rem 0.5rem;
+  }
+}
+
+/* =========================== هاتف: ≤ 767px ============================== */
+@media (max-width: 767px) {
+  .apex-page {
+    padding: 1.25rem 1rem;
+  }
+
+  .apex-main-card {
+    padding: 1.15rem 1rem;
+  }
+
+  /* التبويبات تتكدّس عمودياً. كل زر يصير صفاً واحداً: اسم الباقة في جهة والسعر
+     في الجهة المقابلة — أسهل للمسح بالعين من عمود ضيّق، ويُبقي ارتفاع القائمة
+     قصيراً فلا يُدفع نموذج الإدخال خارج الشاشة الأولى. */
+  .apex-tier-tabs {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .apex-tier-tab {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.95rem;
+    text-align: start;
+  }
+}
+
+/* ======================= هاتف صغير جداً: ≤ 420px ======================== */
+@media (max-width: 420px) {
+  .apex-lang button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
   }
 }
