@@ -980,18 +980,15 @@ export function useLanguage() {
 // زر تبديل اللغة — ثابت أعلى الصفحة (fixed)، ويظهر في كل الشاشات (تسجيل الدخول والتطبيق
 // الرئيسي على حد سواء) لأن اختيار اللغة يجب أن يكون متاحاً دائماً بغض النظر عن حالة الدخول.
 export function LanguageSwitcher() {
-  const { lang, setLang, availableLanguages, isRtl } = useLanguage();
+  // ملاحظة: isRtl لم يعد مطلوباً هنا. كان يُستخدم لاختيار left أو right يدوياً، وصار
+  // الموضع كله في App.css عبر inset-inline-end التي تنقلب تلقائياً مع dir="rtl".
+  // نقل الموضع إلى CSS ضروري وليس تجميلاً: الأنماط المضمّنة (inline) تتفوّق على أي
+  // قاعدة في ملف الأنماط، فما كانت استعلامات الوسائط (media queries) تقدر على تغيير
+  // موضع المبدّل أصلاً وهو مكتوب هنا.
+  const { lang, setLang, availableLanguages } = useLanguage();
 
   return (
-    <div
-      className="apex-lang"
-      style={{
-        position: "fixed",
-        top: "1rem",
-        [isRtl ? "left" : "right"]: "1rem",
-        zIndex: 1000,
-      }}
-    >
+    <div className="apex-lang">
       {availableLanguages.map((code) => (
         <button
           key={code}
