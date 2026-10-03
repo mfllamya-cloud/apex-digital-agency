@@ -13,6 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
+import { registerAdDesignRoutes } from "./adDesign.js";
 
 // ---------------------------------------------------------------------------
 // تحويل CommonJS → ES Modules: بعد ضبط package.json على "type": "module"، لم يعد __dirname
@@ -370,6 +371,7 @@ app.post(
       // لصار بإمكان المشترك استرجاع حصته كاملة بأي تعديل بسيط على اشتراكه.
       if (isFirstActivation) {
         update.generationsUsed = 0;
+        update.designsUsed = 0;
         update.lastResetMonth = nowKey;
       }
 
@@ -387,7 +389,14 @@ app.post(
   }
 );
 
-app.use(express.json());
+// The ad-design start request carries the (browser-downscaled) product photo, so that one route
+// gets a larger JSON limit. Everything else keeps the Express default (100kb). The limit stays
+// under Vercel's 4.5 MB request body cap.
+const jsonDefault = express.json();
+const jsonLarge = express.json({ limit: "4mb" });
+app.use((req, res, next) =>
+  req.path === "/api/design/start" ? jsonLarge(req, res, next) : jsonDefault(req, res, next)
+);
 
 // معالج أخطاء CORS: يعيد رسالة JSON واضحة بدل صفحة خطأ HTML افتراضية من Express
 app.use((err, req, res, next) => {
@@ -675,16 +684,30 @@ if (rawServiceAccountJson) {
 // أوسع). ⚠️ هذا هو مصدر الحقيقة الوحيد والملزم فعلياً لهذه الحدود — ثوابت frontend/src/App.js
 // (PLAN_MAX_DAYS/PLAN_MAX_GENERATIONS) واجهة مستخدم فقط ويجب أن تبقى مطابقة لهذه القيم يدوياً.
 const PLAN_LIMITS = {
-  free: { maxDays: 1, maxGenerationsPerMonth: 1, label: "المجانية" },
-  // تسعير 2026: برو 29$/شهر — 3 حملات شهرياً، حتى 7 أيام لكل حملة (21 يوم-وحدة).
-  //             بريميوم 59$/شهر — 8 حملات شهرياً، حتى 7 أيام لكل حملة (56 يوم-وحدة).
-  // سقف 7 أيام موحَّد لكل الباقات: هو ما يجعل أقصى تكلفة شهرية لكل مشترك قابلة للحساب
-  // مسبقاً (عدد الحملات × 7 أيام × تكلفة اليوم) بدل أن تتضاعف مع مضاعفة المدة.
-  // ⚠️ هذه القيم هي الملزمة فعلياً: reserveGenerationSlot() يقرأ منها داخل معاملة
-  // Firestore قبل أي استدعاء لـ Claude، وحدّ الأيام يُقصَّ هنا أيضاً بـ Math.min.
-  // ثوابت frontend/src/App.js واجهة عرض فقط ولا تفرض شيئاً.
-  pro: { maxDays: 7, maxGenerationsPerMonth: 3, label: "برو" },
-  premium: { maxDays: 7, maxGenerationsPerMonth: 8, label: "بريميوم" },
+  // 2026 "one generation = one complete ad" model. maxDays is 1 on every plan.
+  //   maxGenerationsPerMonth = text ads per month (counter: users/{uid}.generationsUsed)
+  //   maxDesignsPerMonth     = ad designs per month (separate counter: users/{uid}.designsUsed)
+  //   designFormats/designStyles = what one design credit produces on that plan
+  // These values are the binding ones: reserveGenerationSlot() and the design endpoints
+  // (backend/adDesign.js) read them inside Firestore transactions. frontend/src/App.js
+  // only mirrors them for display.
+  free: { maxDays: 1, maxGenerationsPerMonth: 1, maxDesignsPerMonth: 0, designFormats: [], designStyles: [], label: "المجانية" },
+  pro: {
+    maxDays: 1,
+    maxGenerationsPerMonth: 5,
+    maxDesignsPerMonth: 2,
+    designFormats: ["1:1"],
+    designStyles: ["clean_studio", "bold_color"],
+    label: "برو",
+  },
+  premium: {
+    maxDays: 1,
+    maxGenerationsPerMonth: 10,
+    maxDesignsPerMonth: 5,
+    designFormats: ["1:1", "9:16"],
+    designStyles: ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"],
+    label: "بريميوم",
+  },
 };
 
 function getPlanLimits(plan) {
@@ -705,7 +728,8 @@ function getPlanLimits(plan) {
 // التحويل الأولى — تصل كاملة دائماً.
 //
 // premium: عاد إلى 25000 بعد رجوع سقف الأيام إلى 7.
-const PLAN_MAX_TOKENS = { free: 2200, pro: 10000, premium: 25000 };
+// One ad per generation on every plan since the 2026 model, so one ceiling fits all.
+const PLAN_MAX_TOKENS = { free: 2200, pro: 2200, premium: 2200 };
 
 function getPlanMaxTokens(plan) {
   return PLAN_MAX_TOKENS[plan] || PLAN_MAX_TOKENS.free;
@@ -926,90 +950,74 @@ function buildExtraInstructions({ language, tone, goal, platform, sourceText, vi
   );
 }
 
-function buildPrompt(limit, businessDescription, occasion, options) {
+// ---------------------------------------------------------------------------
+// One generation = one complete ad (all plans): headline, caption, call to action, hashtags.
+// The word limits below are also enforced in code by normalizeAd(), because the headline is
+// later drawn on the ad design and must fit its template.
+// ---------------------------------------------------------------------------
+const AD_HEADLINE_MAX_WORDS = 8;
+const AD_CAPTION_MAX_WORDS = 40;
+const AD_CTA_MAX_WORDS = 4;
+
+function buildAdPrompt(businessDescription, occasion, options) {
   const opts = options || {};
   const extraInstructions = opts.extraInstructions || "";
-  const includeImagePrompt = !!opts.includeImagePrompt;
-
-  // حقل "imagePrompt" الإضافي (PREMIUM فقط) — يُضاف بشرط لوصف الحقل ولقالب JSON معاً
-  // حتى يبقى الاثنان متزامنين ولا ننسى أحدهما عند تفعيل/تعطيل الميزة.
-  const imagePromptFieldDoc = includeImagePrompt
-    ? '\n- "imagePrompt": أمر (prompt) تفصيلي بالإنجليزية من جملتين بالضبط لأداة توليد صور بالذكاء الاصطناعي (مثل Midjourney)، يطابق تماماً المشهد البصري المقترح لهذا اليوم'
+  const offer = opts.offer || "";
+  const occasionNote = occasion
+    ? "\nUpcoming occasion you may tie the ad to, only if it fits naturally: " + occasion.name + " (" + occasion.date + ").\n"
     : "";
-  const imagePromptJsonField = includeImagePrompt ? ', "imagePrompt": "..."' : "";
+  const offerNote = offer
+    ? '\nThe business wants this offer / call to action featured: "' + offer + '". Build the ad around it and base the "cta" on it.\n'
+    : "";
 
-  return `أنت خبير تسويق عبر وسائل التواصل الاجتماعي متخصص في إنستغرام لأصحاب الأعمال الصغيرة والمتوسطة.
+  return `You are a senior advertising copywriter at a performance marketing agency. You write one complete, ready-to-run social media ad.
 
-وصف المشروع الذي تكتب له خطة المحتوى (كما أدخله صاحب المشروع):
+The business (as described by its owner):
 "${businessDescription}"
+${occasionNote}${offerNote}
+LANGUAGE (mandatory): detect the language the business description is written in and write every field in that same language and script. If it is in Moroccan Darija, answer in Darija in the same script. Never switch language unless an instruction below says so.
 
-المطلوب: أنشئ خطة محتوى إنستغرام لعدد ${limit} يوم متتالي، مخصصة لهذا المشروع تحديداً. استفد من تفاصيل الوصف أعلاه في الأفكار كلما أمكن بدل الاكتفاء بأفكار عامة تصلح لأي مشروع.${buildOccasionNote(occasion, false)}
-
-تعليمات إلزامية بخصوص اللغة (مهم جداً — اقرأها بعناية): اكتشف اللغة التي كُتب بها "وصف المشروع" أعلاه بالضبط، واكتب كل النصوص في ردّك (idea، caption، الهاشتاغات، imageIdea، bestTime) بنفس تلك اللغة تحديداً — سواء كانت عربية أو إنجليزية أو فرنسية أو إسبانية أو أي لغة أخرى. لا تُترجم وصف المشروع ولا تُبدّل لغته أبداً، ولا تلتزم بلغة هذه التعليمات نفسها (فهي مكتوبة بالعربية لأسباب داخلية فقط ولا علاقة لها بلغة الرد المطلوب). (إن وُجدت تعليمة لغة صريحة أدناه ضمن "تعليمات إضافية إلزامية"، فهي التي تُطبَّق بدل هذا الكشف التلقائي.)
-
-تعليمات إلزامية بخصوص طول كل يوم (مهم جداً):
-لكل يوم: عنوان قصير، نص منشور بين 40 و60 كلمة، 5 هاشتاغات، سطر لاقتراح الصورة، ووقت النشر. حافظ على هذا الطول في كل الأيام لضمان اكتمال التقويم.
-
-لكل يوم، أعطني فكرة محتوى تحتوي بالضبط على الحقول التالية:
-- "idea": عنوان قصير وجذاب لفكرة المحتوى (بنفس لغة وصف المشروع)
-- "caption": نص منشور جاهز للنشر يشرح الفكرة (بنفس لغة وصف المشروع)، يجب أن يكون طوله بين 40 و60 كلمة بالضبط تقريباً — لا تقل عن 40 كلمة ولا تتجاوز 60 كلمة
-- "hashtags": مصفوفة من 5 هاشتاغات بالضبط مناسبة (كل هاشتاغ يبدأ بالرمز #، وبنفس لغة وصف المشروع كلما كان ذلك طبيعياً)
-- "imageIdea": سطر واحد يقترح صورة مناسبة لمرافقة المنشور (وصف مختصر لمشهد أو تكوين الصورة، بنفس لغة وصف المشروع)
-- "bestTime": أفضل وقت مقترح للنشر بصيغة نصية مثل "9:00 AM"${imagePromptFieldDoc}
+Write exactly ONE ad with these fields:
+- "headline": the line printed on the ad image. At most ${AD_HEADLINE_MAX_WORDS} words. Punchy, specific to this business, no hashtags, no emojis, no quotation marks, no final period.
+- "caption": the ready-to-post text that goes with the image. At most ${AD_CAPTION_MAX_WORDS} words. Opens with a hook, gives one concrete benefit, ends by leading into the call to action.
+- "cta": the call-to-action button label. ${AD_CTA_MAX_WORDS} words at most (for example "Shop now"). No emojis.
+- "hashtags": exactly 5 hashtags specific to this business, each starting with #.
 ${extraInstructions}
 
-نوّع بين أنواع محتوى فعالة مثل: عرض منتج، كواليس العمل، مشكلة وحل، قصة نجاح أو شهادة عميل، عرض محدود، نصيحة مفيدة، وتفاعل مع المتابعين. لا تكرر نفس فكرة المحتوى في يومين متتاليين. حافظ بدقة على طول كل حقل كما هو محدد أعلاه في كل الأيام الـ ${limit} دون استثناء، لضمان اكتمال الرد بصيغة JSON صالحة دون انقطاع.
+Answer with valid JSON only, no text before or after, no Markdown code fences, exactly in this shape:
 
-أجب حصراً بصيغة JSON صالحة، بدون أي نص قبلها أو بعدها، وبدون استخدام Markdown code fences، بالشكل التالي بالضبط:
-
-{"content": [{"idea": "...", "caption": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."], "imageIdea": "...", "bestTime": "..."${imagePromptJsonField}}, ...]}
-
-يجب أن تحتوي مصفوفة "content" على ${limit} عنصر بالضبط، بنفس الترتيب من اليوم 1 إلى اليوم ${limit}.`;
+{"ad": {"headline": "...", "caption": "...", "cta": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."]}}`;
 }
 
-function buildFreeTierPrompt(businessDescription, occasion) {
-  // ⚠️ هذه هي الفكرة المجانية — أول (وغالباً الوحيد) ما يراه الزائر قبل أن يقرر الدفع.
-  // لذلك التعليمات هنا تشدّد على شيئين تحديداً: أن تكون الفكرة *مكتملة* (لا تتوقف في
-  // منتصف جملة ولا تترك حقلاً ناقصاً)، وأن تكون *مقنعة* بحد ذاتها — تُظهر مستوى العمل
-  // بدل أن تبدو عيّنة مبتورة. سقف التوكنز لهذه الباقة (PLAN_MAX_TOKENS.free) مضبوط
-  // ليتّسع لهذا الطول كاملاً بهامش مريح؛ لا تُطِل النص هنا دون رفع ذلك السقف معه.
-  return `أنت استراتيجي محتوى إنستغرام مبدع، متخصص في أفكار محددة جداً وليس نصائح عامة.
-
-المشروع: "${businessDescription}"
-
-أعطني فكرة محتوى واحدة فقط، استثنائية الجودة، ومحددة جداً لهذا المشروع بالذات — استخدم تفاصيل ملموسة من وصفه (نوع المنتج، المكان، الطابع الخاص). ممنوع أي فكرة عامة مستهلكة مثل "كواليس المنتج" أو "كواليس العمل" أو "شهادة عميل" أو "قصة نجاح" أو أي فكرة تصلح لأي مشروع آخر بنفس الشكل.${buildOccasionNote(occasion, true)}
-
-معيار الجودة (مهم جداً): هذه الفكرة هي العيّنة الوحيدة التي سيحكم بها صاحب المشروع على مستوى عملنا. اكتبها كنظرة استراتيجية موجزة عالية الأثر ومكتملة تماماً: موجزة لكن غير ناقصة، ومقنعة بذاتها. كل حقل يجب أن يكون جملة (أو جملاً) تامة تنتهي بنقطة — ممنوع منعاً باتاً أن يتوقف أي نص في منتصف جملة أو كلمة، وممنوع إنهاء الرد قبل إغلاق كل أقواس JSON. لو شعرت أنك تقترب من الحد، اختصر الصياغة ولا تبتر النص.
-
-تعليمات إلزامية بخصوص اللغة (مهم جداً — اقرأها بعناية): اكتشف اللغة التي كُتب بها "المشروع" أعلاه بالضبط، واكتب كل النصوص في ردّك (idea، shotAngle، caption، الهاشتاغات، imageIdea، bestTime) بنفس تلك اللغة تحديداً — سواء كانت عربية أو إنجليزية أو فرنسية أو إسبانية أو أي لغة أخرى. لا تُترجم وصف المشروع ولا تُبدّل لغته أبداً، ولا تلتزم بلغة هذه التعليمات نفسها (فهي مكتوبة بالعربية لأسباب داخلية فقط ولا علاقة لها بلغة الرد المطلوب).
-
-الحقول المطلوبة بالضبط:
-- "idea": عنوان قصير وجذاب لجوهر الفكرة، يوضّح الزاوية لا الموضوع فقط (بنفس لغة وصف المشروع)
-- "shotAngle": كيف تُنفَّذ اللقطة عملياً — الزاوية، ما يظهر في الإطار، والحركة إن وُجدت — بدقة كافية ليصوّرها صاحب المشروع بهاتفه دون أي معدات (بنفس لغة وصف المشروع)
-- "caption": النص الكامل الجاهز للنشر مباشرة (وليس ملخصاً)، بين 60 و90 كلمة، يفتح بجملة توقف التمرير وينتهي بدعوة واضحة لفعل محدد (بنفس لغة وصف المشروع)
-- "hashtags": 5 هاشتاغات بالضبط مخصصة لهذا المشروع تحديداً، لا وسوم عامة واسعة (بنفس لغة وصف المشروع كلما كان ذلك طبيعياً)
-- "imageIdea": سطر واحد يقترح صورة ثابتة مناسبة لمرافقة المنشور، محددة بما يكفي للتنفيذ (بالإضافة إلى زاوية التصوير أعلاه، بنفس لغة وصف المشروع)
-- "bestTime": أفضل وقت للنشر مثل "9:00 AM"
-
-أجب بصيغة JSON صالحة فقط، بدون أي نص إضافي ولا Markdown code fences، بعنصر واحد بالضبط:
-
-{"content": [{"idea": "...", "shotAngle": "...", "caption": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."], "imageIdea": "...", "bestTime": "..."}]}`;
+function limitWords(text, maxWords) {
+  const words = String(text || "").trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return words.join(" ");
+  return words.slice(0, maxWords).join(" ");
 }
 
-// عناصر "مقفلة" ثابتة (بدون أي استدعاء لـ Claude) لتمثيل باقي أيام الشهر في الباقة المجانية.
-// الحماية هنا حقيقية على مستوى الخادم: لا يتم توليد أي محتوى فعلي لهذه الأيام إطلاقاً،
-// فقط رقم اليوم يُرسل للواجهة لعرضه كبطاقة مقفلة — هذا يوفر تكلفة استدعاء API أيضاً.
-function buildLockedDayStubs(fromDay, toDay) {
-  const stubs = [];
-  for (let d = fromDay; d <= toDay; d++) {
-    stubs.push({
-      day: d,
-      locked: true,
-      title: "اليوم " + d,
-    });
-  }
-  return stubs;
+// Caption over the limit: prefer cutting at the last sentence end inside the limit, so the
+// text never stops mid-sentence unless there is no sentence boundary at all.
+function limitCaption(text, maxWords) {
+  const words = String(text || "").trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return words.join(" ");
+  const cut = words.slice(0, maxWords).join(" ");
+  const lastEnd = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "), cut.lastIndexOf("؟ "));
+  if (lastEnd > cut.length * 0.5) return cut.slice(0, lastEnd + 1);
+  return cut;
 }
+
+function normalizeAd(raw) {
+  const headline = limitWords(String(raw.headline || raw.idea || "").replace(/["“”«»]/g, "").replace(/[.\s]+$/, ""), AD_HEADLINE_MAX_WORDS);
+  const caption = limitCaption(raw.caption, AD_CAPTION_MAX_WORDS);
+  const cta = limitWords(raw.cta || raw.callToAction || "", AD_CTA_MAX_WORDS);
+  const hashtags = (Array.isArray(raw.hashtags) ? raw.hashtags : [])
+    .map((h) => String(h || "").trim())
+    .filter(Boolean)
+    .map((h) => (h.startsWith("#") ? h : "#" + h))
+    .slice(0, 5);
+  return { headline, caption, cta, hashtags };
+}
+
 
 // ---------------------------------------------------------------------------
 // حجز محاولة توليد ذرّياً من Firestore (Transaction) — يُنفَّذ إلزامياً قبل أي استدعاء
@@ -1069,6 +1077,8 @@ async function reserveGenerationSlot(uid) {
     transaction.update(userRef, {
       generationsUsed: reservedGenerationsUsed,
       lastResetMonth: nowKey,
+      // Both monthly counters share lastResetMonth, so a new month resets the design counter too.
+      ...(wasReset ? { designsUsed: 0 } : {}),
     });
 
     return { realPlan, limits, generationsUsed: reservedGenerationsUsed, wasReset };
@@ -1110,7 +1120,7 @@ app.post("/api/generate-content", async (req, res) => {
       });
     }
 
-    const { days, businessDescription, language, tone, goal, platform, sourceText, visualStyle } = req.body;
+    const { businessDescription, language, tone, goal, platform, sourceText, offer } = req.body;
 
     const description = typeof businessDescription === "string" ? businessDescription.trim() : "";
     if (!description) {
@@ -1187,63 +1197,20 @@ app.post("/api/generate-content", async (req, res) => {
       "[server.js] المستخدم=" + uid + " الباقة الحقيقية (من Firestore)=" + realPlan +
       " الاستهلاك الشهري بعد حجز هذه المحاولة=" + generationsUsed + "/" + limits.maxGenerationsPerMonth
     );
-
-    // 5) الباقة الحقيقية (من Firestore) هي وحدها التي تحدد عدد الأيام المسموح به — وليس أي قيمة من العميل.
+    // 5) One generation = one complete ad, on every plan (max days is always 1).
     const isFree = realPlan === "free";
-    const limit = isFree ? 1 : Math.min(parseInt(days) || 5, limits.maxDays);
+    const limit = 1;
 
-    // TASK 3 ("PREMIUM-EXCLUSIVE UPSELL FIELD") — اعتراض صريح لأي محاولة من باقة Free أو Pro
-    // لتمرير visualStyle مخصّص. هذا التحقق مستقل تماماً عن أي حجب في الواجهة (App.js): حتى لو
-    // تلاعب عميل مباشرة بالطلب المُرسل (Postman، fetch من console المتصفح...)، الخادم هنا هو من
-    // يحسم الأمر فعلياً ويتجاهل القيمة، مع تسجيل محاولة كهذه في اللوج لأغراض المراقبة/الأمان.
-    if (
-      realPlan !== "premium" &&
-      typeof visualStyle === "string" &&
-      visualStyle.trim() &&
-      visualStyle.trim().toLowerCase() !== "auto"
-    ) {
-      console.warn(
-        '[server.js] ⚠️ تجاهل visualStyle مخصّص ("' + visualStyle.trim().slice(0, 60) + '") من طلب بباقة ' +
-        realPlan + " (uid=" + uid + ") — هذا الحقل حصري لباقة Premium فقط، تم إجباره على \"auto\"."
-      );
-    }
-    console.log(
-      "[server.js] البيانات المستلمة: realPlan=" + realPlan + " limit=" + limit + "/" + limits.maxDays +
-      " وصف المشروع (أول 40 حرفاً): \"" + description.slice(0, 40) + (description.length > 40 ? "..." : "") + "\""
-    );
-
-    // التحقق من وجود مناسبة مغربية/إسلامية قريبة (خلال OCCASION_LOOKAHEAD_DAYS يوماً) لربط الفكرة بها إن كانت مناسبة.
     const upcomingOccasion = findUpcomingOccasion(new Date(), OCCASION_LOOKAHEAD_DAYS);
-    console.log(
-      "[server.js] المناسبة القادمة القريبة: " +
-        (upcomingOccasion
-          ? upcomingOccasion.name + " (خلال " + upcomingOccasion.daysUntil + " يوم، بتاريخ " + upcomingOccasion.date + ")"
-          : "لا توجد مناسبة خلال " + OCCASION_LOOKAHEAD_DAYS + " يوماً القادمة")
-    );
 
-    // ميزات PRO/PREMIUM: لغة كتابة صريحة، إعادة تدوير محتوى من نص مصدر، وأوامر صور تلقائية.
-    // كلها مقيَّدة بالباقة الحقيقية من Firestore (realPlan) وليس بأي قيمة يرسلها العميل عن نفسه:
-    // - language و sourceText: متاحان لأي باقة غير مجانية (PRO أو PREMIUM).
-    // - includeImagePrompt: PREMIUM فقط.
-    // الباقة المجانية (isFree) تبقى معزولة تماماً عن كل هذا — buildFreeTierPrompt لا يستقبلها إطلاقاً.
-    const includeImagePrompt = !isFree && realPlan === "premium";
-
+    // Paid-only writing options. The real plan (from Firestore) decides, never the client.
     let extraInstructions = "";
-    // مُعرَّفة هنا (بدل داخل كتلة if (!isFree) فقط) لأنها تُستخدم لاحقاً أيضاً عند حفظ وثيقة
-    // هذا التوليد في Firestore (راجع حفظ collections/generations أدناه) — نحتاج نفس القيم
-    // النظيفة هناك، وليس فقط عند بناء الـ prompt.
     let cleanLanguage = "";
     let cleanTone = "";
     let cleanGoal = "";
     let cleanPlatform = "";
     let cleanSourceText = "";
-    // القيمة الافتراضية "auto" (وليس "" كبقية الحقول أعلاه) لأنها تُحفظ لاحقاً في Firestore
-    // (راجع أدناه) بنفس اصطلاح tone/goal/platform ("auto" حين لا يوجد اختيار صريح)، وتبقى
-    // "auto" دائماً لأي باقة غير Premium بصرف النظر عمّا أُرسل فعلياً (راجع فحص الاعتراض أعلاه).
-    let cleanVisualStyle = "auto";
     if (!isFree) {
-      // حماية بسيطة من إساءة الاستخدام: نحدّ طول القيم المُرسلة قبل حقنها في الـ prompt
-      // (تفادياً لتضخيم input_tokens بشكل غير متوقع أو محاولة حقن تعليمات مفرطة الطول).
       cleanLanguage =
         typeof language === "string" && language.trim() ? language.trim().slice(0, 60) : "";
       cleanTone =
@@ -1253,14 +1220,9 @@ app.post("/api/generate-content", async (req, res) => {
       cleanPlatform =
         typeof platform === "string" && platform.trim() ? platform.trim().slice(0, 40) : "";
       cleanSourceText =
-        typeof sourceText === "string" && sourceText.trim() ? sourceText.trim().slice(0, 6000) : "";
-
-      // التوجيه الفني للصور (visualStyle) — حصري لباقة Premium فقط، خلافاً لبقية الحقول أعلاه
-      // المتاحة لأي باقة غير مجانية (realPlan !== "free"). طلب من Pro يصل إلى هنا (لأن الشرط
-      // المحيط هو !isFree فقط) لكن realPlan === "premium" يفشل، فتبقى القيمة "auto" كما هي.
-      if (realPlan === "premium" && typeof visualStyle === "string" && visualStyle.trim() && visualStyle.trim().toLowerCase() !== "auto") {
-        cleanVisualStyle = visualStyle.trim().slice(0, 60);
-      }
+        realPlan === "premium" && typeof sourceText === "string" && sourceText.trim()
+          ? sourceText.trim().slice(0, 6000)
+          : "";
 
       extraInstructions = buildExtraInstructions({
         language: cleanLanguage,
@@ -1268,37 +1230,18 @@ app.post("/api/generate-content", async (req, res) => {
         goal: cleanGoal,
         platform: cleanPlatform,
         sourceText: cleanSourceText,
-        // "auto" لا يجب أن يُحقَن كتعليمة صريحة في الـ prompt — فقط قيمة مختارة فعلياً تُمرَّر.
-        visualStyle: cleanVisualStyle !== "auto" ? cleanVisualStyle : "",
-        includeImagePrompt,
+        visualStyle: "",
+        includeImagePrompt: false,
       });
-
-      if (cleanLanguage || cleanTone || cleanGoal || cleanPlatform || cleanSourceText || cleanVisualStyle !== "auto" || includeImagePrompt) {
-        console.log(
-          "[server.js] ميزات PRO/PREMIUM مُفعَّلة لهذا الطلب — " +
-          "لغة مخصّصة=" + (cleanLanguage || "لا") +
-          " | نبرة=" + (cleanTone || "لا") +
-          " | هدف=" + (cleanGoal || "لا") +
-          " | منصة=" + (cleanPlatform || "لا") +
-          " | إعادة تدوير محتوى=" + (cleanSourceText ? "نعم (" + cleanSourceText.length + " حرف)" : "لا") +
-          " | التوجيه الفني للصور (Premium فقط)=" + (cleanVisualStyle !== "auto" ? cleanVisualStyle : "لا") +
-          " | أوامر صور تلقائية=" + (includeImagePrompt ? "نعم" : "لا")
-        );
-      }
     }
 
-    // max_tokens هو سقف أقصى فقط (لا يُدفع عنه إن لم يُستخدم بالكامل)، لكنه مضبوط بقيمة ثابتة
-    // لكل باقة (FREE=1000, PRO=10000, PREMIUM=25000) بدل الحساب الديناميكي السابق، لضمان توفّر
-    // هامش كافٍ حتى لأطول سبرنت (7 أيام كحد أقصى، راجع PLAN_LIMITS.maxDays) دون انقطاع رد
-    // الـ JSON قبل اكتماله.
+    const cleanOffer = typeof offer === "string" && offer.trim() ? offer.trim().slice(0, 120) : "";
+
     const model = isFree ? MODEL_FREE : MODEL_PAID;
     const maxTokens = getPlanMaxTokens(realPlan);
-    const prompt = isFree
-      ? buildFreeTierPrompt(description, upcomingOccasion)
-      : buildPrompt(limit, description, upcomingOccasion, { extraInstructions, includeImagePrompt });
+    const prompt = buildAdPrompt(description, upcomingOccasion, { extraInstructions, offer: cleanOffer });
     console.log(
-      "[server.js] إرسال الطلب إلى Claude API (model=" + model + ", max_tokens=" + maxTokens +
-      ", الباقة=" + realPlan + ", عدد الأفكار المطلوبة من النموذج=" + limit + ")..."
+      "[server.js] Calling Claude (model=" + model + ", max_tokens=" + maxTokens + ", plan=" + realPlan + ") for one ad..."
     );
 
     const response = await anthropic.messages.create({
@@ -1306,144 +1249,72 @@ app.post("/api/generate-content", async (req, res) => {
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     });
-    console.log("[server.js] تم استلام رد من Claude API.");
 
-    // --- تتبّع استهلاك التوكنز والتكلفة الفعلية لهذا الاستدعاء ---
     if (response.usage) {
-      const inTok = response.usage.input_tokens ?? 0;
-      const outTok = response.usage.output_tokens ?? 0;
-      const cacheRead = response.usage.cache_read_input_tokens ?? 0;
-      const cacheCreate = response.usage.cache_creation_input_tokens ?? 0;
-
       console.log(
-        "[server.js] 💰 استهلاك التوكنز — input_tokens=" + inTok +
-        " output_tokens=" + outTok +
-        " (الإجمالي=" + (inTok + outTok) + ")" +
-        (cacheRead || cacheCreate ? " [cache_read=" + cacheRead + " cache_creation=" + cacheCreate + "]" : "") +
-        " | الباقة=" + realPlan + " | model=" + model
+        "[server.js] tokens: input=" + (response.usage.input_tokens ?? 0) +
+        " output=" + (response.usage.output_tokens ?? 0) +
+        " stop_reason=" + (response.stop_reason || "n/a") + " plan=" + realPlan + " model=" + model
       );
-
-      // معادلة التكلفة: (input_tokens ÷ 1,000,000 × 3) + (output_tokens ÷ 1,000,000 × 15)
-      // تنبيه مهم: هذه تسعيرة Sonnet ($3 لكل مليون input، $15 لكل مليون output). الباقة المجانية
-      // تستخدم Haiku، وهو أرخص بكثير من هذا — لذا الرقم المطبوع لطلبات الباقة المجانية هو سقف
-      // تقديري أعلى من التكلفة الحقيقية فعلياً، وليس التكلفة الدقيقة لـ Haiku.
-      const costUSD = (inTok / 1000000) * 3 + (outTok / 1000000) * 15;
-      console.log(
-        "[server.js] 💵 التكلفة التقديرية بتسعيرة Sonnet ($3/$15 لكل مليون توكن): $" +
-        costUSD.toFixed(6) +
-        (isFree ? "  (تنبيه: هذا الطلب استخدم Haiku الأرخص فعلياً — التكلفة الحقيقية أقل من هذا الرقم)" : "")
-      );
-
-      console.log("[server.js] 🛑 stop_reason: " + (response.stop_reason || "غير متوفر"));
-    } else {
-      console.warn("[server.js] تحذير: رد Claude API لا يحتوي على حقل usage — لا يمكن تتبع التوكنز أو التكلفة لهذا الطلب.");
-      console.log("[server.js] 🛑 stop_reason: " + (response.stop_reason || "غير متوفر"));
     }
 
     const rawText = response.content
       .filter((block) => block.type === "text")
       .map((block) => block.text)
       .join("\n");
-    console.log("[server.js] طول نص الرد: " + rawText.length + " حرف. جارٍ تحليل JSON...");
-
-    // حارس البتر: عندما يبلغ النموذج سقف max_tokens يتوقف في منتصف الجملة، فيصل
-    // JSON غير مكتمل ويفشل extractJson برسالة عامة لا تدل على السبب. هذا السطر يجعل
-    // السبب الحقيقي ظاهراً في سجلّ Vercel مباشرة، حتى لا يُبحث عنه في المكان الخطأ.
-    if (response.stop_reason === "max_tokens") {
-      console.error(
-        "[server.js] ⛔ بُتر الرد: بلغ النموذج سقف max_tokens (" + maxTokens + ") للباقة " +
-        realPlan + ". ارفع القيمة في PLAN_MAX_TOKENS أعلاه."
-      );
-    }
 
     const parsed = extractJson(rawText);
-
-    if (!parsed || !Array.isArray(parsed.content)) {
+    const rawAd = parsed && (parsed.ad || (Array.isArray(parsed.content) ? parsed.content[0] : null));
+    if (!rawAd || typeof rawAd !== "object") {
       throw new Error(
         response.stop_reason === "max_tokens"
-          ? "رد النموذج وصل مبتوراً (بلغ سقف max_tokens) فلم يكتمل الـ JSON"
-          : "رد النموذج لا يحتوي على مصفوفة content صالحة"
-      );
-    }
-    console.log("[server.js] تم تحليل JSON بنجاح. عدد الأفكار المستلمة: " + parsed.content.length);
-
-    if (isFree && parsed.content.length > 1) {
-      console.warn(
-        "[server.js] تنبيه: الباقة مجانية لكن النموذج أعاد " + parsed.content.length +
-        " فكرة بدل فكرة واحدة فقط (تم تجاهل الباقي، لكن تكلفة توليدها دُفعت بالفعل ضمن output_tokens أعلاه)."
+          ? "model reply was cut off (max_tokens) before the JSON was complete"
+          : "model reply does not contain a valid ad object"
       );
     }
 
-    const realContent = parsed.content.slice(0, limit).map((item, idx) => ({
-      day: idx + 1,
-      locked: false,
-      idea: item.idea || "",
-      caption: item.caption || "",
-      hashtags: Array.isArray(item.hashtags) ? item.hashtags : [],
-      bestTime: item.bestTime || "",
-      imageIdea: item.imageIdea || "",
-      imagePrompt: item.imagePrompt || "",
-      videoIdea: item.videoIdea || "",
-      shotAngle: item.shotAngle || "",
-    }));
-
-    let content = realContent;
-    if (isFree) {
-      // لا نستدعي Claude أبداً لباقي الأيام (2 إلى 30) — فقط عناوين ثابتة كبطاقات مقفلة.
-      const lockedStubs = buildLockedDayStubs(2, 30);
-      content = realContent.concat(lockedStubs);
-      console.log(
-        "[server.js] الباقة مجانية: فكرة حقيقية واحدة (يوم 1) + " + lockedStubs.length +
-        " بطاقة مقفلة (بدون أي استدعاء Claude لها، توفيراً لتكلفة API)."
-      );
+    const ad = normalizeAd(rawAd);
+    if (!ad.headline || !ad.caption) {
+      throw new Error("model reply is missing the headline or the caption");
     }
 
-    // 6) عداد التوليد الشهري تمت زيادته بالفعل عند "حجز" هذه المحاولة في reserveGenerationSlot
-    //    أعلاه (قبل استدعاء Claude API)، وليس هنا — هذا مقصود لسدّ ثغرة سباق الطلبات المتزامنة
-    //    (راجع تعليق الدالة). لا حاجة لأي تحديث إضافي على Firestore في حالة النجاح.
+    // "content" keeps the array shape the frontend already consumes. "idea" mirrors the
+    // headline so any older reader of this response still has a title to show.
+    const content = [
+      {
+        day: 1,
+        locked: false,
+        idea: ad.headline,
+        headline: ad.headline,
+        caption: ad.caption,
+        cta: ad.cta,
+        hashtags: ad.hashtags,
+      },
+    ];
+
     console.log(
-      "[server.js] ✅ التوليد نجح — العداد الشهري (محجوز مسبقاً)=" +
-      generationsUsed + "/" + limits.maxGenerationsPerMonth + " (باقة " + realPlan + ")"
+      "[server.js] ✅ ad generated — monthly text ads (already reserved)=" +
+      generationsUsed + "/" + limits.maxGenerationsPerMonth + " (plan " + realPlan + ")"
     );
 
-    // 7) حفظ نسخة كاملة من هذا التوليد في Firestore تحت المسار:
-    //    collections/generations/{uid}/projects/{docId} — أرشيف/سجل توليدات المستخدم.
-    //
-    //    ⚠️ لم أُضِف "const { getFirestore } = require('firebase-admin/firestore'); const db =
-    //    getFirestore();" هنا كما ورد حرفياً في الطلب: db مُعرَّف ومُهيَّأ مرة واحدة فقط أعلى
-    //    الملف (getFirestore() نفسها، عند نجاح تهيئة Firebase Admin SDK). إعادة الإعلان عنه بنفس
-    //    الاسم "db" في هذا النطاق كانت ستُسبب خطأ JavaScript حقيقي عند تشغيل الخادم
-    //    ("SyntaxError: Identifier 'db' has already been declared") ويمنعه من الإقلاع كلياً —
-    //    لذلك استخدمت نفس db الموجود فعلاً بدل تكرار تعريفه.
-    //
-    //    نحفظ فقط الأيام الحقيقية المولَّدة فعلياً من Claude (realContent) وليس بطاقات الباقة
-    //    المجانية المقفلة (buildLockedDayStubs) — لا يوجد محتوى فعلي فيها لتستحق الأرشفة.
-    const generatedContentForStorage = realContent.map((item) => ({
-      day: item.day,
-      post: item.caption,
-      platform: cleanPlatform || "Instagram",
-    }));
-
-    // الحفظ والرد على الواجهة معاً داخل try/catch واحد فقط، ولا يوجد أي try/catch آخر يخفي
-    // فشل الحفظ: نجاح الحفظ ينتهي بـ res.json() مباشرة، وفشله ينتهي بـ res.status(500) مباشرة —
-    // لا مسار وسيط "ينجح رغم فشل الحفظ" كما كان في نسخة سابقة من هذا الكود.
     try {
+      // "generatedContent" keeps the legacy shape so History can show old 7-day items and
+      // new ads with the same code path; "ad" holds the full new structure.
       const docRef = await db.collection("generations").doc(uid).collection("projects").add({
         createdAt: new Date(),
+        kind: "ad",
         projectDescription: description,
         days: limit,
         language: cleanLanguage,
         plan: realPlan,
-        generatedContent: generatedContentForStorage,
+        ad: ad,
+        generatedContent: [{ day: 1, post: ad.caption, platform: cleanPlatform || "Instagram" }],
         tone: cleanTone || "auto",
         goal: cleanGoal || "auto",
         platform: cleanPlatform || "auto",
-        visualStyle: cleanVisualStyle,
       });
       console.log(`✅ محفوظ في Firestore: ${docRef.id}`);
 
-      // الرد للفرونتاند يأتي مباشرة بعد نجاح الحفظ، ضمن نفس كتلة try — وليس بعدها كخطوة منفصلة.
-      console.log("[server.js] نجح التوليد. إرسال " + content.length + " عنصر إلى الواجهة.");
       res.json({
         success: true,
         docId: docRef.id,
@@ -1630,6 +1501,19 @@ app.post("/api/micro-tool", async (req, res) => {
 // "export default app" أدناه)؛ استدعاء app.listen() هناك غير ضروري (Vercel لا يستخدم منفذاً
 // طويل الأمد) وقد يسبب مشاكل مع إعادة استخدام الدالة (lambda) بين الطلبات. process.env.VERCEL
 // يُضبط تلقائياً بالقيمة "1" بواسطة منصة Vercel نفسها في كل بيئة تشغيل هناك.
+// Ad design endpoints (/api/quota, /api/design/*) live in backend/adDesign.js.
+registerAdDesignRoutes(app, {
+  getDb: () => db,
+  verifyFirebaseToken,
+  anthropic,
+  hasAnthropicKey: () => Boolean(ANTHROPIC_API_KEY),
+  loadEnvVar,
+  getPlanLimits,
+  currentMonthKey,
+  FieldValue,
+  visionModel: MODEL_PAID,
+});
+
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log("Backend running on http://localhost:" + PORT);
