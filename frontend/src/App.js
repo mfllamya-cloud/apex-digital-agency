@@ -66,6 +66,21 @@ const PLAN_DESIGN_STYLES = {
   premium: ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"],
 };
 
+// Texts drawn on the ad design. chips = benefit titles; chipDetails = their one-line
+// explanations; the icons come with the generated ad and are not edited.
+const EMPTY_DESIGN_TEXTS = {
+  headline: "",
+  subheadline: "",
+  badge: "",
+  highlight: "",
+  chips: ["", "", ""],
+  chipDetails: ["", "", ""],
+  chipIcons: [],
+  qualities: ["", "", "", ""],
+  qualityIcons: [],
+  cta: "",
+};
+
 // Shared look of the text inputs added with the ad tool (same as the form's selects).
 const adInputStyle = {
   width: "100%",
@@ -618,7 +633,7 @@ function AppContent() {
   const [adDocId, setAdDocId] = useState(""); // Firestore id of the ad just generated
   const [product, setProduct] = useState(""); // "What are you advertising?" (required, all plans)
   // Texts drawn on the design. Prefilled from the generated ad, editable before the design is made.
-  const [designTexts, setDesignTexts] = useState({ headline: "", subheadline: "", badge: "", chips: ["", "", ""], cta: "" });
+  const [designTexts, setDesignTexts] = useState(EMPTY_DESIGN_TEXTS);
   const [designResult, setDesignResult] = useState(null); // { jobId, scenes, design, redoAvailable }
   const [designBusy, setDesignBusy] = useState(false);
   const [designError, setDesignError] = useState(""); // failure reason of the last attempt
@@ -795,9 +810,28 @@ function AppContent() {
       headline: limitWords(designTexts.headline, 8),
       subheadline: limitWords(designTexts.subheadline, 10),
       badge: limitWords(designTexts.badge, 3),
-      chips: designTexts.chips.map((c) => limitWords(c, 3)).filter(Boolean).slice(0, 3),
+      highlight: limitWords(designTexts.highlight, 3),
       cta: limitWords(designTexts.cta, 4),
+      chips: [],
+      chipDetails: [],
+      chipIcons: [],
+      qualities: [],
+      qualityIcons: [],
     };
+    // Keep each benefit with its explanation and icon, and each quality with its icon.
+    designTexts.chips.forEach((title, i) => {
+      const clean = limitWords(title, 3);
+      if (!clean) return;
+      texts.chips.push(clean);
+      texts.chipDetails.push(limitWords(designTexts.chipDetails[i], 7));
+      texts.chipIcons.push(designTexts.chipIcons[i] || "check");
+    });
+    designTexts.qualities.forEach((label, i) => {
+      const clean = limitWords(label, 2);
+      if (!clean) return;
+      texts.qualities.push(clean);
+      texts.qualityIcons.push(designTexts.qualityIcons[i] || "star");
+    });
     const base = {
       ...texts,
       brandName: designFields.brandName.trim(),
@@ -910,12 +944,18 @@ function AppContent() {
         setResults(data.content);
         setAdDocId(data.docId || "");
         const first = (data.content || []).find((item) => !item.locked) || {};
-        const benefits = Array.isArray(first.benefits) ? first.benefits : [];
+        const arr = (v) => (Array.isArray(v) ? v : []);
+        const pad = (v, n) => Array.from({ length: n }, (_, i) => arr(v)[i] || "");
         setDesignTexts({
           headline: first.headline || first.idea || "",
           subheadline: first.subheadline || "",
           badge: first.offerBadge || "",
-          chips: [benefits[0] || "", benefits[1] || "", benefits[2] || ""],
+          highlight: first.highlight || "",
+          chips: pad(first.benefits, 3),
+          chipDetails: pad(first.benefitDetails, 3),
+          chipIcons: arr(first.benefitIcons),
+          qualities: pad(first.qualities, 4),
+          qualityIcons: arr(first.qualityIcons),
           cta: first.cta || "",
         });
         designRunRef.current += 1; // drops any design still running for the previous ad
@@ -1769,10 +1809,9 @@ function AppContent() {
                         style={adInputStyle}
                       />
                       <label className="agency-form-label">{t("ads.chipsEditLabel")}</label>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.6rem" }}>
-                        {[0, 1, 2].map((i) => (
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(140px, 1fr) minmax(180px, 2fr)", gap: "0 0.6rem" }}>
                           <input
-                            key={i}
                             type="text"
                             dir="auto"
                             value={designTexts.chips[i] || ""}
@@ -1784,8 +1823,49 @@ function AppContent() {
                             }}
                             style={adInputStyle}
                           />
+                          <input
+                            type="text"
+                            dir="auto"
+                            value={designTexts.chipDetails[i] || ""}
+                            maxLength={60}
+                            placeholder={t("ads.benefitDetailPlaceholder")}
+                            onChange={(e) => {
+                              const chipDetails = designTexts.chipDetails.slice();
+                              chipDetails[i] = e.target.value;
+                              setDesignTexts({ ...designTexts, chipDetails });
+                            }}
+                            style={adInputStyle}
+                          />
+                        </div>
+                      ))}
+                      <label className="agency-form-label">{t("ads.qualitiesEditLabel")}</label>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0 0.6rem" }}>
+                        {[0, 1, 2, 3].map((i) => (
+                          <input
+                            key={i}
+                            type="text"
+                            dir="auto"
+                            value={designTexts.qualities[i] || ""}
+                            maxLength={24}
+                            onChange={(e) => {
+                              const qualities = designTexts.qualities.slice();
+                              qualities[i] = e.target.value;
+                              setDesignTexts({ ...designTexts, qualities });
+                            }}
+                            style={{ ...adInputStyle, marginBottom: "0.4rem" }}
+                          />
                         ))}
                       </div>
+                      <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.8rem" }}>{t("ads.qualitiesHint")}</p>
+                      <label className="agency-form-label">{t("ads.highlightEditLabel")}</label>
+                      <input
+                        type="text"
+                        dir="auto"
+                        value={designTexts.highlight}
+                        maxLength={24}
+                        onChange={(e) => setDesignTexts({ ...designTexts, highlight: e.target.value })}
+                        style={adInputStyle}
+                      />
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0 0.8rem" }}>
                         <div>
                           <label className="agency-form-label">{t("ads.badgeEditLabel")}</label>
@@ -1932,7 +2012,14 @@ function AppContent() {
                 {[
                   { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || ad.idea || "" },
                   { key: "subheadline", label: t("ads.subheadlineLabel"), text: ad.subheadline || "" },
-                  { key: "benefits", label: t("ads.benefitsLabel"), text: (ad.benefits || []).join(" · ") },
+                  {
+                    key: "benefits",
+                    label: t("ads.benefitsLabel"),
+                    text: (ad.benefits || [])
+                      .map((b, i) => (ad.benefitDetails && ad.benefitDetails[i] ? b + " — " + ad.benefitDetails[i] : b))
+                      .join("\n"),
+                  },
+                  { key: "qualities", label: t("ads.qualitiesLabel"), text: (ad.qualities || []).join(" · ") },
                   { key: "badge", label: t("ads.badgeLabel"), text: ad.offerBadge || "" },
                   { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
                 ]
@@ -1960,6 +2047,7 @@ function AppContent() {
                           fontSize: row.key === "headline" ? "1.2rem" : "0.98rem",
                           fontWeight: row.key === "headline" ? 800 : 400,
                           lineHeight: 1.5,
+                          whiteSpace: "pre-wrap",
                         }}
                       >
                         {row.text}

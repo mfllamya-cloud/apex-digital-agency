@@ -3,12 +3,16 @@
 // <canvas>: brand, headline, subheadline, benefit chips, call-to-action button, offer badge.
 // The AI only produces the scene (the customer's real product in a setting, no text, no logo).
 //
-// Layout principle: the ad is split in two zones that never overlap.
-//   - a colour PANEL (designed shape, built from the palette) that carries all the text;
-//   - a SCENE region, clipped to its own area, where the product is the hero.
-// The scene is generated at the size of its region with the product boxed inside it (see
-// SCENE_LAYOUTS in backend/adDesign.js — the two tables must stay in step), so text can never
-// cover the product, in any style, format or language.
+// Layout principle: text zones and the product zone never overlap.
+//   - colour PANELS and shapes (built from the palette) carry all the text;
+//   - the SCENE is clipped to its own region, where the product is the hero.
+// One square scene is generated per design, with the product boxed in its centre (SCENE_PADDING
+// in backend/adDesign.js). Every layout here crops that same square around the product box, so
+// all formats show the same concept and text can never cover the product.
+//
+// Formats: 4:5 is the "feature poster" (brand, headline, tagline, product, three benefits with
+// icon and explanation, badge, button, strip of product qualities). 1:1 and 9:16 are the panel
+// layouts.
 //
 // Each style has its own look (panel colour, type, shapes). The "variant" number changes the
 // panel side, the edge shape and, in 9:16, whether the panel is above or below the product, so
@@ -18,6 +22,7 @@
 // ---------------------------------------------------------------------------
 
 export const AD_FORMATS = {
+  "4:5": { width: 1080, height: 1350, label: "1080 × 1350" },
   "1:1": { width: 1080, height: 1080, label: "1080 × 1080" },
   "9:16": { width: 1080, height: 1920, label: "1080 × 1920" },
 };
@@ -652,7 +657,7 @@ function styleTokens(style, palette) {
       button: { fill: pop, text: onColor(pop), radius: 12, uppercase: true, outline: false, shadow: true },
       chip: { bg: "rgba(255,255,255,0.16)", border: null, text: ink, icon: pop, iconMark: onColor(pop) },
       badge: { fill: pop, text: onColor(pop), ring: rgba(onColor(pop), 0.45), rotate: -12, burst: true },
-      align: "start",
+      align: "start", strip: { bg: "#0e0e10", ink: "#ffffff", icon: pop }, iconDisc: "rgba(255,255,255,0.16)", iconInk: "#ffffff",
     };
   }
   if (style === "luxury_dark") {
@@ -663,7 +668,7 @@ function styleTokens(style, palette) {
       button: { fill: gold, text: gold, radius: 999, uppercase: true, outline: true, shadow: false },
       chip: { bg: null, border: rgba(gold, 0.55), text: "#f6f0e2", icon: gold, iconMark: "#0b0b0d" },
       badge: { fill: "#0b0b0d", text: gold, ring: gold, rotate: 0, burst: false },
-      align: "center",
+      align: "center", strip: { bg: "#16161a", ink: "#f6f0e2", icon: gold }, iconDisc: rgba(gold, 0.14), iconInk: gold,
     };
   }
   if (style === "lifestyle_scene") {
@@ -675,7 +680,7 @@ function styleTokens(style, palette) {
       button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
       chip: { bg: rgba(accent, 0.12), border: null, text: "#1d1b18", icon: accent, iconMark: onColor(accent) },
       badge: { fill: c2, text: onColor(c2), ring: rgba(onColor(c2), 0.4), rotate: -10, burst: false },
-      align: "start",
+      align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.13), iconInk: accent,
     };
   }
   // clean_studio: airy tint of the brand colour, dark ink, precise shapes.
@@ -687,88 +692,59 @@ function styleTokens(style, palette) {
     button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
     chip: { bg: "#ffffff", border: rgba(accent, 0.3), text: "#101114", icon: accent, iconMark: onColor(accent) },
     badge: { fill: accent, text: onColor(accent), ring: rgba(onColor(accent), 0.45), rotate: -8, burst: false },
-    align: "start",
+    align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.12), iconInk: accent,
   };
 }
 
 // --- geometry ---------------------------------------------------------------
-// Scene regions here must match SCENE_LAYOUTS in backend/adDesign.js.
+// The scene is one 1024 x 1024 image with the product boxed in its centre. Each region below
+// crops it ("cover", centred), so the product box always lands inside the region.
+// ⚠️ SCENE_BOX mirrors SCENE_PADDING in backend/adDesign.js (fractions of the scene size).
+export const SCENE_BOX = {
+  portrait: { x0: 308 / 1024, x1: 716 / 1024, y0: 190 / 1024, y1: 948 / 1024 },
+  landscape: { x0: 130 / 1024, x1: 894 / 1024, y0: 300 / 1024, y1: 750 / 1024 },
+};
 
 function geometry(format, variant, landscape, rtl, style) {
   const edge = EDGE_BY_STYLE[style][variant % 3];
   if (format === "9:16") {
     const W = 1080;
     const H = 1920;
-    const top = variant % 2 === 0;
-    if (top) {
-      // Panel above (content below the 220 px interface zone), product below.
-      const edgeTop = (ctx, move) => {
-        if (edge === "diagonal") {
-          if (move) ctx.moveTo(W, rtl ? 1040 : 962);
-          else ctx.lineTo(W, rtl ? 1040 : 962);
-          ctx.lineTo(0, rtl ? 962 : 1040);
-        } else if (edge === "curve") {
-          if (move) ctx.moveTo(W, 962);
-          else ctx.lineTo(W, 962);
-          ctx.quadraticCurveTo(W / 2, 1086, 0, 962);
-        } else {
-          if (move) ctx.moveTo(W, 1000);
-          else ctx.lineTo(W, 1000);
-          ctx.lineTo(0, 1000);
-        }
-      };
-      return {
-        W, H, kind: "top", edge, mirror: rtl,
-        scene: { x: 0, y: 950, w: W, h: 970 },
-        content: { x: 84, y: 232, w: W - 168, h: 700 },
-        badge: { cx: rtl ? 176 : W - 176, cy: 1040, r: 100 },
-        panel: (ctx) => {
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(W, 0);
-          edgeTop(ctx, false);
-          ctx.closePath();
-        },
-        edgeLine: (ctx) => {
-          ctx.beginPath();
-          edgeTop(ctx, true);
-        },
-      };
-    }
-    // Product above, panel below (content above the 300 px interface zone).
+    // Product above (clear of the 220 px interface zone at the top), panel below (content
+    // above the 300 px interface zone at the bottom).
     return {
       W, H, kind: "bottom", edge, mirror: rtl,
-      scene: { x: 0, y: 0, w: W, h: 1120 },
-      content: { x: 84, y: 1150, w: W - 168, h: 462 },
+      scene: { x: 0, y: 0, w: W, h: 1140 },
+      content: { x: 84, y: 1172, w: W - 168, h: 440 },
       brandOnScene: { x: 84, y: 236 },
-      badge: { cx: rtl ? 176 : W - 176, cy: 336, r: 100 },
+      badge: { cx: rtl ? 150 : W - 150, cy: 330, r: 92 },
       panel: (ctx) => {
         ctx.beginPath();
         ctx.moveTo(0, H);
         ctx.lineTo(W, H);
         if (edge === "diagonal") {
-          ctx.lineTo(W, rtl ? 1046 : 1114);
-          ctx.lineTo(0, rtl ? 1114 : 1046);
+          ctx.lineTo(W, rtl ? 1080 : 1140);
+          ctx.lineTo(0, rtl ? 1140 : 1080);
         } else if (edge === "curve") {
-          ctx.lineTo(W, 1114);
-          ctx.quadraticCurveTo(W / 2, 1000, 0, 1114);
+          ctx.lineTo(W, 1140);
+          ctx.quadraticCurveTo(W / 2, 1040, 0, 1140);
         } else {
-          ctx.lineTo(W, 1080);
-          ctx.lineTo(0, 1080);
+          ctx.lineTo(W, 1110);
+          ctx.lineTo(0, 1110);
         }
         ctx.closePath();
       },
       edgeLine: (ctx) => {
         ctx.beginPath();
         if (edge === "diagonal") {
-          ctx.moveTo(W, rtl ? 1046 : 1114);
-          ctx.lineTo(0, rtl ? 1114 : 1046);
+          ctx.moveTo(W, rtl ? 1080 : 1140);
+          ctx.lineTo(0, rtl ? 1140 : 1080);
         } else if (edge === "curve") {
-          ctx.moveTo(W, 1114);
-          ctx.quadraticCurveTo(W / 2, 1000, 0, 1114);
+          ctx.moveTo(W, 1140);
+          ctx.quadraticCurveTo(W / 2, 1040, 0, 1140);
         } else {
-          ctx.moveTo(W, 1080);
-          ctx.lineTo(0, 1080);
+          ctx.moveTo(W, 1110);
+          ctx.lineTo(0, 1110);
         }
       },
     };
@@ -839,7 +815,7 @@ function geometry(format, variant, landscape, rtl, style) {
     W, H, kind: "side", edge, mirror: !panelLeft, panelLeft,
     scene: { x: panelLeft ? 460 : 0, y: 0, w: 620, h: H },
     content: { x: panelLeft ? 56 : W - 56 - 376, y: 60, w: 376, h: H - 120 },
-    badge: { cx: fx(506), cy: 150, r: 92 },
+    badge: { cx: fx(506), cy: 132, r: 92 },
     panel: (ctx) => {
       ctx.beginPath();
       ctx.moveTo(fx(0), 0);
@@ -949,8 +925,7 @@ function drawPanel(ctx, g, tk, style, palette) {
 function scaleFor(kind) {
   if (kind === "side") return { headMax: 62, headMin: 34, headLines: 5, sub: 25, subLines: 4, chip: 21, chipH: 44, btnH: 66, btn: 24, logoH: 60, logoW: 240, gap: 26 };
   if (kind === "stack") return { headMax: 62, headMin: 34, headLines: 2, sub: 25, subLines: 2, chip: 20, chipH: 42, btnH: 62, btn: 23, logoH: 52, logoW: 220, gap: 18 };
-  if (kind === "bottom") return { headMax: 76, headMin: 40, headLines: 3, sub: 32, subLines: 2, chip: 26, chipH: 54, btnH: 82, btn: 30, logoH: 84, logoW: 300, gap: 26 };
-  return { headMax: 92, headMin: 44, headLines: 3, sub: 34, subLines: 3, chip: 27, chipH: 56, btnH: 84, btn: 31, logoH: 84, logoW: 300, gap: 30 };
+  return { headMax: 76, headMin: 40, headLines: 3, sub: 31, subLines: 2, chip: 25, chipH: 52, btnH: 80, btn: 29, logoH: 84, logoW: 300, gap: 24 };
 }
 
 function drawContent(ctx, g, tk, d) {
@@ -1053,9 +1028,315 @@ function drawContent(ctx, g, tk, d) {
   }
 }
 
-// Draws the finished ad on the canvas at its export size (1080x1080 or 1080x1920).
+// --- icons ------------------------------------------------------------------
+// Small line icons drawn by code. "name" comes from the ad copy (AD_ICONS in backend/server.js).
+export const AD_ICON_NAMES = ["drop", "leaf", "shield", "sparkle", "clock", "heart", "star", "sun", "bolt", "check", "flower", "award"];
+
+function drawIcon(ctx, name, cx, cy, r, color) {
+  const P = (x, y) => [cx + x * r, cy + y * r];
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = Math.max(2, r * 0.17);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  const M = (x, y) => ctx.moveTo.apply(ctx, P(x, y));
+  const L = (x, y) => ctx.lineTo.apply(ctx, P(x, y));
+  const Q = (a, b, x, y) => ctx.quadraticCurveTo.apply(ctx, P(a, b).concat(P(x, y)));
+  const B = (a, b, c, d, x, y) => ctx.bezierCurveTo.apply(ctx, P(a, b).concat(P(c, d), P(x, y)));
+  const circle = (x, y, rad) => {
+    const p = P(x, y);
+    ctx.moveTo(p[0] + rad * r, p[1]);
+    ctx.arc(p[0], p[1], rad * r, 0, Math.PI * 2);
+  };
+  switch (name) {
+    case "drop":
+      M(0, -0.9); B(0.95, 0.1, 0.7, 0.92, 0, 0.92); B(-0.7, 0.92, -0.95, 0.1, 0, -0.9);
+      break;
+    case "leaf":
+      M(-0.72, 0.72); Q(-0.85, -0.75, 0.78, -0.78); Q(0.8, 0.8, -0.72, 0.72); M(-0.72, 0.72); L(0.2, -0.2);
+      break;
+    case "shield":
+      M(0, -0.9); L(0.76, -0.6); L(0.76, 0.05); Q(0.7, 0.66, 0, 0.94); Q(-0.7, 0.66, -0.76, 0.05); L(-0.76, -0.6); ctx.closePath();
+      M(-0.3, 0.02); L(-0.05, 0.28); L(0.34, -0.2);
+      break;
+    case "sparkle":
+      M(0, -0.92); Q(0.14, -0.14, 0.92, 0); Q(0.14, 0.14, 0, 0.92); Q(-0.14, 0.14, -0.92, 0); Q(-0.14, -0.14, 0, -0.92);
+      break;
+    case "clock":
+      circle(0, 0, 0.84); M(0, -0.46); L(0, 0); L(0.36, 0.2);
+      break;
+    case "heart":
+      M(0, 0.82); B(-1.15, 0.05, -0.62, -0.95, 0, -0.32); B(0.62, -0.95, 1.15, 0.05, 0, 0.82);
+      break;
+    case "sun": {
+      circle(0, 0, 0.36);
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        M(Math.cos(a) * 0.6, Math.sin(a) * 0.6); L(Math.cos(a) * 0.9, Math.sin(a) * 0.9);
+      }
+      break;
+    }
+    case "bolt":
+      M(0.18, -0.92); L(-0.5, 0.12); L(0, 0.12); L(-0.18, 0.92); L(0.5, -0.12); L(0, -0.12); ctx.closePath();
+      break;
+    case "flower": {
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        circle(Math.cos(a) * 0.52, Math.sin(a) * 0.52, 0.3);
+      }
+      circle(0, 0, 0.16);
+      break;
+    }
+    case "award":
+      circle(0, -0.3, 0.5); M(-0.3, 0.14); L(-0.48, 0.92); L(0, 0.62); L(0.48, 0.92); L(0.3, 0.14);
+      break;
+    case "star": {
+      for (let i = 0; i < 10; i++) {
+        const rad = i % 2 === 0 ? 0.92 : 0.4;
+        const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+        if (i === 0) M(Math.cos(a) * rad, Math.sin(a) * rad);
+        else L(Math.cos(a) * rad, Math.sin(a) * rad);
+      }
+      ctx.closePath();
+      break;
+    }
+    default:
+      M(-0.6, 0.05); L(-0.15, 0.5); L(0.66, -0.45);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// --- 4:5 feature poster -----------------------------------------------------
+
+// Clip path of the product card. The variant changes its shape.
+function cardPath(ctx, x, y, w, h, shape) {
+  if (shape === "arch") {
+    const r = w / 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x, y + r);
+    ctx.arc(x + r, y + r, r, Math.PI, 0);
+    ctx.lineTo(x + w, y + h - 36);
+    ctx.arcTo(x + w, y + h, x + w - 36, y + h, 36);
+    ctx.lineTo(x + 36, y + h);
+    ctx.arcTo(x, y + h, x, y + h - 36, 36);
+    ctx.closePath();
+  } else {
+    roundRectPath(ctx, x, y, w, h, shape === "soft" ? 90 : 40);
+  }
+}
+
+function drawSceneInto(ctx, img, x, y, w, h, vignette) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (iw && ih) {
+    const scale = Math.max(w / iw, h / ih);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, x + (w - iw * scale) / 2, y + (h - ih * scale) / 2, iw * scale, ih * scale);
+  }
+  const cx = x + w / 2;
+  const cy = y + h * 0.56;
+  const rad = Math.max(w, h) * 0.8;
+  const vig = ctx.createRadialGradient(cx, cy, rad * 0.45, cx, cy, rad);
+  vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(1, "rgba(0,0,0," + vignette + ")");
+  ctx.fillStyle = vig;
+  ctx.fillRect(x, y, w, h);
+}
+
+function drawPoster(ctx, tk, d, o) {
+  const W = 1080;
+  const H = 1350;
+  const M = 64;
+  const rtl = d.rtl;
+  const hd = tk.headline;
+  ctx.fillStyle = tk.panelBg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Backdrop shapes from the palette, behind everything.
+  ctx.save();
+  ctx.fillStyle = rgba(tk.accent, o.style === "bold_color" ? 0.22 : 0.1);
+  ctx.beginPath();
+  ctx.arc(o.sceneLeft ? 250 : W - 250, 800, 430, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = rgba(tk.accent, o.style === "luxury_dark" ? 0.45 : 0.22);
+  ctx.lineWidth = o.style === "bold_color" ? 30 : 2;
+  ctx.beginPath();
+  ctx.arc(o.sceneLeft ? W - 60 : 60, 120, 210, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  if (o.style === "luxury_dark") {
+    ctx.strokeStyle = rgba(tk.accent, 0.5);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(26, 26, W - 52, H - 52 - 160);
+  }
+
+  // ---- header: brand, headline, tagline (centred) ----
+  const box = { x: M, y: 54, w: W - M * 2, h: 0 };
+  const brand = brandMetrics(ctx, d, 300, 58);
+  let y = box.y;
+  if (brand.kind !== "none") {
+    drawBrand(ctx, d, brand, (W - brand.width) / 2, y, tk.panelBg, tk.ink, false);
+    y += brand.height + 22;
+  }
+  ctx.fillStyle = tk.accent;
+  ctx.fillRect(W / 2 - 40, y, 80, tk.align === "center" ? 2 : 6);
+  y += 24;
+  const headText = hd.upper && !rtl ? d.headline.toUpperCase() : d.headline;
+  const subFit = d.subheadline
+    ? fitText(ctx, d.subheadline, { weight: 500, family: rtl ? FONT_SANS_AR : FONT_SANS, maxSize: 30, minSize: 24, maxWidth: box.w - 80, maxLines: 2, maxHeight: 92, leading: rtl ? 1.5 : 1.36, tracking: 0 })
+    : null;
+  const headerBottom = 404;
+  const headFit = fitText(ctx, headText, {
+    weight: hd.weight, family: rtl ? FONT_SANS_AR : hd.family,
+    maxSize: 80 * hd.boost * (rtl ? 0.88 : 1), minSize: 44, maxWidth: box.w, maxLines: 2,
+    maxHeight: headerBottom - y - (subFit ? subFit.height + 16 : 0), leading: rtl ? 1.3 : hd.leading, tracking: rtl ? 0 : hd.tracking,
+  });
+  // centre the headline block in the header space
+  const blockH = headFit.height + (subFit ? subFit.height + 16 : 0);
+  y += Math.max(0, (headerBottom - y - blockH) / 2);
+  drawFit(ctx, headFit, W / 2, y, "center", tk.ink);
+  y += headFit.height;
+  if (subFit) drawFit(ctx, subFit, W / 2, y + 16, "center", tk.subInk);
+
+  // ---- middle: product card + three benefits ----
+  const y0 = 432;
+  const y1 = 1150;
+  const benefits = d.chips.map((title, i) => ({ title, detail: d.chipDetails[i] || "", icon: d.chipIcons[i] || "check" }));
+  const btnOpts = { size: 27, height: 74, padX: 38, uppercase: tk.button.uppercase };
+  let card;
+  let badgeAt;
+
+  if (o.landscape) {
+    card = { x: M, y: y0, w: W - M * 2, h: 450 };
+    badgeAt = { cx: rtl ? M + 70 : W - M - 70, cy: y0 + 40, r: 84 };
+  } else {
+    card = { x: o.sceneLeft ? M : W - M - 520, y: y0, w: 520, h: y1 - y0 };
+    badgeAt = { cx: o.sceneLeft ? card.x + card.w - 6 : card.x + 6, cy: y0 + 84, r: 88 };
+  }
+
+  // backing shape, then the scene clipped to the card
+  ctx.save();
+  ctx.translate(card.x + card.w / 2, card.y + card.h / 2);
+  ctx.rotate(((o.sceneLeft ? -3 : 3) * Math.PI) / 180);
+  ctx.fillStyle = o.style === "luxury_dark" ? rgba(tk.accent, 0.28) : tk.accent;
+  roundRectPath(ctx, -card.w / 2 + 6, -card.h / 2 + 10, card.w, card.h, 44);
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 16;
+  cardPath(ctx, card.x, card.y, card.w, card.h, o.landscape ? "rect" : o.shape);
+  ctx.fillStyle = "#d9d9d9";
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  cardPath(ctx, card.x, card.y, card.w, card.h, o.landscape ? "rect" : o.shape);
+  ctx.clip();
+  if (o.scene) drawSceneInto(ctx, o.scene, card.x, card.y, card.w, card.h, tk.vignette);
+  ctx.restore();
+  ctx.save();
+  cardPath(ctx, card.x, card.y, card.w, card.h, o.landscape ? "rect" : o.shape);
+  ctx.lineWidth = o.style === "luxury_dark" ? 2 : 5;
+  ctx.strokeStyle = o.style === "luxury_dark" ? tk.accent : "rgba(255,255,255,0.9)";
+  ctx.stroke();
+  ctx.restore();
+
+  const drawBenefit = (b, bx, by, bw, centered) => {
+    const disc = 34;
+    const textRtl = isRtlText(b.title);
+    if (centered) {
+      ctx.fillStyle = tk.iconDisc;
+      ctx.beginPath();
+      ctx.arc(bx + bw / 2, by + disc, disc, 0, Math.PI * 2);
+      ctx.fill();
+      drawIcon(ctx, b.icon, bx + bw / 2, by + disc, disc * 0.52, tk.iconInk);
+      const tf = fitText(ctx, b.title, { weight: 700, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 27, minSize: 20, maxWidth: bw, maxLines: 1, maxHeight: 44, leading: 1.2, tracking: 0 });
+      drawFit(ctx, tf, bx + bw / 2, by + disc * 2 + 12, "center", tk.ink);
+      if (b.detail) {
+        const df = fitText(ctx, b.detail, { weight: 500, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 21, minSize: 17, maxWidth: bw, maxLines: 2, maxHeight: 64, leading: 1.35, tracking: 0 });
+        drawFit(ctx, df, bx + bw / 2, by + disc * 2 + 12 + tf.height + 4, "center", tk.subInk);
+      }
+      return;
+    }
+    const iconCx = rtl ? bx + bw - disc : bx + disc;
+    ctx.fillStyle = tk.iconDisc;
+    ctx.beginPath();
+    ctx.arc(iconCx, by + disc, disc, 0, Math.PI * 2);
+    ctx.fill();
+    drawIcon(ctx, b.icon, iconCx, by + disc, disc * 0.52, tk.iconInk);
+    const tx = rtl ? bx + bw - disc * 2 - 18 : bx + disc * 2 + 18;
+    const tw = bw - disc * 2 - 18;
+    const tf = fitText(ctx, b.title, { weight: 700, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 29, minSize: 20, maxWidth: tw, maxLines: 2, maxHeight: 76, leading: 1.15, tracking: 0 });
+    drawFit(ctx, tf, tx, by + 2, rtl ? "right" : "left", tk.ink);
+    if (b.detail) {
+      const df = fitText(ctx, b.detail, { weight: 500, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 22, minSize: 17, maxWidth: tw, maxLines: 3, maxHeight: 92, leading: 1.35, tracking: 0 });
+      drawFit(ctx, df, tx, by + 2 + tf.height + 6, rtl ? "right" : "left", tk.subInk);
+    }
+  };
+
+  if (o.landscape) {
+    const top = card.y + card.h + 26;
+    const gap = 28;
+    const cw = (W - M * 2 - gap * 2) / 3;
+    benefits.forEach((b, i) => {
+      const col = rtl ? 2 - i : i;
+      drawBenefit(b, M + col * (cw + gap), top, cw, true);
+    });
+    if (d.cta) {
+      const btn = buttonMetrics(ctx, d.cta, { ...btnOpts, height: 58, size: 23, maxWidth: 520 });
+      drawButton(ctx, btn, (W - btn.width) / 2, y1 - 54, { ...tk.button, padX: btnOpts.padX });
+    }
+  } else {
+    const colX = o.sceneLeft ? card.x + card.w + 44 : M;
+    const colW = W - M * 2 - card.w - 44;
+    const rowsTop = y0 + 150; // the badge sits above the first row
+    const rowsBottom = y1 - (d.cta ? btnOpts.height + 30 : 0);
+    const n = Math.max(1, benefits.length);
+    const rowH = (rowsBottom - rowsTop) / n;
+    benefits.forEach((b, i) => drawBenefit(b, colX, rowsTop + i * rowH, colW, false));
+    if (d.cta) {
+      const btn = buttonMetrics(ctx, d.cta, { ...btnOpts, maxWidth: colW });
+      drawButton(ctx, btn, rtl ? colX + colW - btn.width : colX, y1 - btnOpts.height, { ...tk.button, padX: btnOpts.padX });
+    }
+    // The badge sits at the top of the benefits column, touching the card: never on the product.
+    badgeAt = { cx: o.sceneLeft ? colX + 34 : colX + colW - 34, cy: y0 + 64, r: 84 };
+  }
+  drawBadge(ctx, d.badge, badgeAt.cx, badgeAt.cy, badgeAt.r, tk);
+
+  // ---- bottom strip: short product qualities with icons ----
+  const stripY = H - 160;
+  ctx.fillStyle = tk.strip.bg;
+  ctx.fillRect(0, stripY, W, 160);
+  if (o.style === "luxury_dark") {
+    ctx.fillStyle = tk.accent;
+    ctx.fillRect(0, stripY, W, 2);
+  }
+  const items = (d.qualities.length ? d.qualities.map((label, i) => ({ label, icon: d.qualityIcons[i] || "star" })) : d.chips.map((label, i) => ({ label, icon: d.chipIcons[i] || "check" }))).slice(0, 4);
+  const cells = rtl ? items.slice().reverse() : items;
+  const cellW = (W - M) / Math.max(1, cells.length);
+  cells.forEach((it, i) => {
+    const cxm = M / 2 + cellW * i + cellW / 2;
+    drawIcon(ctx, it.icon, cxm, stripY + 54, 20, tk.strip.icon);
+    const lr = isRtlText(it.label);
+    const lf = fitText(ctx, lr ? it.label : it.label.toUpperCase(), { weight: 700, family: lr ? FONT_SANS_AR : FONT_SANS, maxSize: 22, minSize: 15, maxWidth: cellW - 24, maxLines: 2, maxHeight: 56, leading: 1.2, tracking: lr ? 0 : 0.08 });
+    drawFit(ctx, lf, cxm, stripY + 88, "center", tk.strip.ink);
+    if (i > 0) {
+      ctx.fillStyle = rgba(tk.strip.ink, 0.25);
+      ctx.fillRect(M / 2 + cellW * i, stripY + 40, 1.5, 80);
+    }
+  });
+}
+
+// Draws the finished ad on the canvas at its export size (1080x1350, 1080x1080 or 1080x1920).
 //   opts: { format, style, variant, landscape, scene (loaded image), headline, subheadline,
-//           badge, chips [..3], cta, brandName, colors [c1, c2], logo (loaded image or null) }
+//           badge, highlight, chips [..3], chipDetails, chipIcons, qualities [..4], qualityIcons,
+//           cta, brandName, colors [c1, c2], logo (loaded image or null) }
 export function drawAd(canvas, opts) {
   const format = AD_FORMATS[opts.format] ? opts.format : "1:1";
   const style = AD_STYLES.includes(opts.style) ? opts.style : "clean_studio";
@@ -1063,8 +1344,13 @@ export function drawAd(canvas, opts) {
   const data = {
     headline,
     subheadline: String(opts.subheadline || "").trim(),
-    badge: String(opts.badge || "").trim(),
+    // Never an empty spot: with no offer, the badge carries the strongest benefit instead.
+    badge: String(opts.badge || "").trim() || String(opts.highlight || "").trim(),
     chips: (Array.isArray(opts.chips) ? opts.chips : []).map((c) => String(c || "").trim()).filter(Boolean).slice(0, 3),
+    chipDetails: (Array.isArray(opts.chipDetails) ? opts.chipDetails : []).map((c) => String(c || "").trim()),
+    chipIcons: Array.isArray(opts.chipIcons) ? opts.chipIcons : [],
+    qualities: (Array.isArray(opts.qualities) ? opts.qualities : []).map((c) => String(c || "").trim()).filter(Boolean).slice(0, 4),
+    qualityIcons: Array.isArray(opts.qualityIcons) ? opts.qualityIcons : [],
     cta: String(opts.cta || "").trim(),
     brandName: String(opts.brandName || "").trim(),
     logo: opts.logo || null,
@@ -1072,8 +1358,20 @@ export function drawAd(canvas, opts) {
   };
   const palette = normalizePalette(opts.colors && opts.colors[0], opts.colors && opts.colors[1]);
   const variant = Number.isFinite(Number(opts.variant)) ? Math.abs(Math.round(Number(opts.variant))) : 0;
-  const g = geometry(format, variant, Boolean(opts.landscape), data.rtl, style);
   const tk = styleTokens(style, palette);
+  if (format === "4:5") {
+    canvas.width = 1080;
+    canvas.height = 1350;
+    drawPoster(canvas.getContext("2d"), tk, data, {
+      style,
+      scene: opts.scene,
+      landscape: Boolean(opts.landscape),
+      sceneLeft: (variant % 2 === 0) !== data.rtl,
+      shape: ["rect", "arch", "soft"][variant % 3],
+    });
+    return canvas;
+  }
+  const g = geometry(format, variant, Boolean(opts.landscape), data.rtl, style);
 
   canvas.width = g.W;
   canvas.height = g.H;

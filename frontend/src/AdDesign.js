@@ -21,6 +21,7 @@ const LOGO_MAX_SIDE = 480;
 const LOGO_MAX_DATAURL_CHARS = 250000;
 const POLL_INTERVAL_MS = 3500;
 const POLL_MAX_MS = 8 * 60 * 1000;
+const FORMAT_ORDER = ["4:5", "1:1", "9:16"]; // the 4:5 feature poster comes first and carries the caption
 
 export const EMPTY_DESIGN_FIELDS = {
   photo: null, // { dataUrl, thumb, previewUrl, palette }
@@ -615,10 +616,16 @@ function CopyCaptionButton({ text, t }) {
 function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
   const canvasRef = useRef(null);
   const [state, setState] = useState("loading"); // loading | ready | error
-  const { headline, subheadline, badge, cta, brandName, logo, style, variant, landscape } = design;
+  const { headline, subheadline, badge, highlight, cta, brandName, logo, style, variant, landscape } = design;
   const color1 = design.colors && design.colors[0];
   const color2 = design.colors && design.colors[1];
-  const chipsKey = (Array.isArray(design.chips) ? design.chips : []).join("\n");
+  // Lists are joined into strings so the effect below only reruns when their content changes.
+  const list = (v) => (Array.isArray(v) ? v : []).join("\n");
+  const chipsKey = list(design.chips);
+  const detailsKey = list(design.chipDetails);
+  const iconsKey = list(design.chipIcons);
+  const qualitiesKey = list(design.qualities);
+  const qualityIconsKey = list(design.qualityIcons);
 
   useEffect(() => {
     let cancelled = false;
@@ -628,7 +635,7 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
         const [sceneImg, logoImg] = await Promise.all([
           loadSceneImage(user, scene.url, docId, sceneIndex),
           logo ? loadImage(logo).catch(() => null) : Promise.resolve(null),
-          ensureAdFonts([headline, subheadline, badge, cta, brandName, chipsKey].join(" ")),
+          ensureAdFonts([headline, subheadline, badge, highlight, cta, brandName, chipsKey, detailsKey, qualitiesKey].join(" ")),
         ]);
         if (cancelled || !canvasRef.current) return;
         drawAd(canvasRef.current, {
@@ -640,7 +647,12 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
           headline,
           subheadline,
           badge,
+          highlight,
           chips: chipsKey ? chipsKey.split("\n") : [],
+          chipDetails: detailsKey ? detailsKey.split("\n") : [],
+          chipIcons: iconsKey ? iconsKey.split("\n") : [],
+          qualities: qualitiesKey ? qualitiesKey.split("\n") : [],
+          qualityIcons: qualityIconsKey ? qualityIconsKey.split("\n") : [],
           cta,
           brandName,
           colors: [color1, color2],
@@ -654,7 +666,7 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
     return () => {
       cancelled = true;
     };
-  }, [user, docId, sceneIndex, scene.url, scene.format, style, variant, landscape, headline, subheadline, badge, chipsKey, cta, brandName, color1, color2, logo]);
+  }, [user, docId, sceneIndex, scene.url, scene.format, style, variant, landscape, headline, subheadline, badge, highlight, chipsKey, detailsKey, iconsKey, qualitiesKey, qualityIconsKey, cta, brandName, color1, color2, logo]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -680,7 +692,7 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "center", width: story ? "min(100%, 300px)" : "min(100%, 440px)" }}>
       <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "#94a3b8" }}>
-        {t(story ? "ads.format916" : "ads.format11")} · {size.label}
+        {t(story ? "ads.format916" : scene.format === "4:5" ? "ads.format45" : "ads.format11")} · {size.label}
       </div>
       <PostShell
         brandName={brandName}
@@ -713,7 +725,8 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
   );
 }
 
-// The finished ad: one post per format (premium: 1:1 and 9:16), the caption under the first,
+// The finished ad: one post per format (4:5 poster, 1:1, and 9:16 on premium), all drawn from
+// the same scene. The caption sits under the first,
 // the download reminder and the link to the done-for-you video packages.
 export function DesignGallery({ user, docId, scenes, design, post, t, light, showVideoLink }) {
   const list = Array.isArray(scenes) ? scenes : [];
@@ -721,7 +734,7 @@ export function DesignGallery({ user, docId, scenes, design, post, t, light, sho
   // Keep each scene's original index: the server-side image copy is addressed by it.
   const ordered = list
     .map((scene, index) => ({ scene, index }))
-    .sort((a, b) => (a.scene.format === b.scene.format ? 0 : a.scene.format === "1:1" ? -1 : 1));
+    .sort((a, b) => FORMAT_ORDER.indexOf(a.scene.format) - FORMAT_ORDER.indexOf(b.scene.format));
 
   const scrollToPricing = (e) => {
     const target = document.getElementById("pricing");
