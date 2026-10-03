@@ -951,42 +951,54 @@ function buildExtraInstructions({ language, tone, goal, platform, sourceText, vi
 }
 
 // ---------------------------------------------------------------------------
-// One generation = one complete ad (all plans): headline, caption, call to action, hashtags.
-// The word limits below are also enforced in code by normalizeAd(), because the headline is
-// later drawn on the ad design and must fit its template.
+// One generation = one complete ad (all plans). The same copy feeds the post (caption and
+// hashtags) and the ad design (headline, subheadline, offer badge, benefit chips, button), so
+// the image and the post tell the same story.
+// The word limits below are also enforced in code by normalizeAd(), because these texts are
+// later drawn on the ad design and must fit its templates.
 // ---------------------------------------------------------------------------
 const AD_HEADLINE_MAX_WORDS = 8;
+const AD_SUBHEADLINE_MAX_WORDS = 10;
 const AD_CAPTION_MAX_WORDS = 40;
 const AD_CTA_MAX_WORDS = 4;
+const AD_BADGE_MAX_WORDS = 3;
+const AD_BENEFIT_MAX_WORDS = 3;
 
 function buildAdPrompt(businessDescription, occasion, options) {
   const opts = options || {};
   const extraInstructions = opts.extraInstructions || "";
   const offer = opts.offer || "";
+  const product = opts.product || "";
   const occasionNote = occasion
     ? "\nUpcoming occasion you may tie the ad to, only if it fits naturally: " + occasion.name + " (" + occasion.date + ").\n"
     : "";
-  const offerNote = offer
-    ? '\nThe business wants this offer / call to action featured: "' + offer + '". Build the ad around it and base the "cta" on it.\n'
+  const productNote = product
+    ? '\nWhat this ad advertises (the product and what it does): "' + product + '". The whole ad is about this product.\n'
     : "";
+  const offerNote = offer
+    ? '\nThe business wants this offer / call to action featured: "' + offer + '". Build the ad around it, base the "cta" on it and write the "offerBadge" from it.\n'
+    : '\nNo offer was given: "offerBadge" must be an empty string. Do not invent a discount.\n';
 
-  return `You are a senior advertising copywriter at a performance marketing agency. You write one complete, ready-to-run social media ad.
+  return `You are a senior advertising copywriter at a performance marketing agency. You write one complete, ready-to-run social media ad: the text printed on the ad image and the post that goes with it. Both must tell the same story.
 
 The business (as described by its owner):
 "${businessDescription}"
-${occasionNote}${offerNote}
+${productNote}${occasionNote}${offerNote}
 LANGUAGE (mandatory): detect the language the business description is written in and write every field in that same language and script. If it is in Moroccan Darija, answer in Darija in the same script. Never switch language unless an instruction below says so.
 
 Write exactly ONE ad with these fields:
-- "headline": the line printed on the ad image. At most ${AD_HEADLINE_MAX_WORDS} words. Punchy, specific to this business, no hashtags, no emojis, no quotation marks, no final period.
-- "caption": the ready-to-post text that goes with the image. At most ${AD_CAPTION_MAX_WORDS} words. Opens with a hook, gives one concrete benefit, ends by leading into the call to action.
+- "headline": the main line printed on the ad image. At most ${AD_HEADLINE_MAX_WORDS} words. Punchy, specific to this product, no hashtags, no emojis, no quotation marks, no final period.
+- "subheadline": one supporting line printed under the headline. At most ${AD_SUBHEADLINE_MAX_WORDS} words. Says what the product is or does; does not repeat the headline. No emojis.
+- "offerBadge": the offer as a sticker, ${AD_BADGE_MAX_WORDS} words at most (for example "20% OFF" or "Free delivery"). Empty string when no offer was given.
+- "benefits": exactly 3 benefit chips, each 1 to ${AD_BENEFIT_MAX_WORDS} words (for example "24h hydration"). Concrete, true to the description, no emojis, no punctuation at the end.
+- "caption": the ready-to-post text that goes with the image. At most ${AD_CAPTION_MAX_WORDS} words. Opens with a hook, uses the same benefits as the chips, ends by leading into the call to action.
 - "cta": the call-to-action button label. ${AD_CTA_MAX_WORDS} words at most (for example "Shop now"). No emojis.
 - "hashtags": exactly 5 hashtags specific to this business, each starting with #.
 ${extraInstructions}
 
 Answer with valid JSON only, no text before or after, no Markdown code fences, exactly in this shape:
 
-{"ad": {"headline": "...", "caption": "...", "cta": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."]}}`;
+{"ad": {"headline": "...", "subheadline": "...", "offerBadge": "...", "benefits": ["...", "...", "..."], "caption": "...", "cta": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."]}}`;
 }
 
 function limitWords(text, maxWords) {
@@ -1010,12 +1022,18 @@ function normalizeAd(raw) {
   const headline = limitWords(String(raw.headline || raw.idea || "").replace(/["“”«»]/g, "").replace(/[.\s]+$/, ""), AD_HEADLINE_MAX_WORDS);
   const caption = limitCaption(raw.caption, AD_CAPTION_MAX_WORDS);
   const cta = limitWords(raw.cta || raw.callToAction || "", AD_CTA_MAX_WORDS);
+  const subheadline = limitWords(String(raw.subheadline || "").replace(/[.\s]+$/, ""), AD_SUBHEADLINE_MAX_WORDS);
+  const offerBadge = limitWords(String(raw.offerBadge || raw.badge || "").replace(/[.\s]+$/, ""), AD_BADGE_MAX_WORDS);
+  const benefits = (Array.isArray(raw.benefits) ? raw.benefits : [])
+    .map((b) => limitWords(String(b || "").replace(/[.,;!\s]+$/, ""), AD_BENEFIT_MAX_WORDS))
+    .filter(Boolean)
+    .slice(0, 3);
   const hashtags = (Array.isArray(raw.hashtags) ? raw.hashtags : [])
     .map((h) => String(h || "").trim())
     .filter(Boolean)
     .map((h) => (h.startsWith("#") ? h : "#" + h))
     .slice(0, 5);
-  return { headline, caption, cta, hashtags };
+  return { headline, subheadline, offerBadge, benefits, caption, cta, hashtags };
 }
 
 
@@ -1120,7 +1138,7 @@ app.post("/api/generate-content", async (req, res) => {
       });
     }
 
-    const { businessDescription, language, tone, goal, platform, sourceText, offer } = req.body;
+    const { businessDescription, language, tone, goal, platform, sourceText, offer, product } = req.body;
 
     const description = typeof businessDescription === "string" ? businessDescription.trim() : "";
     if (!description) {
@@ -1236,10 +1254,12 @@ app.post("/api/generate-content", async (req, res) => {
     }
 
     const cleanOffer = typeof offer === "string" && offer.trim() ? offer.trim().slice(0, 120) : "";
+    // "What are you advertising?" — the product name and what it does (all plans).
+    const cleanProduct = typeof product === "string" && product.trim() ? product.trim().slice(0, 120) : "";
 
     const model = isFree ? MODEL_FREE : MODEL_PAID;
     const maxTokens = getPlanMaxTokens(realPlan);
-    const prompt = buildAdPrompt(description, upcomingOccasion, { extraInstructions, offer: cleanOffer });
+    const prompt = buildAdPrompt(description, upcomingOccasion, { extraInstructions, offer: cleanOffer, product: cleanProduct });
     console.log(
       "[server.js] Calling Claude (model=" + model + ", max_tokens=" + maxTokens + ", plan=" + realPlan + ") for one ad..."
     );
@@ -1274,6 +1294,7 @@ app.post("/api/generate-content", async (req, res) => {
     }
 
     const ad = normalizeAd(rawAd);
+    if (!cleanOffer) ad.offerBadge = ""; // never show a discount the customer did not give
     if (!ad.headline || !ad.caption) {
       throw new Error("model reply is missing the headline or the caption");
     }
@@ -1286,6 +1307,9 @@ app.post("/api/generate-content", async (req, res) => {
         locked: false,
         idea: ad.headline,
         headline: ad.headline,
+        subheadline: ad.subheadline,
+        offerBadge: ad.offerBadge,
+        benefits: ad.benefits,
         caption: ad.caption,
         cta: ad.cta,
         hashtags: ad.hashtags,
@@ -1304,6 +1328,7 @@ app.post("/api/generate-content", async (req, res) => {
         createdAt: new Date(),
         kind: "ad",
         projectDescription: description,
+        product: cleanProduct,
         days: limit,
         language: cleanLanguage,
         plan: realPlan,

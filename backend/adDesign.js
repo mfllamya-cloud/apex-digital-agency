@@ -1,15 +1,17 @@
 // ---------------------------------------------------------------------------
 // Ad design endpoints.
 //
-// A design is built in three layers:
+// A design is built in layers:
 //   A. Scene (AI, here): the customer's real product placed in an advertising scene by fal.ai.
 //      The product pixels come from the uploaded photo; the scene has no text and no logo.
-//   B. Text and logo (code, in the browser): frontend/src/adTemplates.js draws the headline,
-//      the call-to-action button and the customer's logo file on top of the scene.
-//   C. Styles: one scene recipe per style (STYLE_SCENES below), one layout per style and format.
+//   B. Text, shapes and logo (code, in the browser): frontend/src/adTemplates.js draws a colour
+//      panel with the headline, subheadline, benefit chips, button, offer badge and brand.
+//      The panel and the scene are separate zones, so text never covers the product.
 //
-// Every scene is checked by a vision model before the customer sees it (checkScene). A design
-// credit is consumed only when at least one scene passes.
+// One design credit = one scene per format (pro: 1:1; premium: 1:1 and 9:16). A scene that
+// fails the quality check (checkScene) is regenerated once, silently. The credit is consumed
+// only when a scene passes. Each credit also includes ONE free "redo": the customer can ask
+// for a new scene once if they do not like the result.
 //
 // Nothing here trusts the browser for the plan, the limits or the counters: they are read from
 // Firestore with the Admin SDK inside transactions.
@@ -28,7 +30,8 @@ export const FAL_UPSCALE_ENDPOINT = null;
 const FAL_QUEUE_URL = "https://queue.fal.run/";
 const FAL_STORAGE_INITIATE_URL = "https://rest.alpha.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3";
 
-const VARIATIONS_PER_CREDIT = 2;
+const VARIATIONS_PER_CREDIT = 1;
+const LAYOUT_VARIANTS = 6; // see geometry() in frontend/src/adTemplates.js
 const IMAGE_DAILY_CAP_DEFAULT = 150;
 const MAX_FAILED_ATTEMPTS_PER_DAY = 3;
 const JOB_TIMEOUT_MS = 6 * 60 * 1000;
@@ -40,20 +43,30 @@ const MAX_LOGO_CHARS = 260 * 1024;
 const MAX_THUMB_CHARS = 330 * 1024;
 const MAX_SCENE_PROXY_BYTES = 4 * 1024 * 1024;
 
-// Scene size per format (about 1 megapixel, as Bria recommends) and the box the product is
-// placed in: padding is [left, right, top, bottom] in scene pixels. The top padding keeps the
-// upper 47% of the scene free of the product; every template in frontend/src/adTemplates.js
-// draws its text block inside the upper 45%, so text never covers the product, for both
-// formats and for right-to-left text. The 9:16 bottom padding keeps the product above the
-// area that story/reel interfaces cover.
-const FORMAT_LAYOUT = {
-  "1:1": { shotSize: [1024, 1024], padding: [190, 190, 482, 70] },
-  "9:16": { shotSize: [768, 1344], padding: [110, 110, 632, 210] },
+// Scene size and product box per layout. The browser draws the scene only inside its own region
+// of the ad (the rest is the text panel), so each scene is generated at the shape of that region,
+// about 1 megapixel as Bria recommends. padding is [left, right, top, bottom] in scene pixels:
+// it boxes the product inside the region, leaves a band for the offer badge and, in 9:16, keeps
+// the product clear of the areas that story/reel interfaces cover.
+// ⚠️ These must match the scene regions in geometry() in frontend/src/adTemplates.js.
+const SCENE_LAYOUTS = {
+  side: { shotSize: [784, 1368], padding: [133, 133, 253, 101] }, // 1:1, text panel beside the product
+  stack: { shotSize: [1376, 736], padding: [204, 204, 115, 64] }, // 1:1, wide product photo
+  top: { shotSize: [1056, 944], padding: [147, 147, 176, 244] }, // 9:16, panel above the product
+  bottom: { shotSize: [1008, 1040], padding: [131, 131, 411, 112] }, // 9:16, panel below the product
 };
 
-const NO_TEXT_SUFFIX =
-  " The upper 45% of the image is empty, calm background with nothing in it. " +
-  "No text, no letters, no numbers, no logos, no watermark, no people, no hands.";
+// Same rule as the browser: 1:1 uses "stack" for wide product photos and "side" otherwise;
+// 9:16 alternates with the variant.
+function sceneLayoutFor(format, variant, landscape) {
+  if (format === "9:16") return variant % 2 === 0 ? SCENE_LAYOUTS.top : SCENE_LAYOUTS.bottom;
+  return landscape ? SCENE_LAYOUTS.stack : SCENE_LAYOUTS.side;
+}
+
+const SCENE_SUFFIX =
+  " The product is the hero of the image: sharp, well lit, standing on the surface with a soft realistic contact shadow." +
+  " The background is uncluttered, softly out of focus and slightly darker than the product." +
+  " No text, no letters, no numbers, no logos, no watermark, no people, no hands, no other products.";
 
 const STYLE_SCENES = {
   clean_studio: () =>
@@ -115,8 +128,9 @@ function hexToColorName(hex) {
 
 function buildSceneDescription(style, ctx) {
   const recipe = STYLE_SCENES[style] || STYLE_SCENES.clean_studio;
+  const what = ctx.product ? "The product (" + ctx.product + ") " : "The product ";
   const note = ctx.note ? " Scene idea from the client: " + ctx.note + "." : "";
-  return "The product " + recipe(ctx) + note + NO_TEXT_SUFFIX;
+  return what + recipe(ctx) + note + SCENE_SUFFIX;
 }
 
 // --- image helpers ---------------------------------------------------------
@@ -197,8 +211,8 @@ async function submitScene(falKey, imageRef, style, format, ctx) {
       image_url: imageRef,
       scene_description: buildSceneDescription(style, ctx),
       placement_type: "manual_padding",
-      padding_values: FORMAT_LAYOUT[format].padding,
-      shot_size: FORMAT_LAYOUT[format].shotSize,
+      padding_values: sceneLayoutFor(format, ctx.variant || 0, Boolean(ctx.landscape)).padding,
+      shot_size: sceneLayoutFor(format, ctx.variant || 0, Boolean(ctx.landscape)).shotSize,
       num_results: 1,
       optimize_description: true,
       // Quality over speed and price: use the full model, not the fast one.
@@ -287,7 +301,7 @@ async function checkScene(deps, job, sceneUrl) {
               type: "text",
               text:
                 "You are the quality controller of an advertising agency. Judge Image 2 strictly. " +
-                "A headline and a button will later be printed over the upper 45% of Image 2.\n\n" +
+                "Text and graphics will be added around it later, on a separate panel.\n\n" +
                 "Answer these, true only if clearly satisfied:\n" +
                 '- "product_visible": the product is clearly visible, in focus, fully inside the frame and not cropped.\n' +
                 '- "product_matches": it is the same product as in Image 1 — same shape, same label, same colours. ' +
@@ -295,9 +309,9 @@ async function checkScene(deps, job, sceneUrl) {
                 '- "no_stray_text": apart from the product\'s own label, the scene contains no text, letters, numbers, logos or watermarks.\n' +
                 '- "no_distortion": no distorted, melted, duplicated or impossible objects, no hands, no people, ' +
                 "and the product sits naturally in the scene (plausible scale, contact shadow, no visible cut-out halo).\n" +
-                '- "headline_space_clean": the upper 45% of the image is calm and free of the product and of busy details, so text placed there would be readable.\n\n' +
+                '- "product_framed": the whole product stands inside the image with clear background around it on every side; it does not touch or cross the image borders.\n\n' +
                 'Reply with JSON only: {"product_visible": true|false, "product_matches": true|false, "no_stray_text": true|false, ' +
-                '"no_distortion": true|false, "headline_space_clean": true|false, "reason": "one short sentence"}',
+                '"no_distortion": true|false, "product_framed": true|false, "reason": "one short sentence"}',
             },
           ],
         },
@@ -312,7 +326,7 @@ async function checkScene(deps, job, sceneUrl) {
       verdict.product_matches === true &&
       verdict.no_stray_text === true &&
       verdict.no_distortion === true &&
-      verdict.headline_space_clean === true;
+      verdict.product_framed === true;
     return { pass, reason: cleanText(String(verdict.reason || ""), 200) };
   } catch (err) {
     console.warn("[adDesign] quality check error: " + err.message);
@@ -427,6 +441,11 @@ export function registerAdDesignRoutes(app, deps) {
     const userRef = db.collection("users").doc(uid);
     let userLocked = false;
     let reserved = 0;
+    let redoRef = null; // set when this request uses the free redo of an earlier design
+    // Gives the free redo back when a redo could not even start.
+    const restoreRedo = async () => {
+      if (redoRef) await redoRef.update({ redoUsed: false }).catch(() => {});
+    };
 
     try {
       const body = req.body || {};
@@ -465,6 +484,10 @@ export function registerAdDesignRoutes(app, deps) {
         return res.status(404).json({ success: false, errorCode: "DESIGN_INVALID_INPUT" });
       }
 
+      // Free redo: "redoOf" names the job whose design the customer wants regenerated.
+      const redoOf = cleanText(body.redoOf, 80);
+      const redoCandidate = redoOf ? db.collection("design_jobs").doc(redoOf) : null;
+
       // Plan, credits, daily failed attempts and "one job at a time", all in one transaction.
       const monthKey = deps.currentMonthKey();
       const dayKey = utcDayKey();
@@ -477,7 +500,16 @@ export function registerAdDesignRoutes(app, deps) {
         const limits = deps.getPlanLimits(plan);
         if (!limits.maxDesignsPerMonth) return { errorCode: "DESIGN_NOT_IN_PLAN", status: 403 };
         if (!limits.designStyles.includes(style)) return { errorCode: "DESIGN_STYLE_NOT_IN_PLAN", status: 403 };
-        if (effectiveDesignsUsed(data, monthKey) >= limits.maxDesignsPerMonth) {
+        let previousVariant = null;
+        if (redoCandidate) {
+          // One redo per credit: only for a paid-for design of this same ad, never for a redo.
+          const old = await tx.get(redoCandidate);
+          const o = old.exists ? old.data() : null;
+          if (!o || o.uid !== uid || o.docId !== docId || o.status !== "passed" || o.isRedo || o.redoUsed) {
+            return { errorCode: "DESIGN_REDO_USED", status: 409 };
+          }
+          previousVariant = typeof o.variant === "number" ? o.variant : null;
+        } else if (effectiveDesignsUsed(data, monthKey) >= limits.maxDesignsPerMonth) {
           return { errorCode: "DESIGN_QUOTA_EXCEEDED", status: 429 };
         }
         if (failuresToday(data, dayKey) >= MAX_FAILED_ATTEMPTS_PER_DAY) {
@@ -487,24 +519,40 @@ export function registerAdDesignRoutes(app, deps) {
           return { errorCode: "DESIGN_IN_PROGRESS", status: 409 };
         }
         tx.update(userRef, { designJobActiveUntil: now + USER_JOB_LOCK_MS });
-        return { plan, limits };
+        if (redoCandidate) tx.update(redoCandidate, { redoUsed: true });
+        return { plan, limits, previousVariant };
       });
       if (gate.errorCode) {
         return res.status(gate.status).json({ success: false, errorCode: gate.errorCode });
       }
       userLocked = true;
+      if (redoCandidate) redoRef = redoCandidate;
 
       const formats = gate.limits.designFormats;
       const wanted = formats.length * VARIATIONS_PER_CREDIT;
       if (!(await reserveImages(db, wanted))) {
         console.warn("[adDesign] daily image cap reached — design refused for uid=" + uid);
+        await restoreRedo();
         await userRef.update({ designJobActiveUntil: 0 });
         return res.json({ success: false, errorCode: "DESIGN_UNAVAILABLE" });
       }
       reserved = wanted;
 
       const colors = [cleanHex(body.color1, "#111111"), cleanHex(body.color2, "#d4af37")];
-      const ctx = { colorName: hexToColorName(colors[0]), note: cleanText(body.note, 200) };
+      // Layout variant: random, and always different from the design being redone, so two ads
+      // for the same customer do not look identical. Wide product photos get the wide 1:1 layout.
+      let variant = Math.floor(Math.random() * LAYOUT_VARIANTS);
+      if (gate.previousVariant !== null && variant % LAYOUT_VARIANTS === gate.previousVariant % LAYOUT_VARIANTS) {
+        variant = (variant + 1) % LAYOUT_VARIANTS;
+      }
+      const landscape = size.width / size.height >= 1.3; // 4:3 and wider
+      const ctx = {
+        colorName: hexToColorName(colors[0]),
+        note: cleanText(body.note, 200),
+        product: cleanText(body.product, 120),
+        variant,
+        landscape,
+      };
 
       // fal.ai file upload first; if it fails, send the photo inline (no silent retry possible then).
       const productUrl = await uploadToFalStorage(key, product.buffer, product.mime);
@@ -533,6 +581,7 @@ export function registerAdDesignRoutes(app, deps) {
         reserved = submitted;
       }
       if (submitted === 0) {
+        await restoreRedo();
         await userRef.update({ designJobActiveUntil: 0 });
         return res.json({ success: false, errorCode: "DESIGN_UNAVAILABLE" });
       }
@@ -550,13 +599,22 @@ export function registerAdDesignRoutes(app, deps) {
         productUrl: productUrl || null,
         productThumb,
         sceneContext: ctx,
+        variant,
+        isRedo: Boolean(redoRef),
+        redoOf: redoRef ? redoRef.id : null,
+        redoUsed: false,
         design: {
           headline,
+          subheadline: cleanText(body.subheadline, 140),
+          badge: cleanText(body.badge, 24),
+          chips: (Array.isArray(body.chips) ? body.chips : []).map((c) => cleanText(c, 32)).filter(Boolean).slice(0, 3),
           cta: cleanText(body.cta, 40),
           brandName: cleanText(body.brandName, 40),
           colors,
           logo,
           style,
+          variant,
+          landscape,
         },
       });
       console.log("[adDesign] job " + jobRef.id + " started: uid=" + uid + " style=" + style + " images=" + submitted);
@@ -564,6 +622,7 @@ export function registerAdDesignRoutes(app, deps) {
     } catch (err) {
       console.error("[adDesign] /api/design/start error: " + err.message);
       if (reserved > 0) await releaseImages(db, reserved);
+      await restoreRedo();
       if (userLocked) await userRef.update({ designJobActiveUntil: 0 }).catch(() => {});
       res.json({ success: false, errorCode: "DESIGN_UNAVAILABLE" });
     }
@@ -575,6 +634,10 @@ export function registerAdDesignRoutes(app, deps) {
       status: job.status,
       failure: job.failure || null,
       style: job.style,
+      variant: job.variant || 0,
+      landscape: Boolean(job.sceneContext && job.sceneContext.landscape),
+      // The free redo belongs to the original design; a redo cannot be redone.
+      redoAvailable: job.status === "passed" && !job.isRedo && !job.redoUsed,
       scenes: (job.slots || [])
         .filter((s) => s.state === "passed")
         .map((s) => ({ format: s.format, variation: s.variation, url: s.sceneUrl })),
@@ -687,20 +750,25 @@ export function registerAdDesignRoutes(app, deps) {
 
       if (passed.length > 0) {
         status = "passed";
-        await db.runTransaction(async (tx) => {
-          const snap = await tx.get(userRef);
-          const data = snap.exists ? snap.data() : {};
-          const sameMonth = (data.lastResetMonth || null) === monthKey;
-          tx.set(
-            userRef,
-            {
-              designsUsed: effectiveDesignsUsed(data, monthKey) + 1,
-              designJobActiveUntil: 0,
-              ...(sameMonth ? {} : { generationsUsed: 0, lastResetMonth: monthKey }),
-            },
-            { merge: true }
-          );
-        });
+        if (job.isRedo) {
+          // A redo is free: the credit was consumed by the original design.
+          await userRef.set({ designJobActiveUntil: 0 }, { merge: true });
+        } else {
+          await db.runTransaction(async (tx) => {
+            const snap = await tx.get(userRef);
+            const data = snap.exists ? snap.data() : {};
+            const sameMonth = (data.lastResetMonth || null) === monthKey;
+            tx.set(
+              userRef,
+              {
+                designsUsed: effectiveDesignsUsed(data, monthKey) + 1,
+                designJobActiveUntil: 0,
+                ...(sameMonth ? {} : { generationsUsed: 0, lastResetMonth: monthKey }),
+              },
+              { merge: true }
+            );
+          });
+        }
         // Saved on the project so History can redraw the design from data.
         // NOTE: scene URLs are fal.ai links and may expire. The future fix is to copy each
         // scene into Firebase Storage here and save that permanent URL instead.
@@ -714,6 +782,7 @@ export function registerAdDesignRoutes(app, deps) {
               design: {
                 ...job.design,
                 createdAt: new Date(),
+                jobId: job.isRedo && job.redoOf ? job.redoOf : jobId,
                 scenes: passed.map((s) => ({ format: s.format, variation: s.variation, url: s.sceneUrl })),
               },
             },
@@ -734,6 +803,10 @@ export function registerAdDesignRoutes(app, deps) {
           }
           tx.set(userRef, update, { merge: true });
         });
+        // A redo that produced nothing is given back: the earlier design stays as it was.
+        if (job.isRedo && job.redoOf) {
+          await db.collection("design_jobs").doc(job.redoOf).update({ redoUsed: false }).catch(() => {});
+        }
       }
 
       // The reference thumbnail and logo are no longer needed on the job once it is settled.
