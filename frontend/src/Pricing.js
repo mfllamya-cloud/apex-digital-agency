@@ -231,10 +231,14 @@ function PackageCard({ pkg, index }) {
             النافذة: هناك يراه العميل مع الاسم والسعر في اللحظة التي يقرر فيها
             فعلاً، لا في أسفل بطاقة قد يمرّ عليها دون قراءة. */}
         <div style={{ marginTop: "auto" }}>
+          {/* TEMPORARY: the checkout modal (Paddle / PayPal / crypto) is bypassed until
+              Paddle is verified. The button opens the Tally order form instead.
+              To re-enable: change onClick back to () => setCheckoutOpen(true).
+              PaymentModal below, paddle.js and PAYMENT_LINKS are untouched. */}
           <button
             type="button"
             className="apex-btn-gold"
-            onClick={() => setCheckoutOpen(true)}
+            onClick={() => window.open("https://tally.so/r/PdV7bB", "_blank", "noopener,noreferrer")}
             style={{ width: "100%", boxSizing: "border-box", padding: "16px 18px", fontSize: "1rem" }}
           >
             {t("agency.checkout.orderNow")} — ${total}
