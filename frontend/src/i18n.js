@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { agencyTranslations, LANGUAGE_LABELS } from "./i18nAgency";
+import { adsTranslations } from "./i18nAds";
 
 // ---------------------------------------------------------------------------
 // ملف الترجمة المركزي (i18n) — كل نصوص واجهة التطبيق مُعرَّفة هنا في مكان واحد فقط.
@@ -98,34 +99,7 @@ export const translations = {
         threeDRenders: "3D Renders",
       },
     },
-    planFeatures: {
-      free: { emoji: "✅", label: "Strategic Consultation:", description: "A complimentary preview of your custom campaign direction." },
-      // pro/premium: "features" مصفوفة تُعرَض كبطاقة مبنية ببنود واضحة (راجع App.js، قسم
-      // "Luxury Structured Tier Cards"). تسعير 2026:
-      //   Pro      29$/شهر — 3 حملات شهرياً، حتى 7 أيام لكل حملة.
-      //   Premium  59$/شهر — 8 حملات شهرياً، حتى 7 أيام لكل حملة.
-      // ⚠️ الأرقام في هذه النصوص وصفية فقط، لكنها يجب أن تبقى مطابقة حرفياً لـ
-      // PLAN_LIMITS في backend/server.js (وهو الملزم فعلياً) ولـ PLAN_MAX_DAYS/PLAN_MAX_GENERATIONS
-      // في frontend/src/App.js. نص وصفي بحت، لا يغيّر أي منطق أو حد فعلي في التطبيق. كل بند
-      // يبدأ بعلامة "✦" ذهبية مضمَّنة في النص نفسه (بدل رسمها منفصلة في App.js كما كان سابقاً
-      // مع ◆)، ويُعرض بلونها الذهبي عبر تقسيم النص في App.js (renderBulletFeature).
-      pro: {
-        label: "Boutique Campaign:",
-        features: [
-          "✦ 3 Weekly Sprints per month (Up to 7 days each)",
-          "✦ Multi-Language Support",
-          "✦ CSV Strategy Export",
-        ],
-      },
-      premium: {
-        label: "Full Agency Retainer:",
-        features: [
-          "✦ 8 Sprints per month (Up to 7 days each)",
-          "✦ Omnichannel Strategy",
-          "✦ Creative Direction & Repurposing",
-        ],
-      },
-    },
+    // planFeatures: defined for all five languages in i18nAds.js (merged below).
     upsell: {
       free: {
         title: "🔒 Professional features locked",
@@ -393,25 +367,7 @@ export const translations = {
         threeDRenders: "تصاميم ثلاثية الأبعاد (3D)",
       },
     },
-    planFeatures: {
-      free: { emoji: "✅", label: "استشارة أولية:", description: "معاينة مجانية لاتجاه حملتك المخصّصة." },
-      pro: {
-        label: "حملة مخصصة:",
-        features: [
-          "✦ 3 حملات أسبوعية شهرياً (تصل لـ 7 أيام لكل حملة)",
-          "✦ دعم لغات متعددة",
-          "✦ تصدير الخطة بصيغة CSV",
-        ],
-      },
-      premium: {
-        label: "إدارة تسويقية شاملة:",
-        features: [
-          "✦ 8 حملات شهرياً (تصل لـ 7 أيام لكل حملة)",
-          "✦ استراتيجية متعددة المنصات",
-          "✦ توجيه إبداعي وإعادة صياغة المحتوى",
-        ],
-      },
-    },
+    // planFeatures: defined for all five languages in i18nAds.js (merged below).
     upsell: {
       free: {
         title: "🔒 ميزات احترافية مقفلة",
@@ -664,25 +620,7 @@ export const translations = {
         threeDRenders: "Rendus 3D",
       },
     },
-    planFeatures: {
-      free: { emoji: "✅", label: "Consultation Stratégique :", description: "Un aperçu gratuit de l'orientation de votre campagne sur mesure." },
-      pro: {
-        label: "Campagne Sur Mesure :",
-        features: [
-          "✦ 3 Sprints Hebdomadaires par mois (Jusqu'à 7 jours chacun)",
-          "✦ Support Multilingue",
-          "✦ Exportation CSV",
-        ],
-      },
-      premium: {
-        label: "Forfait Agence Complet :",
-        features: [
-          "✦ 8 Sprints par mois (Jusqu'à 7 jours chacun)",
-          "✦ Stratégie Omnicanal",
-          "✦ Direction Créative et Recyclage",
-        ],
-      },
-    },
+    // planFeatures: defined for all five languages in i18nAds.js (merged below).
     upsell: {
       free: {
         title: "🔒 Fonctionnalités professionnelles verrouillées",
@@ -876,6 +814,14 @@ Object.keys(agencyTranslations).forEach((code) => {
   translations[code] = {
     ...(translations[code] || {}),
     agency: agencyTranslations[code],
+  };
+});
+
+// Ad tool texts and plan feature lists (i18nAds.js): "ads" and "planFeatures" for all five languages.
+Object.keys(adsTranslations).forEach((code) => {
+  translations[code] = {
+    ...(translations[code] || {}),
+    ...adsTranslations[code],
   };
 });
 

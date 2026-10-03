@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { LanguageSwitcher, useLanguage } from "./i18n";
+import { DesignGallery, CopyButton } from "./AdDesign";
 import "./App.css";
 
 // نظام ألوان "الوكالة الرقمية الفاخرة" — نفس القيم المعرَّفة في App.js (AGENCY_COLORS) وفي
@@ -65,9 +66,21 @@ function formatProjectDate(createdAt, lang) {
 
 // نافذة منبثقة (Modal) بسيطة تعرض تفاصيل مشروع واحد: كل المنشورات المحفوظة فيه
 // (day, post, platform) — هذا هو زر "View" المطلوب.
-function ProjectDetailsModal({ project, lang, t, isRtl, onClose }) {
+function ProjectDetailsModal({ project, user, lang, t, isRtl, onClose }) {
   if (!project) return null;
   const posts = Array.isArray(project.generatedContent) ? project.generatedContent : [];
+  // New items (one generation = one complete ad) carry "ad", and "design" when an ad design was
+  // made. Old 7-day items have neither and keep the day-by-day list below.
+  const ad = project.ad && typeof project.ad === "object" ? project.ad : null;
+  const design = project.design && Array.isArray(project.design.scenes) ? project.design : null;
+  const adRows = ad
+    ? [
+        { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || "" },
+        { key: "caption", label: t("ads.captionLabel"), text: ad.caption || "" },
+        { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
+        { key: "hashtags", label: t("ads.hashtagsLabel"), text: (ad.hashtags || []).join(" ") },
+      ].filter((row) => row.text)
+    : [];
 
   return (
     <div
@@ -124,7 +137,27 @@ function ProjectDetailsModal({ project, lang, t, isRtl, onClose }) {
           {project.projectDescription || t("history.noDescription")}
         </p>
 
-        {posts.length === 0 ? (
+        {design && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h3 style={{ margin: "0 0 0.9rem", fontSize: "1.05rem", color: "#1e293b" }}>{t("ads.historyDesign")}</h3>
+            {/* Redrawn from saved data: scene link + headline, button, colours, logo. */}
+            <DesignGallery user={user} docId={project.id} scenes={design.scenes} design={design} t={t} light />
+          </div>
+        )}
+
+        {ad ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+            {adRows.map((row) => (
+              <div key={row.key} style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "1rem", background: "#f8fafc" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <span style={{ fontWeight: "700", color: AGENCY_COLORS.navy }}>{row.label}</span>
+                  <CopyButton text={row.text} t={t} light />
+                </div>
+                <p dir="auto" style={{ margin: 0, color: "#1e293b", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{row.text}</p>
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
           <p style={{ color: "#94a3b8", fontStyle: "italic" }}>{t("history.noPosts")}</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
@@ -363,8 +396,17 @@ export default function History() {
                     </p>
 
                     <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap", color: "#64748b", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                      <span>{t("history.daysLabel", { days: project.days ?? "—" })}</span>
-                      <span>{t("history.postsLabel", { count: postsCount })}</span>
+                      {project.ad ? (
+                        <>
+                          <span>{t("ads.historyAd")}</span>
+                          {project.design && <span>✦ {t("ads.historyDesign")}</span>}
+                        </>
+                      ) : (
+                        <>
+                          <span>{t("history.daysLabel", { days: project.days ?? "—" })}</span>
+                          <span>{t("history.postsLabel", { count: postsCount })}</span>
+                        </>
+                      )}
                     </div>
 
                     <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
@@ -435,6 +477,7 @@ export default function History() {
 
       <ProjectDetailsModal
         project={viewingProject}
+        user={user}
         lang={lang}
         t={t}
         isRtl={isRtl}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase";
@@ -14,7 +14,16 @@ import { T } from "./theme";
 import PaymentModal from "./PaymentModal";
 import { PADDLE_PRICE_IDS } from "./paddle";
 import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
-import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
+import { LanguageProvider, LanguageSwitcher, useLanguage } from "./i18n";
+import {
+  DesignFields,
+  DesignGallery,
+  CopyButton,
+  EMPTY_DESIGN_FIELDS,
+  fetchQuota,
+  runDesignJob,
+  designFailureMessage,
+} from "./AdDesign";
 import "./App.css";
 
 // نظام ألوان "الوكالة الرقمية الفاخرة" (Apex Digital Agency) — يُستخدم في الأنماط المضمّنة
@@ -45,18 +54,29 @@ const AGENCY_COLORS = {
   textStrong: "#F7F5F0",
 };
 
-// حدود الباقات — تُستخدم هنا فقط لضبط واجهة المستخدم (حجم شريط الأيام مثلاً).
-// التحقق الحقيقي والملزم يتم في الباكند اعتماداً على الباقة الفعلية المخزّنة في Firestore،
-// وليس على أي قيمة يختارها المستخدم في هذه الواجهة.
-//
-// بنية "Weekly Sprint" (Weekly Sprint Architecture): pro/premium لم يعودا يسمحان بمخطط متصل
-// لمدة 30/90 يوماً — الحد الأقصى لكل "سبرنت/حملة" أسبوعية أصبح 7 أيام للاثنين معاً، والفرق
-// بينهما هو عدد السبرنتات المسموح بها شهرياً (maxGenerationsPerMonth): 5 لـ Pro، 12 لـ
-// Premium (بدل 10 سابقاً). هذه القيم يجب أن تبقى مطابقة تماماً لـ PLAN_LIMITS في
-// backend/server.js — الباكند هو مصدر الحقيقة الوحيد والملزم فعلياً؛ هذه الثوابت هنا واجهة
-// مستخدم فقط (حجم شريط "عدد الأيام" في النموذج، والنص المعروض في quotaInfo/planLimitNote).
-const PLAN_MAX_DAYS = { free: 1, pro: 7, premium: 7 };
-const PLAN_MAX_GENERATIONS = { free: 1, pro: 3, premium: 8 };
+// Plan limits — display only. The binding values are PLAN_LIMITS in backend/server.js, read
+// inside Firestore transactions; these mirror them for the moments before /api/quota answers.
+// One generation = one complete ad on every plan (no "days" any more).
+const PLAN_MAX_GENERATIONS = { free: 1, pro: 5, premium: 10 };
+const PLAN_MAX_DESIGNS = { free: 0, pro: 2, premium: 5 };
+const PLAN_DESIGN_STYLES = {
+  free: [],
+  pro: ["clean_studio", "bold_color"],
+  premium: ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"],
+};
+
+// Shared look of the text inputs added with the ad tool (same as the form's selects).
+const adInputStyle = {
+  width: "100%",
+  padding: "0.65rem",
+  borderRadius: "8px",
+  border: `1px solid ${T.glassBorder}`,
+  marginBottom: "1rem",
+  fontFamily: "inherit",
+  fontSize: "0.95rem",
+  boxSizing: "border-box",
+  background: T.glass,
+};
 
 // ---------------------------------------------------------------------------
 // 💵 أسعار باقات المولّد — بالدولار شهرياً. 0 تعني مجانية.
@@ -173,21 +193,6 @@ const CONTENT_PLATFORM_OPTIONS = [
   { value: "X (Twitter)", key: "twitter" },
 ];
 
-// "التوجيه الفني للصور" (Visual Direction) — على عكس الحقول أعلاه (متاحة لأي باقة غير مجانية)،
-// هذا الحقل حصري لباقة Premium فقط، ويُعرض عمداً في النموذج الرئيسي لكل الباقات (بدل إخفائه
-// بالكامل كبقية حقول PRO/PREMIUM) كأداة تحفيز على الترقية (upsell) — راجع الحقل نفسه في JSX
-// أدناه لمنطق القفل البصري والتفاعل. القيمة "" تعني "تلقائي/اختيار الاستراتيجيين" (السلوك الافتراضي
-// دائماً)، والقيمة المُرسلة فعلياً للخادم تبقى بالإنجليزية دائماً لتتسق تعليمات النظام (system
-// prompt)، تماماً كبقية الخيارات أعلاه. الخادم (backend/server.js) هو من يفرض فعلياً حصرية هذه
-// الميزة على Premium فقط، بصرف النظر عمّا تُرسله الواجهة.
-const VISUAL_STYLE_OPTIONS = [
-  { value: "", key: "" },
-  { value: "Real Photography", key: "realPhotography" },
-  { value: "Minimalist Graphics", key: "minimalistGraphics" },
-  { value: "UGC / Reels Style", key: "ugcReels" },
-  { value: "3D Renders", key: "threeDRenders" },
-];
-
 // يحوّل استجابة خطأ من الباكند (data من /api/generate-content) إلى رسالة مترجمة بلغة الواجهة
 // الحالية، بدل عرض نص عربي ثابت دائماً كما كان الحال سابقاً. يعتمد على errorCode الذي أصبح
 // الخادم يرسله الآن (مثل "QUOTA_EXCEEDED"، "AUTH_REQUIRED"...) ويترجمه عبر مساحة الأسماء
@@ -211,53 +216,6 @@ function getBackendErrorMessage(data, t) {
     }
   }
   return (data && data.error) || t("app.alertGenericError");
-}
-
-// يحوّل خانة CSV إلى نص آمن: يضيف علامات اقتباس حول أي قيمة تحتوي فاصلة أو سطراً جديداً
-// أو علامة اقتباس، ويُضاعف علامات الاقتباس الداخلية حسب معيار CSV القياسي (RFC 4180).
-function escapeCsvField(value) {
-  const str = String(value == null ? "" : value);
-  if (/[",\n]/.test(str)) {
-    return '"' + str.replace(/"/g, '""') + '"';
-  }
-  return str;
-}
-
-// يحوّل نتائج التوليد (مصفوفة الأيام) إلى ملف .csv وينزّله مباشرة في المتصفح —
-// متاح فقط للباقات المدفوعة (PRO/PREMIUM). يتجاهل بطاقات الأيام "المقفلة" لأنها بلا محتوى فعلي.
-function downloadCSV(items) {
-  const rows = (items || []).filter((item) => !item.locked);
-  const headers = ["Day", "Idea", "Caption", "Hashtags", "Best Time", "Image Suggestion", "Creative Direction"];
-  const lines = [headers.map(escapeCsvField).join(",")];
-
-  rows.forEach((item) => {
-    lines.push(
-      [
-        item.day,
-        item.idea,
-        item.caption,
-        Array.isArray(item.hashtags) ? item.hashtags.join(" ") : "",
-        item.bestTime,
-        item.imageIdea || "",
-        item.imagePrompt || "",
-      ]
-        .map(escapeCsvField)
-        .join(",")
-    );
-  });
-
-  // ﻿ (BOM) في البداية يضمن فتح إكسل للملف بترميز UTF-8 صحيح بدل حروف مشوّهة
-  // (مهم جداً هنا لأن المحتوى قد يكون بالعربية أو الفرنسية أو أي لغة أخرى).
-  const csvContent = "﻿" + lines.join("\r\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "content-calendar.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
 }
 
 // يعرض بند ميزة باقة مدفوعة (planFeatures.pro/premium.features) — كل بند في i18n.js يبدأ
@@ -645,7 +603,6 @@ function AppContent() {
   const [profile, setProfile] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const [days, setDays] = useState("5");
   const [tier, setTier] = useState("free");
   const [businessDescription, setBusinessDescription] = useState("");
   const [language, setLanguage] = useState(""); // لغة محتوى صريحة (PRO/PREMIUM) — "" = كشف تلقائي من وصف المشروع
@@ -653,7 +610,15 @@ function AppContent() {
   const [goal, setGoal] = useState(""); // هدف المحتوى (PRO/PREMIUM) — "" = يختار Claude تلقائياً
   const [platform, setPlatform] = useState(""); // المنصة المستهدفة (PRO/PREMIUM) — "" = عام لكل المنصات
   const [sourceText, setSourceText] = useState(""); // نص "إعادة تدوير المحتوى" (PREMIUM فقط)
-  const [visualStyle, setVisualStyle] = useState(""); // "التوجيه الفني للصور" — حصري لـ PREMIUM؛ "" = تلقائي/اختيار الاستراتيجيين (راجع VISUAL_STYLE_OPTIONS أعلاه)
+  const [offer, setOffer] = useState(""); // main offer / call to action (all plans)
+  const [includeDesign, setIncludeDesign] = useState(false);
+  const [designFields, setDesignFields] = useState(EMPTY_DESIGN_FIELDS);
+  const [quota, setQuota] = useState(null); // /api/quota: real plan, counters, design limits
+  const [adDocId, setAdDocId] = useState(""); // Firestore id of the ad just generated
+  const [designHeadline, setDesignHeadline] = useState("");
+  const [designCta, setDesignCta] = useState("");
+  const [designState, setDesignState] = useState({ status: "idle" }); // idle | working | passed | failed
+  const designRunRef = useRef(0);
   const [loading, setLoading] = useState(false);
   // loadingStepIndex: يتقدّم كل 2.5 ثانية أثناء التحميل فقط، لعرض "تجربة الوكالة النفسية
   // متعددة المراحل" (Strategy Directors are analyzing... ثم Senior Copywriters...، إلخ)
@@ -780,6 +745,79 @@ function AppContent() {
     setShowPaymentModal(true);
   };
 
+  // Real plan, counters and limits from the server. The tier tabs above are only a preview of
+  // each plan's form; everything that matters is decided from this.
+  const refreshQuota = async () => {
+    if (!auth.currentUser) return;
+    const data = await fetchQuota(auth.currentUser);
+    if (data) setQuota(data);
+  };
+
+  useEffect(() => {
+    if (!user) {
+      setQuota(null);
+      return;
+    }
+    let cancelled = false;
+    fetchQuota(user).then((data) => {
+      if (!cancelled && data) setQuota(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const realPlan = (quota && quota.plan) || (profile && profile.plan) || "free";
+  const designsMax = quota ? quota.designsMax : PLAN_MAX_DESIGNS[realPlan] || 0;
+  const designsLeft = designsMax - (quota ? quota.designsUsed : 0);
+  const allowedStyles = quota ? quota.designStyles : PLAN_DESIGN_STYLES[realPlan] || [];
+  const ad = results.find((item) => !item.locked) || null;
+  const canStartDesign =
+    Boolean(adDocId) && Boolean(designFields.photo) && designHeadline.trim().length > 0 && designsLeft > 0;
+
+  const handleGenerateDesign = async () => {
+    if (!user || !canStartDesign) return;
+    const headline = designHeadline.trim().split(/\s+/).slice(0, 8).join(" ");
+    const style = allowedStyles.includes(designFields.style) ? designFields.style : allowedStyles[0];
+    const design = {
+      headline,
+      cta: designCta.trim(),
+      brandName: designFields.brandName.trim(),
+      colors: [designFields.color1, designFields.color2],
+      logo: designFields.logo,
+      style,
+    };
+    const runId = designRunRef.current + 1;
+    designRunRef.current = runId;
+    setDesignHeadline(headline);
+    setDesignState({ status: "working" });
+    const result = await runDesignJob(
+      user,
+      {
+        docId: adDocId,
+        style,
+        headline,
+        cta: design.cta,
+        brandName: design.brandName,
+        color1: designFields.color1,
+        color2: designFields.color2,
+        note: designFields.note.trim(),
+        logo: designFields.logo,
+        productImage: designFields.photo.dataUrl,
+        productThumb: designFields.photo.thumb,
+      },
+      () => designRunRef.current !== runId
+    );
+    if (designRunRef.current !== runId || result.status === "cancelled") return;
+    if (result.quota) setQuota(result.quota);
+    else refreshQuota();
+    if (result.status === "passed") {
+      setDesignState({ status: "passed", scenes: result.scenes, design });
+    } else {
+      setDesignState({ status: "failed", reason: result.reason });
+    }
+  };
+
   const isDescriptionValid = businessDescription.trim().length > 0;
 
   const handleGenerate = async () => {
@@ -794,6 +832,11 @@ function AppContent() {
     }
     if (!isDescriptionValid) {
       alert(t("app.alertDescribeFirst"));
+      return;
+    }
+    // The product photo is required when an ad design is requested.
+    if (realPlan !== "free" && includeDesign && designsLeft > 0 && !designFields.photo) {
+      alert(t("ads.photoRequired"));
       return;
     }
     // حماية إضافية: الزر أصلاً معطّل (disabled) بمجرد quotaExceeded=true، لكن نتحقق هنا أيضاً
@@ -818,36 +861,34 @@ function AppContent() {
           Authorization: "Bearer " + idToken,
         },
         body: JSON.stringify({
-          days: tier === "free" ? 1 : parseInt(days),
-          userTier: tier,
-          // لغة المحتوى المولَّد منفصلة تماماً عن لغة الواجهة: نرسل نص المستخدم كما كتبه
-          // بأي لغة اختارها، والخادم يطلب من Claude الرد بنفس تلك اللغة (راجع server.js) —
-          // إلا إذا اختار المستخدم لغة صريحة أدناه (ميزة PRO/PREMIUM)، فهي تتغلّب على الكشف التلقائي.
           businessDescription: businessDescription.trim(),
-          // ميزات PRO/PREMIUM — الخادم هو من يفرض فعلياً من يحق له استخدامها (realPlan من Firestore)،
-          // إرسالها هنا دائماً غير ضار حتى للباقة المجانية لأن الخادم يتجاهلها إن كانت isFree.
+          offer: offer.trim(),
+          // Paid-only options. The server ignores them unless the real plan allows them.
           language: tier === "free" ? "" : language,
           tone: tier === "free" ? "" : tone,
           goal: tier === "free" ? "" : goal,
           platform: tier === "free" ? "" : platform,
           sourceText: tier === "premium" ? sourceText.trim() : "",
-          // "التوجيه الفني للصور" — حصري لـ Premium فقط (بخلاف بقية الحقول أعلاه المتاحة لأي
-          // باقة غير مجانية)؛ نرسل "auto" صراحة لغير Premium بدل القيمة الفعلية، تماماً كما
-          // يعرضها الحقل المقفل في الواجهة أدناه. الخادم يفرض هذا الحصر فعلياً على أي حال.
-          visualStyle: tier === "premium" ? visualStyle : "auto",
         }),
       });
       const data = await res.json();
       if (data.success) {
         setResults(data.content);
+        setAdDocId(data.docId || "");
+        const first = (data.content || []).find((item) => !item.locked) || {};
+        setDesignHeadline(first.headline || first.idea || "");
+        setDesignCta(first.cta || "");
+        designRunRef.current += 1; // drops any design still running for the previous ad
+        setDesignState({ status: "idle" });
         setQuotaInfo({
           plan: data.plan,
           generationsUsed: data.generationsUsed,
           maxGenerationsPerMonth: data.maxGenerationsPerMonth,
         });
-        // نجح التوليد -> أي حالة "رصيد منتهٍ" سابقة لم تعد صالحة (مثلاً بعد ترقية الباقة).
+        // أي توليد ناجح يعني أن الحصة لم تُستنفد بعد
         setQuotaExceeded(false);
         setQuotaErrorMessage("");
+        refreshQuota();
       } else if (data.errorCode === "QUOTA_EXCEEDED") {
         // الخادم رفض الطلب فوراً قبل أي استدعاء لـ Claude API (الفحص المسبق الصارم في
         // server.js) — نعطّل زر التوليد بشكل دائم ونعرض رسالة واضحة مترجمة بدل تنبيه (alert)
@@ -986,7 +1027,7 @@ function AppContent() {
                 <h2 className="apex-display apex-h2" style={{ marginBottom: "0.75rem" }}>
                   {t("agency.self.title")}
                 </h2>
-                <p className="apex-lede">{t("agency.self.sub")}</p>
+                <p className="apex-lede">{t("ads.selfSub")}</p>
               </div>
             </Reveal>
           )}
@@ -1154,31 +1195,15 @@ function AppContent() {
               );
             })()}
 
-            {/* شريط الأيام يظهر فقط للباقات المدفوعة — الباقة المجانية = فكرة واحدة ليوم واحد بدون شريط.
-                الحد الأقصى للشريط مبني على الباقة الحقيقية للحساب (من Firestore)، وليس على الزر المختار هنا —
-                الباكند هو من يفرض الحد فعلياً على أي حال. */}
-            {tier !== "free" && (
-              <>
-                <label className="agency-form-label">
-                  {t("app.daysLabel", { days })}
-                </label>
-                <input
-                  type="range"
-                  min="5"
-                  max={Math.max(PLAN_MAX_DAYS[profile?.plan] || 7, 5)}
-                  value={days}
-                  onChange={(e) => setDays(e.target.value)}
-                  style={{ width: "100%", marginBottom: "0.4rem" }}
-                />
-                <p style={{ color: T.textFaint, fontSize: "0.8rem", marginTop: 0, marginBottom: "1.5rem" }}>
-                  {t("app.planLimitNote", {
-                    plan: t("plans." + (profile?.plan || "free")),
-                    maxDays: PLAN_MAX_DAYS[profile?.plan] || 1,
-                    maxGenerations: PLAN_MAX_GENERATIONS[profile?.plan] || 1,
-                  })}
-                </p>
-              </>
-            )}
+            {/* One generation = one complete ad on every plan, so there is no "days" slider any
+                more. The note shows the real plan's monthly limits (enforced by the server). */}
+            <p style={{ color: T.textFaint, fontSize: "0.8rem", marginTop: 0, marginBottom: "1.5rem" }}>
+              {t("ads.limitNote", {
+                plan: t("plans." + realPlan),
+                textMax: quota ? quota.textMax : PLAN_MAX_GENERATIONS[realPlan] || 1,
+                designMax: quota ? quota.designsMax : PLAN_MAX_DESIGNS[realPlan] || 0,
+              })}
+            </p>
 
             <label className="agency-form-label">
               {t("app.describeLabel")} <span style={{ color: "#ef4444" }}>*</span>
@@ -1322,70 +1347,16 @@ function AppContent() {
               </>
             )}
 
-            {/* "التوجيه الفني للصور" (Visual Direction) — ميزة حصرية لباقة Premium فقط، لكنها
-                تُعرض دائماً في النموذج الرئيسي لكل الباقات (بخلاف حقول PRO/PREMIUM أعلاه
-                المخفية بالكامل عن Free) كأداة تحفيز على الترقية (upsell). لغير Premium: القائمة
-                تعرض القيمة المثبَّتة "تلقائي" فوق طبقة تعتيم زجاجية (frosted overlay)، والضغط
-                على الحقل يفتح فوراً نافذة "VIP Lead Capture" بدل فتح القائمة المنسدلة فعلياً —
-                عنصر overlay شفاف فوق select المعطَّل (disabled) هو ما يعترض النقرة، لأن
-                المتصفحات تتجاهل أحداث onClick على عنصر select معطَّل مباشرة. */}
-            <div style={{ marginBottom: "1rem" }}>
-              <label className="agency-form-label">
-                {t("pro.visualStyleLabel")}
-              </label>
-              <div style={{ position: "relative" }}>
-                <select
-                  value={tier === "premium" ? visualStyle : ""}
-                  onChange={(e) => {
-                    if (tier !== "premium") return;
-                    setVisualStyle(e.target.value);
-                  }}
-                  disabled={tier !== "premium"}
-                  style={{
-                    width: "100%",
-                    padding: "0.65rem",
-                    borderRadius: "8px",
-                    border: `1px solid ${T.glassBorder}`,
-                    fontFamily: "inherit",
-                    fontSize: "0.95rem",
-                    boxSizing: "border-box",
-                    background: T.glass,
-                    opacity: tier === "premium" ? 1 : 0.55,
-                  }}
-                >
-                  {tier === "premium" ? (
-                    VISUAL_STYLE_OPTIONS.map((opt) => (
-                      <option key={opt.key || "auto"} value={opt.value}>
-                        {opt.key === "" ? t("pro.visualStyleAuto") : t("pro.visualStyleOptions." + opt.key)}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">{t("pro.visualStyleAuto")}</option>
-                  )}
-                </select>
-
-                {tier !== "premium" && (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t("pro.visualStyleLabel")}
-                    onClick={() => handleUpgradeClick("pro")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") handleUpgradeClick("pro");
-                    }}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      background: "rgba(248, 250, 252, 0.4)",
-                      backdropFilter: "blur(1.5px)",
-                      WebkitBackdropFilter: "blur(1.5px)",
-                    }}
-                  />
-                )}
-              </div>
-            </div>
+            {/* Offer / call to action: feeds the ad copy and becomes the button on the ad design. */}
+            <label className="agency-form-label">{t("ads.offerLabel")}</label>
+            <input
+              type="text"
+              value={offer}
+              maxLength={120}
+              onChange={(e) => setOffer(e.target.value)}
+              placeholder={t("ads.offerPlaceholder")}
+              style={adInputStyle}
+            />
 
             {/* إعادة تدوير المحتوى — ميزة PREMIUM فقط: يلصق المستخدم مقالاً أو سكريبت فيديو
                 فيبني الخادم المنشورات من هذا النص بدل الاكتفاء بوصف المشروع القصير. */}
@@ -1411,6 +1382,53 @@ function AppContent() {
                     boxSizing: "border-box",
                   }}
                 />
+              </>
+            )}
+
+            {/* Ad design: the tick box sits right above the generate button. The fields open when it
+                is ticked. Plan and remaining designs come from the server (/api/quota). */}
+            {realPlan === "free" ? (
+              <p style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: T.textMuted }}>
+                <button
+                  type="button"
+                  onClick={() => handleUpgradeClick("pro")}
+                  style={{ background: "none", border: "none", padding: 0, color: T.goldLight, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", textDecoration: "underline" }}
+                >
+                  {t("ads.designUpgrade")}
+                </button>
+              </p>
+            ) : (
+              <>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    margin: "0 0 0.9rem",
+                    color: designsLeft > 0 ? T.text : T.textFaint,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    cursor: designsLeft > 0 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={includeDesign && designsLeft > 0}
+                    disabled={designsLeft <= 0}
+                    onChange={(e) => setIncludeDesign(e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: T.gold }}
+                  />
+                  {t("ads.includeDesign", { n: Math.max(designsLeft, 0) })}
+                </label>
+                {includeDesign && designsLeft > 0 && (
+                  <DesignFields
+                    t={t}
+                    value={designFields}
+                    onChange={setDesignFields}
+                    allowedStyles={allowedStyles}
+                    onLockedStyle={() => handleUpgradeClick("premium")}
+                  />
+                )}
               </>
             )}
 
@@ -1507,6 +1525,11 @@ function AppContent() {
                   max: quotaInfo.maxGenerationsPerMonth,
                   plan: t("plans." + quotaInfo.plan) || quotaInfo.plan,
                 })}
+              </p>
+            )}
+            {quota && quota.designsMax > 0 && (
+              <p style={{ textAlign: "center", color: T.textFaint, fontSize: "0.85rem", marginTop: "0.35rem", marginBottom: 0 }}>
+                {t("ads.designsUsed", { used: quota.designsUsed, max: quota.designsMax })}
               </p>
             )}
           </div>
@@ -1616,189 +1639,10 @@ function AppContent() {
             </div>
           )}
 
-          {/* عرض خاص للباقة المجانية: منشور واحد احترافي كامل التفاصيل + تجربة تشويقية عالية
-              التحويل (بطاقات هيكلية مموّهة مقفلة + صندوق مقارنة تسويقي) بدل خطة كاملة. */}
-          {results.length > 0 && tier === "free" && (() => {
-            const freeIdea = results.find((r) => !r.locked) || results[0];
-            return (
-              <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-                <h2
-                  style={{
-                    color: T.text,
-                    fontWeight: "800",
-                    letterSpacing: "-0.01em",
-                    marginBottom: "1.25rem",
-                    textAlign: "center",
-                  }}
-                >
-                  {t("app.outputHeading")}
-                </h2>
-
-                <div style={{ maxWidth: "620px", margin: "0 auto" }}>
-                  <div className="agency-card" style={{ background: T.glass,
-                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "2rem", marginBottom: "1rem" }}>
-                    <div style={{ background: AGENCY_COLORS.navy, color: "white", padding: "0.4rem 1rem", borderRadius: "8px", display: "inline-block", fontWeight: "bold", marginBottom: "1rem" }}>
-                      {t("free.yourIdea")}
-                    </div>
-                    <h3 style={{ marginBottom: "0.75rem" }}>{freeIdea.idea}</h3>
-
-                    {freeIdea.shotAngle && (
-                      <div style={{ background: "rgba(56,116,255,0.12)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
-                        {t("free.shotAngle", { value: freeIdea.shotAngle })}
-                      </div>
-                    )}
-
-                    <p style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem", whiteSpace: "pre-wrap" }}>
-                      {freeIdea.caption}
-                    </p>
-
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-                      {freeIdea.hashtags.map((tag, j) => (
-                        <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: T.goldLight, padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    {freeIdea.imageIdea && (
-                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
-                        {t("content.imageIdea", { value: freeIdea.imageIdea })}
-                      </div>
-                    )}
-
-                    <div style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px" }}>
-                      {t("content.bestTime", { time: freeIdea.bestTime })}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* تجربة تشويقية عالية التحويل: 3 بطاقات هيكلية وهمية (Skeleton) — بيانات مزيّفة
-                    ثابتة، وليست من lockedDays القادمة من الخادم — بتأثير ضبابي خفيف (blur)، وفوقها
-                    قفل مع عبارة توضّح أن باقي الخطة جاهزة بانتظار الترقية. */}
-                <div style={{ position: "relative", marginTop: "1.5rem", borderRadius: "12px", overflow: "hidden" }}>
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                      gap: "1.25rem",
-                      filter: "blur(3px)",
-                      pointerEvents: "none",
-                      userSelect: "none",
-                    }}
-                  >
-                    {[0, 1, 2].map((i) => (
-                      <div key={i} style={{ background: T.glass,
-                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.5rem" }}>
-                        <div style={{ width: "72px", height: "22px", borderRadius: "6px", background: AGENCY_COLORS.navy, marginBottom: "1rem" }} />
-                        <div style={{ width: "80%", height: "16px", borderRadius: "4px", background: "rgba(255,255,255,0.10)", marginBottom: "0.85rem" }} />
-                        <div style={{ width: "100%", height: "56px", borderRadius: "8px", background: "rgba(255,255,255,0.05)", marginBottom: "1rem" }} />
-                        <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
-                          <div style={{ width: "48px", height: "18px", borderRadius: "999px", background: "rgba(212,175,55,0.18)" }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background: "rgba(15, 23, 42, 0.5)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "0.85rem",
-                      padding: "1.5rem",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "2.2rem" }}>🔒</div>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "white",
-                        fontWeight: "700",
-                        fontSize: "1.05rem",
-                        maxWidth: "440px",
-                        textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      {t("freeUpsell.lockOverlayText")}
-                    </p>
-                    <button
-                      onClick={() => handleUpgradeClick("pro")}
-                      style={{
-                        background: T.glass,
-                        color: AGENCY_COLORS.goldDark,
-                        border: `1px solid ${T.gold}`,
-                        borderRadius: "999px",
-                        padding: "0.6rem 1.5rem",
-                        fontSize: "0.9rem",
-                        fontWeight: "700",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {t("freeUpsell.unlockButton")}
-                    </button>
-                  </div>
-                </div>
-
-                {/* صندوق المقارنة التسويقي (القهوة) — زر الترقية هنا أخضر بارز مع تأثير hover
-                    (عبر كلاس CSS مُعرَّف أدناه في <style>، لأن أنماط hover لا تُكتب inline في React). */}
-                <div style={{ background: T.glass,
-                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.75rem", marginTop: "1.5rem", textAlign: "center" }}>
-                  <h4 style={{ margin: "0 0 0.75rem 0", color: T.text, fontSize: "1.15rem" }}>
-                    {t("freeUpsell.coffee.title")}
-                  </h4>
-                  <p style={{ margin: "0 0 0.75rem 0", color: T.textMuted, fontSize: "0.95rem", lineHeight: 1.6 }}>
-                    {t("freeUpsell.coffee.description")}
-                  </p>
-                  <p style={{ margin: "0 0 1.25rem 0", color: T.textMuted, fontSize: "0.95rem", fontWeight: "600" }}>
-                    {t("freeUpsell.coffee.cta")}
-                  </p>
-                  <button
-                    className="free-upsell-cta-btn"
-                    onClick={() => handleUpgradeClick("pro")}
-                    style={{
-                      padding: "0.85rem 2.25rem",
-                      border: "none",
-                      borderRadius: "999px",
-                      color: "white",
-                      fontWeight: "700",
-                      fontSize: "1rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {t("freeUpsell.coffee.button")}
-                  </button>
-                </div>
-
-                {/* أنماط hover للزر الأخضر أعلاه — مُضمَّنة هنا محلياً (بدل ملف CSS منفصل) لأن
-                    App.js لا يستورد أي ورقة أنماط خارجية حالياً؛ تُضاف للصفحة فقط عند عرض هذا
-                    القسم (تجربة الباقة المجانية)، ولا تؤثر على أي عنصر آخر في التطبيق. */}
-                <style>{`
-                  .free-upsell-cta-btn {
-                    background: #10b981;
-                    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-                  }
-                  .free-upsell-cta-btn:hover {
-                    background: #059669;
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.45);
-                  }
-                `}</style>
-              </div>
-            );
-          })()}
-
-          {/* عرض الشبكة المعتاد للباقات المدفوعة (بدون تغيير في المنطق، فقط النصوص أصبحت مترجمة) */}
-          {results.length > 0 && tier !== "free" && (
-            <>
+          {/* Result: one complete ad. Design area first (passing variations, or the upgrade
+              prompt on the free plan), then headline, caption, call to action and hashtags. */}
+          {ad && (
+            <div style={{ maxWidth: "860px", margin: "0 auto" }}>
               <h2
                 style={{
                   color: T.text,
@@ -1808,101 +1652,182 @@ function AppContent() {
                   textAlign: "center",
                 }}
               >
-                {t("app.outputHeading")}
+                {t("ads.outputHeading")}
               </h2>
 
-              {/* زر تصدير CSV — متاح لأي باقة غير مجانية بعد ظهور النتيجة. يبني الملف محلياً في
-                  المتصفح من مصفوفة results نفسها، بدون أي طلب إضافي للخادم. */}
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-                <button
-                  onClick={() => downloadCSV(results)}
-                  className="agency-btn-outline"
-                  style={{
-                    padding: "0.6rem 1.25rem",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                  }}
-                >
-                  {t("pro.downloadCsv")}
-                </button>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
-                {results.map((item, i) => (
-                  <div key={i} className="agency-card" style={{ background: T.glass,
-                    border: `1px solid ${T.glassBorder}`, borderRadius: "12px", padding: "1.5rem" }}>
-                    <div style={{ background: AGENCY_COLORS.navy, color: "white", padding: "0.4rem 1rem", borderRadius: "8px", display: "inline-block", fontWeight: "bold", marginBottom: "1rem" }}>
-                      {t("common.dayLabel", { n: item.day })}
-                    </div>
-                    <h3 style={{ marginBottom: "0.5rem" }}>{item.idea}</h3>
-                    <p style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>{item.caption}</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-                      {item.hashtags.map((tag, j) => <span key={j} style={{ background: "rgba(212,175,55,0.18)", color: T.goldLight, padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.85rem" }}>{tag}</span>)}
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.05)", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
-                      {t("content.bestTime", { time: item.bestTime })}
-                    </div>
-                    {item.imageIdea && (
-                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
-                        {t("content.imageIdea", { value: item.imageIdea })}
-                      </div>
-                    )}
-                    {item.videoIdea && (
-                      <div style={{ background: "rgba(212,175,55,0.12)", padding: "0.75rem", borderRadius: "8px", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
-                        {t("content.video", { value: item.videoIdea })}
-                      </div>
-                    )}
-                    {/* أمر توليد الصورة بالذكاء الاصطناعي — PREMIUM فقط (imagePrompt فارغ لغير بريميوم) */}
-                    {item.imagePrompt && (
-                      <div style={{ background: "rgba(212,175,55,0.12)", color: T.goldLight, padding: "0.75rem", borderRadius: "8px", fontSize: "0.85rem" }}>
-                        {t("pro.imagePrompt", { value: item.imagePrompt })}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* قسم التشويق (Upsell Teaser) — يظهر مباشرة بعد النتيجة، ويختلف حسب الباقة الحالية:
-              FREE تُشوَّق لـ PRO، و PRO تُشوَّق لـ PREMIUM. لا يظهر أي شيء لباقة PREMIUM. */}
-          {SHOW_LEGACY_TIER_UI && results.length > 0 && (tier === "free" || tier === "pro") && (
-            <div style={{ maxWidth: "1100px", margin: "30px auto 0" }}>
-              {tier === "free" && (
+              {realPlan === "free" ? (
                 <div
+                  className="agency-card"
                   style={{
-                    padding: "20px",
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderRadius: "8px",
-                    border: "2px dashed #94a3b8",
+                    background: T.glass,
+                    border: `1px dashed ${T.glassBorderGold}`,
+                    borderRadius: "12px",
+                    padding: "1.5rem",
+                    marginBottom: "1.25rem",
                     textAlign: "center",
                   }}
                 >
-                  <h4 style={{ margin: "0 0 10px 0", color: T.textMuted }}>
-                    {t("upsell.free.title")}
-                  </h4>
-                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: T.textMuted }}>
-                    {renderWithBold(t("upsell.free.description"))}
+                  <p style={{ margin: "0 0 1rem", color: T.textMuted, fontSize: "0.95rem", lineHeight: 1.6 }}>
+                    {t("ads.designUpgradeBody")}
                   </p>
                   <button
+                    type="button"
+                    className="apex-btn-gold"
                     onClick={() => handleUpgradeClick("pro")}
-                    style={{
-                      backgroundColor: "#10b981",
-                      color: "white",
-                      padding: "10px 20px",
-                      border: "none",
-                      borderRadius: "5px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
+                    style={{ padding: "0.8rem 1.6rem", fontSize: "0.95rem" }}
                   >
-                    {t("upsell.free.button")}
+                    {t("ads.designUpgrade")}
                   </button>
                 </div>
-              )}
-              {tier === "pro" && (
+              ) : designState.status === "passed" ? (
+                <div
+                  className="agency-card"
+                  style={{
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorder}`,
+                    borderRadius: "12px",
+                    padding: "1.5rem",
+                    marginBottom: "1.25rem",
+                  }}
+                >
+                  <h3 style={{ margin: "0 0 1.1rem", textAlign: "center", color: T.text }}>{t("ads.designPanelTitle")}</h3>
+                  <DesignGallery
+                    user={user}
+                    docId={adDocId}
+                    scenes={designState.scenes}
+                    design={designState.design}
+                    t={t}
+                    showVideoLink
+                  />
+                </div>
+              ) : includeDesign ? (
+                <div
+                  className="agency-card"
+                  style={{
+                    background: T.glass,
+                    border: `1px solid ${T.glassBorderGold}`,
+                    borderRadius: "12px",
+                    padding: "1.5rem",
+                    marginBottom: "1.25rem",
+                  }}
+                >
+                  <h3 style={{ margin: "0 0 1rem", color: T.text }}>{t("ads.designPanelTitle")}</h3>
+                  {designState.status === "working" ? (
+                    <p className="agency-loading-step" style={{ margin: 0, color: T.text, fontWeight: 600, textAlign: "center" }}>
+                      {t("ads.designWorking")}
+                    </p>
+                  ) : (
+                    <>
+                      {designState.status === "failed" && (
+                        <p
+                          style={{
+                            margin: "0 0 1rem",
+                            padding: "0.8rem 1rem",
+                            borderRadius: "8px",
+                            background: "rgba(239,68,68,0.10)",
+                            border: "1px solid rgba(239,68,68,0.35)",
+                            color: "#FCA5A5",
+                            fontSize: "0.9rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {designFailureMessage(designState.reason, t)}
+                        </p>
+                      )}
+                      <label className="agency-form-label">{t("ads.headlineEditLabel")}</label>
+                      <input
+                        type="text"
+                        value={designHeadline}
+                        maxLength={120}
+                        onChange={(e) => setDesignHeadline(e.target.value)}
+                        style={adInputStyle}
+                      />
+                      <label className="agency-form-label">{t("ads.ctaEditLabel")}</label>
+                      <input
+                        type="text"
+                        value={designCta}
+                        maxLength={40}
+                        onChange={(e) => setDesignCta(e.target.value)}
+                        style={adInputStyle}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateDesign}
+                        disabled={!canStartDesign}
+                        className="agency-btn-primary"
+                        style={{
+                          width: "100%",
+                          padding: "0.9rem",
+                          borderRadius: "8px",
+                          fontSize: "1rem",
+                          cursor: canStartDesign ? "pointer" : "not-allowed",
+                          opacity: canStartDesign ? 1 : 0.6,
+                        }}
+                      >
+                        {t("ads.generateDesignBtn")}
+                      </button>
+                      {designsLeft <= 0 && (
+                        <p style={{ margin: "0.6rem 0 0", color: T.textFaint, fontSize: "0.85rem", textAlign: "center" }}>
+                          {t("ads.designQuotaExceeded")}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : null}
+
+              <div
+                className="agency-card"
+                style={{
+                  background: T.glass,
+                  border: `1px solid ${T.glassBorder}`,
+                  borderRadius: "12px",
+                  padding: "1.5rem",
+                }}
+              >
+                {[
+                  { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || ad.idea || "" },
+                  { key: "caption", label: t("ads.captionLabel"), text: ad.caption || "" },
+                  { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
+                  { key: "hashtags", label: t("ads.hashtagsLabel"), text: (ad.hashtags || []).join(" ") },
+                ]
+                  .filter((row) => row.text)
+                  .map((row, i) => (
+                    <div
+                      key={row.key}
+                      style={{
+                        paddingTop: i === 0 ? 0 : "1rem",
+                        marginTop: i === 0 ? 0 : "1rem",
+                        borderTop: i === 0 ? "none" : `1px solid ${T.glassBorder}`,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem", marginBottom: "0.4rem" }}>
+                        <span style={{ color: T.goldLight, fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                          {row.label}
+                        </span>
+                        <CopyButton text={row.text} t={t} />
+                      </div>
+                      <p
+                        dir="auto"
+                        style={{
+                          margin: 0,
+                          color: row.key === "hashtags" ? T.goldLight : T.text,
+                          fontSize: row.key === "headline" ? "1.35rem" : "1rem",
+                          fontWeight: row.key === "headline" ? 800 : 400,
+                          lineHeight: 1.55,
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {row.text}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+
+              {SHOW_LEGACY_TIER_UI && realPlan === "pro" && (
                 <div
                   style={{
+                    marginTop: "1.5rem",
                     padding: "20px",
                     backgroundColor: "rgba(212,175,55,0.07)",
                     borderRadius: "8px",
@@ -1910,25 +1835,15 @@ function AppContent() {
                     textAlign: "center",
                   }}
                 >
-                  <h4 style={{ margin: "0 0 10px 0", color: T.goldLight }}>
-                    {t("upsell.pro.title")}
-                  </h4>
-                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: T.textMuted }}>
-                    {renderWithBold(t("upsell.pro.description"))}
-                  </p>
+                  <h4 style={{ margin: "0 0 10px 0", color: T.goldLight }}>{t("ads.upsellProTitle")}</h4>
+                  <p style={{ margin: "0 0 15px 0", fontSize: "15px", color: T.textMuted }}>{t("ads.upsellProBody")}</p>
                   <button
+                    type="button"
+                    className="apex-btn-gold"
                     onClick={() => handleUpgradeClick("premium")}
-                    style={{
-                      background: T.goldGradient,
-                      color: "white",
-                      padding: "10px 20px",
-                      border: "none",
-                      borderRadius: "5px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
+                    style={{ padding: "0.7rem 1.4rem", fontSize: "0.92rem" }}
                   >
-                    {t("upsell.pro.button")}
+                    {t("ads.upsellProButton")}
                   </button>
                 </div>
               )}
