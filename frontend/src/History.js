@@ -76,6 +76,8 @@ function ProjectDetailsModal({ project, user, lang, t, isRtl, onClose }) {
   const adRows = ad
     ? [
         { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || "" },
+        { key: "subheadline", label: t("ads.subheadlineLabel"), text: ad.subheadline || "" },
+        { key: "benefits", label: t("ads.benefitsLabel"), text: (ad.benefits || []).join(" · ") },
         { key: "caption", label: t("ads.captionLabel"), text: ad.caption || "" },
         { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
         { key: "hashtags", label: t("ads.hashtagsLabel"), text: (ad.hashtags || []).join(" ") },
@@ -141,7 +143,15 @@ function ProjectDetailsModal({ project, user, lang, t, isRtl, onClose }) {
           <div style={{ marginBottom: "1.25rem" }}>
             <h3 style={{ margin: "0 0 0.9rem", fontSize: "1.05rem", color: "#1e293b" }}>{t("ads.historyDesign")}</h3>
             {/* Redrawn from saved data: scene link + headline, button, colours, logo. */}
-            <DesignGallery user={user} docId={project.id} scenes={design.scenes} design={design} t={t} light />
+            <DesignGallery
+              user={user}
+              docId={project.id}
+              scenes={design.scenes}
+              design={design}
+              post={ad ? { caption: ad.caption || "", hashtags: ad.hashtags || [] } : null}
+              t={t}
+              light
+            />
           </div>
         )}
 

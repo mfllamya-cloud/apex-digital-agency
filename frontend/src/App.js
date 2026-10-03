@@ -18,6 +18,7 @@ import { LanguageProvider, LanguageSwitcher, useLanguage } from "./i18n";
 import {
   DesignFields,
   DesignGallery,
+  PostShell,
   CopyButton,
   EMPTY_DESIGN_FIELDS,
   fetchQuota,
@@ -615,9 +616,13 @@ function AppContent() {
   const [designFields, setDesignFields] = useState(EMPTY_DESIGN_FIELDS);
   const [quota, setQuota] = useState(null); // /api/quota: real plan, counters, design limits
   const [adDocId, setAdDocId] = useState(""); // Firestore id of the ad just generated
-  const [designHeadline, setDesignHeadline] = useState("");
-  const [designCta, setDesignCta] = useState("");
-  const [designState, setDesignState] = useState({ status: "idle" }); // idle | working | passed | failed
+  const [product, setProduct] = useState(""); // "What are you advertising?" (required, all plans)
+  // Texts drawn on the design. Prefilled from the generated ad, editable before the design is made.
+  const [designTexts, setDesignTexts] = useState({ headline: "", subheadline: "", badge: "", chips: ["", "", ""], cta: "" });
+  const [designResult, setDesignResult] = useState(null); // { jobId, scenes, design, redoAvailable }
+  const [designBusy, setDesignBusy] = useState(false);
+  const [designError, setDesignError] = useState(""); // failure reason of the last attempt
+  const [showRedoEditor, setShowRedoEditor] = useState(false);
   const designRunRef = useRef(0);
   const [loading, setLoading] = useState(false);
   // loadingStepIndex: يتقدّم كل 2.5 ثانية أثناء التحميل فقط، لعرض "تجربة الوكالة النفسية
@@ -772,16 +777,29 @@ function AppContent() {
   const designsLeft = designsMax - (quota ? quota.designsUsed : 0);
   const allowedStyles = quota ? quota.designStyles : PLAN_DESIGN_STYLES[realPlan] || [];
   const ad = results.find((item) => !item.locked) || null;
+  const isRedo = Boolean(designResult);
   const canStartDesign =
-    Boolean(adDocId) && Boolean(designFields.photo) && designHeadline.trim().length > 0 && designsLeft > 0;
+    !designBusy &&
+    Boolean(adDocId) &&
+    Boolean(designFields.photo) &&
+    designTexts.headline.trim().length > 0 &&
+    (isRedo ? designResult.redoAvailable : designsLeft > 0);
 
+  const limitWords = (text, max) => String(text || "").trim().split(/\s+/).filter(Boolean).slice(0, max).join(" ");
+
+  // Generates the design, or regenerates it once for free ("redo") when one already exists.
   const handleGenerateDesign = async () => {
     if (!user || !canStartDesign) return;
-    const headline = designHeadline.trim().split(/\s+/).slice(0, 8).join(" ");
     const style = allowedStyles.includes(designFields.style) ? designFields.style : allowedStyles[0];
-    const design = {
-      headline,
-      cta: designCta.trim(),
+    const texts = {
+      headline: limitWords(designTexts.headline, 8),
+      subheadline: limitWords(designTexts.subheadline, 10),
+      badge: limitWords(designTexts.badge, 3),
+      chips: designTexts.chips.map((c) => limitWords(c, 3)).filter(Boolean).slice(0, 3),
+      cta: limitWords(designTexts.cta, 4),
+    };
+    const base = {
+      ...texts,
       brandName: designFields.brandName.trim(),
       colors: [designFields.color1, designFields.color2],
       logo: designFields.logo,
@@ -789,19 +807,20 @@ function AppContent() {
     };
     const runId = designRunRef.current + 1;
     designRunRef.current = runId;
-    setDesignHeadline(headline);
-    setDesignState({ status: "working" });
+    setDesignBusy(true);
+    setDesignError("");
     const result = await runDesignJob(
       user,
       {
         docId: adDocId,
+        redoOf: isRedo ? designResult.jobId : "",
         style,
-        headline,
-        cta: design.cta,
-        brandName: design.brandName,
+        ...texts,
+        brandName: base.brandName,
         color1: designFields.color1,
         color2: designFields.color2,
         note: designFields.note.trim(),
+        product: product.trim(),
         logo: designFields.logo,
         productImage: designFields.photo.dataUrl,
         productThumb: designFields.photo.thumb,
@@ -809,16 +828,26 @@ function AppContent() {
       () => designRunRef.current !== runId
     );
     if (designRunRef.current !== runId || result.status === "cancelled") return;
+    setDesignBusy(false);
     if (result.quota) setQuota(result.quota);
     else refreshQuota();
     if (result.status === "passed") {
-      setDesignState({ status: "passed", scenes: result.scenes, design });
+      setDesignResult({
+        // The free redo belongs to the first design of this credit, so its job id is kept.
+        jobId: isRedo ? designResult.jobId : result.jobId,
+        scenes: result.scenes,
+        design: { ...base, variant: result.variant, landscape: result.landscape },
+        redoAvailable: isRedo ? false : result.redoAvailable,
+      });
+      setShowRedoEditor(false);
     } else {
-      setDesignState({ status: "failed", reason: result.reason });
+      // A failed redo is given back by the server; the earlier design stays on screen.
+      setDesignError(result.reason || "unavailable");
     }
   };
 
   const isDescriptionValid = businessDescription.trim().length > 0;
+  const isProductValid = product.trim().length > 0;
 
   const handleGenerate = async () => {
     // بوابة "Authentication UI" الجديدة (سقالة/mock — راجع التعليق أعلى تعريف isAuthenticated
@@ -832,6 +861,10 @@ function AppContent() {
     }
     if (!isDescriptionValid) {
       alert(t("app.alertDescribeFirst"));
+      return;
+    }
+    if (!isProductValid) {
+      alert(t("ads.productRequired"));
       return;
     }
     // The product photo is required when an ad design is requested.
@@ -862,6 +895,7 @@ function AppContent() {
         },
         body: JSON.stringify({
           businessDescription: businessDescription.trim(),
+          product: product.trim(),
           offer: offer.trim(),
           // Paid-only options. The server ignores them unless the real plan allows them.
           language: tier === "free" ? "" : language,
@@ -876,10 +910,19 @@ function AppContent() {
         setResults(data.content);
         setAdDocId(data.docId || "");
         const first = (data.content || []).find((item) => !item.locked) || {};
-        setDesignHeadline(first.headline || first.idea || "");
-        setDesignCta(first.cta || "");
+        const benefits = Array.isArray(first.benefits) ? first.benefits : [];
+        setDesignTexts({
+          headline: first.headline || first.idea || "",
+          subheadline: first.subheadline || "",
+          badge: first.offerBadge || "",
+          chips: [benefits[0] || "", benefits[1] || "", benefits[2] || ""],
+          cta: first.cta || "",
+        });
         designRunRef.current += 1; // drops any design still running for the previous ad
-        setDesignState({ status: "idle" });
+        setDesignResult(null);
+        setDesignBusy(false);
+        setDesignError("");
+        setShowRedoEditor(false);
         setQuotaInfo({
           plan: data.plan,
           generationsUsed: data.generationsUsed,
@@ -1234,6 +1277,20 @@ function AppContent() {
               <div style={{ marginBottom: "1rem" }} />
             )}
 
+            {/* "What are you advertising?" — the product and what it does. It feeds both the ad
+                copy and the scene of the ad design. */}
+            <label className="agency-form-label">
+              {t("ads.productLabel")} <span style={{ color: "#ef4444" }}>*</span>
+            </label>
+            <input
+              type="text"
+              value={product}
+              maxLength={120}
+              onChange={(e) => setProduct(e.target.value)}
+              placeholder={t("ads.productPlaceholder")}
+              style={{ ...adInputStyle, border: isProductValid ? adInputStyle.border : "1px solid rgba(239,68,68,0.55)" }}
+            />
+
             {/* لغة المحتوى الصريحة — ميزة PRO/PREMIUM، منفصلة تماماً عن لغة الواجهة (i18n).
                 القيمة الافتراضية "" تعني: اترك الخادم يكتشف اللغة تلقائياً من وصف المشروع كما كان دائماً. */}
             {tier !== "free" && (
@@ -1434,18 +1491,18 @@ function AppContent() {
 
             <button
               onClick={handleGenerate}
-              disabled={loading || !isDescriptionValid || quotaExceeded}
+              disabled={loading || !isDescriptionValid || !isProductValid || quotaExceeded}
               className="agency-btn-primary"
               style={{
                 width: "100%",
                 padding: "1rem",
                 borderRadius: "8px",
                 fontSize: "1rem",
-                cursor: loading || !isDescriptionValid || quotaExceeded ? "not-allowed" : "pointer",
-                opacity: loading || !isDescriptionValid || quotaExceeded ? 0.6 : 1,
+                cursor: loading || !isDescriptionValid || !isProductValid || quotaExceeded ? "not-allowed" : "pointer",
+                opacity: loading || !isDescriptionValid || !isProductValid || quotaExceeded ? 0.6 : 1,
               }}
             >
-              {loading ? t("app.generating") : t("app.generateBtn")}
+              {loading ? t("ads.generating") : t("ads.generateBtn")}
             </button>
 
             {/* "تجربة الوكالة النفسية متعددة المراحل": أثناء التحميل فقط، تُستبدل لوحة الانتظار
@@ -1639,10 +1696,11 @@ function AppContent() {
             </div>
           )}
 
-          {/* Result: one complete ad. Design area first (passing variations, or the upgrade
-              prompt on the free plan), then headline, caption, call to action and hashtags. */}
+          {/* Result: one integrated ad, shown as a social post — the design on top, the caption
+              and hashtags under it. Above it, the design editor (texts are editable before the
+              design is generated, and again for the one free redo). */}
           {ad && (
-            <div style={{ maxWidth: "860px", margin: "0 auto" }}>
+            <div style={{ maxWidth: "920px", margin: "0 auto" }}>
               <h2
                 style={{
                   color: T.text,
@@ -1655,52 +1713,7 @@ function AppContent() {
                 {t("ads.outputHeading")}
               </h2>
 
-              {realPlan === "free" ? (
-                <div
-                  className="agency-card"
-                  style={{
-                    background: T.glass,
-                    border: `1px dashed ${T.glassBorderGold}`,
-                    borderRadius: "12px",
-                    padding: "1.5rem",
-                    marginBottom: "1.25rem",
-                    textAlign: "center",
-                  }}
-                >
-                  <p style={{ margin: "0 0 1rem", color: T.textMuted, fontSize: "0.95rem", lineHeight: 1.6 }}>
-                    {t("ads.designUpgradeBody")}
-                  </p>
-                  <button
-                    type="button"
-                    className="apex-btn-gold"
-                    onClick={() => handleUpgradeClick("pro")}
-                    style={{ padding: "0.8rem 1.6rem", fontSize: "0.95rem" }}
-                  >
-                    {t("ads.designUpgrade")}
-                  </button>
-                </div>
-              ) : designState.status === "passed" ? (
-                <div
-                  className="agency-card"
-                  style={{
-                    background: T.glass,
-                    border: `1px solid ${T.glassBorder}`,
-                    borderRadius: "12px",
-                    padding: "1.5rem",
-                    marginBottom: "1.25rem",
-                  }}
-                >
-                  <h3 style={{ margin: "0 0 1.1rem", textAlign: "center", color: T.text }}>{t("ads.designPanelTitle")}</h3>
-                  <DesignGallery
-                    user={user}
-                    docId={adDocId}
-                    scenes={designState.scenes}
-                    design={designState.design}
-                    t={t}
-                    showVideoLink
-                  />
-                </div>
-              ) : includeDesign ? (
+              {realPlan !== "free" && (includeDesign || designResult) && (!designResult || showRedoEditor) && (
                 <div
                   className="agency-card"
                   style={{
@@ -1708,17 +1721,20 @@ function AppContent() {
                     border: `1px solid ${T.glassBorderGold}`,
                     borderRadius: "12px",
                     padding: "1.5rem",
-                    marginBottom: "1.25rem",
+                    marginBottom: "1.5rem",
                   }}
                 >
-                  <h3 style={{ margin: "0 0 1rem", color: T.text }}>{t("ads.designPanelTitle")}</h3>
-                  {designState.status === "working" ? (
+                  <h3 style={{ margin: "0 0 0.35rem", color: T.text }}>
+                    {isRedo ? t("ads.redoPanelTitle") : t("ads.designPanelTitle")}
+                  </h3>
+                  <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.85rem" }}>{t("ads.designPanelHint")}</p>
+                  {designBusy ? (
                     <p className="agency-loading-step" style={{ margin: 0, color: T.text, fontWeight: 600, textAlign: "center" }}>
                       {t("ads.designWorking")}
                     </p>
                   ) : (
                     <>
-                      {designState.status === "failed" && (
+                      {designError && (
                         <p
                           style={{
                             margin: "0 0 1rem",
@@ -1731,25 +1747,70 @@ function AppContent() {
                             fontWeight: 600,
                           }}
                         >
-                          {designFailureMessage(designState.reason, t)}
+                          {designFailureMessage(designError, t)}
                         </p>
                       )}
                       <label className="agency-form-label">{t("ads.headlineEditLabel")}</label>
                       <input
                         type="text"
-                        value={designHeadline}
+                        dir="auto"
+                        value={designTexts.headline}
                         maxLength={120}
-                        onChange={(e) => setDesignHeadline(e.target.value)}
+                        onChange={(e) => setDesignTexts({ ...designTexts, headline: e.target.value })}
                         style={adInputStyle}
                       />
-                      <label className="agency-form-label">{t("ads.ctaEditLabel")}</label>
+                      <label className="agency-form-label">{t("ads.subheadlineEditLabel")}</label>
                       <input
                         type="text"
-                        value={designCta}
-                        maxLength={40}
-                        onChange={(e) => setDesignCta(e.target.value)}
+                        dir="auto"
+                        value={designTexts.subheadline}
+                        maxLength={140}
+                        onChange={(e) => setDesignTexts({ ...designTexts, subheadline: e.target.value })}
                         style={adInputStyle}
                       />
+                      <label className="agency-form-label">{t("ads.chipsEditLabel")}</label>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.6rem" }}>
+                        {[0, 1, 2].map((i) => (
+                          <input
+                            key={i}
+                            type="text"
+                            dir="auto"
+                            value={designTexts.chips[i] || ""}
+                            maxLength={32}
+                            onChange={(e) => {
+                              const chips = designTexts.chips.slice();
+                              chips[i] = e.target.value;
+                              setDesignTexts({ ...designTexts, chips });
+                            }}
+                            style={adInputStyle}
+                          />
+                        ))}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0 0.8rem" }}>
+                        <div>
+                          <label className="agency-form-label">{t("ads.badgeEditLabel")}</label>
+                          <input
+                            type="text"
+                            dir="auto"
+                            value={designTexts.badge}
+                            maxLength={24}
+                            onChange={(e) => setDesignTexts({ ...designTexts, badge: e.target.value })}
+                            placeholder={t("ads.badgePlaceholder")}
+                            style={adInputStyle}
+                          />
+                        </div>
+                        <div>
+                          <label className="agency-form-label">{t("ads.ctaEditLabel")}</label>
+                          <input
+                            type="text"
+                            dir="auto"
+                            value={designTexts.cta}
+                            maxLength={40}
+                            onChange={(e) => setDesignTexts({ ...designTexts, cta: e.target.value })}
+                            style={adInputStyle}
+                          />
+                        </div>
+                      </div>
                       <button
                         type="button"
                         onClick={handleGenerateDesign}
@@ -1764,9 +1825,14 @@ function AppContent() {
                           opacity: canStartDesign ? 1 : 0.6,
                         }}
                       >
-                        {t("ads.generateDesignBtn")}
+                        {isRedo ? t("ads.redoConfirmBtn") : t("ads.generateDesignBtn")}
                       </button>
-                      {designsLeft <= 0 && (
+                      {!designFields.photo && (
+                        <p style={{ margin: "0.6rem 0 0", color: T.textFaint, fontSize: "0.85rem", textAlign: "center" }}>
+                          {t("ads.photoRequired")}
+                        </p>
+                      )}
+                      {!isRedo && designsLeft <= 0 && (
                         <p style={{ margin: "0.6rem 0 0", color: T.textFaint, fontSize: "0.85rem", textAlign: "center" }}>
                           {t("ads.designQuotaExceeded")}
                         </p>
@@ -1774,8 +1840,85 @@ function AppContent() {
                     </>
                   )}
                 </div>
-              ) : null}
+              )}
 
+              {designResult ? (
+                <>
+                  <DesignGallery
+                    user={user}
+                    docId={adDocId}
+                    scenes={designResult.scenes}
+                    design={designResult.design}
+                    post={{ caption: ad.caption || "", hashtags: ad.hashtags || [] }}
+                    t={t}
+                    showVideoLink
+                  />
+                  {!showRedoEditor && (
+                    <div style={{ textAlign: "center", marginTop: "1rem" }}>
+                      {designResult.redoAvailable ? (
+                        <button
+                          type="button"
+                          className="agency-btn-outline"
+                          onClick={() => {
+                            setDesignError("");
+                            setShowRedoEditor(true);
+                          }}
+                          style={{ padding: "0.65rem 1.4rem", borderRadius: "8px", cursor: "pointer" }}
+                        >
+                          ↻ {t("ads.redoBtn")}
+                        </button>
+                      ) : (
+                        <span style={{ color: T.textFaint, fontSize: "0.82rem" }}>{t("ads.redoUsed")}</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <PostShell
+                    brandName={designFields.brandName}
+                    t={t}
+                    caption={ad.caption || ""}
+                    hashtags={ad.hashtags || []}
+                    media={
+                      <div
+                        style={{
+                          padding: "1.6rem 1.2rem",
+                          background: "#f1f5f9",
+                          borderTop: "1px solid #e2e8f0",
+                          borderBottom: "1px solid #e2e8f0",
+                          textAlign: "center",
+                        }}
+                      >
+                        <p dir="auto" style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, lineHeight: 1.25, color: "#0f1419" }}>
+                          {ad.headline || ad.idea}
+                        </p>
+                        {ad.subheadline && (
+                          <p dir="auto" style={{ margin: "0.5rem 0 0", fontSize: "0.95rem", color: "#475569" }}>{ad.subheadline}</p>
+                        )}
+                        {realPlan === "free" && (
+                          <>
+                            <p style={{ margin: "1rem 0 0.8rem", fontSize: "0.85rem", color: "#475569", lineHeight: 1.5 }}>
+                              {t("ads.designUpgradeBody")}
+                            </p>
+                            <button
+                              type="button"
+                              className="apex-btn-gold"
+                              onClick={() => handleUpgradeClick("pro")}
+                              style={{ padding: "0.7rem 1.2rem", fontSize: "0.9rem" }}
+                            >
+                              {t("ads.designUpgrade")}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    }
+                    actions={<CopyButton text={[ad.caption, (ad.hashtags || []).join(" ")].filter(Boolean).join("\n\n")} t={t} light label={t("ads.copyCaption")} />}
+                  />
+                </div>
+              )}
+
+              {/* The copy behind the design, each line copyable on its own. */}
               <div
                 className="agency-card"
                 style={{
@@ -1783,25 +1926,27 @@ function AppContent() {
                   border: `1px solid ${T.glassBorder}`,
                   borderRadius: "12px",
                   padding: "1.5rem",
+                  marginTop: "1.5rem",
                 }}
               >
                 {[
                   { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || ad.idea || "" },
-                  { key: "caption", label: t("ads.captionLabel"), text: ad.caption || "" },
+                  { key: "subheadline", label: t("ads.subheadlineLabel"), text: ad.subheadline || "" },
+                  { key: "benefits", label: t("ads.benefitsLabel"), text: (ad.benefits || []).join(" · ") },
+                  { key: "badge", label: t("ads.badgeLabel"), text: ad.offerBadge || "" },
                   { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
-                  { key: "hashtags", label: t("ads.hashtagsLabel"), text: (ad.hashtags || []).join(" ") },
                 ]
                   .filter((row) => row.text)
                   .map((row, i) => (
                     <div
                       key={row.key}
                       style={{
-                        paddingTop: i === 0 ? 0 : "1rem",
-                        marginTop: i === 0 ? 0 : "1rem",
+                        paddingTop: i === 0 ? 0 : "0.8rem",
+                        marginTop: i === 0 ? 0 : "0.8rem",
                         borderTop: i === 0 ? "none" : `1px solid ${T.glassBorder}`,
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem", marginBottom: "0.4rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem", marginBottom: "0.3rem" }}>
                         <span style={{ color: T.goldLight, fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
                           {row.label}
                         </span>
@@ -1811,11 +1956,10 @@ function AppContent() {
                         dir="auto"
                         style={{
                           margin: 0,
-                          color: row.key === "hashtags" ? T.goldLight : T.text,
-                          fontSize: row.key === "headline" ? "1.35rem" : "1rem",
+                          color: T.text,
+                          fontSize: row.key === "headline" ? "1.2rem" : "0.98rem",
                           fontWeight: row.key === "headline" ? 800 : 400,
-                          lineHeight: 1.55,
-                          whiteSpace: "pre-wrap",
+                          lineHeight: 1.5,
                         }}
                       >
                         {row.text}

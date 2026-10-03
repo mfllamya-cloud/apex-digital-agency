@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// Ad design UI: the form fields, the calls to the design endpoints, and the finished designs
-// (scene from the server + headline, button and logo drawn in the browser by adTemplates.js).
+// Ad design UI: the form fields, the calls to the design endpoints, and the finished ad shown
+// as a social post (the design on top, the caption and hashtags under it).
 // Used by App.js (new ads) and History.js (saved designs, redrawn from saved data).
 //
 // No secret key is used here. The browser only talks to this site's own /api endpoints, with the
@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 import React, { useEffect, useRef, useState } from "react";
 import { T } from "./theme";
-import { AD_FORMATS, drawAd, ensureAdFonts } from "./adTemplates";
+import { AD_FORMATS, drawAd, ensureAdFonts, extractPalette, normalizePalette } from "./adTemplates";
 
 export const DESIGN_STYLE_KEYS = ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"];
 
@@ -23,11 +23,14 @@ const POLL_INTERVAL_MS = 3500;
 const POLL_MAX_MS = 8 * 60 * 1000;
 
 export const EMPTY_DESIGN_FIELDS = {
-  photo: null, // { dataUrl, thumb, previewUrl }
+  photo: null, // { dataUrl, thumb, previewUrl, palette }
   logo: "", // PNG data URL
   brandName: "",
-  color1: "#1f5c4d",
+  // Brand colours are read from the product photo. customColors turns true only when the
+  // customer overrides them with "Change colors".
+  color1: "#1f2a44",
   color2: "#d4af37",
+  customColors: false,
   note: "",
   style: "clean_studio",
 };
@@ -66,8 +69,9 @@ function fileError(code) {
   return err;
 }
 
-// Validates the product photo (JPG/PNG, 5 MB, 800 px on the short side) and prepares the two
-// copies the server needs. Rejects with err.code = "type" | "size" | "dims" | "read".
+// Validates the product photo (JPG/PNG, 5 MB, 800 px on the short side), prepares the two
+// copies the server needs and reads the brand colours from it.
+// Rejects with err.code = "type" | "size" | "dims" | "read".
 export async function prepareProductPhoto(file) {
   if (!file || !["image/jpeg", "image/png"].includes(file.type)) throw fileError("type");
   if (file.size > MAX_PHOTO_BYTES) throw fileError("size");
@@ -93,8 +97,13 @@ export async function prepareProductPhoto(file) {
     dataUrl = drawScaled(img, attempts[i][0], "#ffffff").toDataURL("image/jpeg", attempts[i][1]);
     if (dataUrl.length <= PHOTO_MAX_DATAURL_CHARS) break;
   }
-  const thumb = drawScaled(img, THUMB_MAX_SIDE, "#ffffff").toDataURL("image/jpeg", 0.82);
-  return { dataUrl, thumb, previewUrl: objectUrl };
+  const thumbCanvas = drawScaled(img, THUMB_MAX_SIDE, "#ffffff");
+  return {
+    dataUrl,
+    thumb: thumbCanvas.toDataURL("image/jpeg", 0.82),
+    previewUrl: objectUrl,
+    palette: extractPalette(thumbCanvas),
+  };
 }
 
 // The logo is drawn by code on the design, so it is kept as a small PNG (transparency preserved).
@@ -138,8 +147,9 @@ export async function fetchQuota(user) {
 }
 
 // Starts a design job and waits for it. Resolves with
-//   { status: "passed", scenes, quota } or { status: "failed", reason }
-// where reason is "quality" | "unavailable" | an error code from the server.
+//   { status: "passed", jobId, scenes, variant, landscape, redoAvailable, quota }
+//   or { status: "failed", reason } where reason is "quality" | "unavailable" | a server code.
+// payload.redoOf (a job id) asks for the free redo of an earlier design.
 export async function runDesignJob(user, payload, isCancelled) {
   let jobId;
   try {
@@ -165,7 +175,17 @@ export async function runDesignJob(user, payload, isCancelled) {
       const data = await res.json();
       if (!data.success) throw new Error("poll failed");
       consecutiveErrors = 0;
-      if (data.status === "passed") return { status: "passed", scenes: data.scenes || [], quota: data.quota || null };
+      if (data.status === "passed") {
+        return {
+          status: "passed",
+          jobId,
+          scenes: data.scenes || [],
+          variant: data.variant || 0,
+          landscape: Boolean(data.landscape),
+          redoAvailable: Boolean(data.redoAvailable),
+          quota: data.quota || null,
+        };
+      }
       if (data.status === "failed") return { status: "failed", reason: data.failure || "unavailable", quota: data.quota || null };
     } catch (_) {
       consecutiveErrors += 1;
@@ -188,6 +208,8 @@ export function designFailureMessage(reason, t) {
       return t("ads.designInProgress");
     case "DESIGN_INVALID_PHOTO":
       return t("ads.designInvalidPhoto");
+    case "DESIGN_REDO_USED":
+      return t("ads.redoUsed");
     case "DESIGN_NOT_IN_PLAN":
     case "DESIGN_STYLE_NOT_IN_PLAN":
       return t("ads.designNotInPlan");
@@ -212,7 +234,7 @@ const fieldStyle = {
 
 const hintStyle = { color: T.textFaint, fontSize: "0.8rem", margin: "0.35rem 0 1rem" };
 
-export function CopyButton({ text, t, light }) {
+export function CopyButton({ text, t, light, label }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -239,7 +261,7 @@ export function CopyButton({ text, t, light }) {
         flexShrink: 0,
       }}
     >
-      {copied ? t("ads.copied") : t("ads.copy")}
+      {copied ? t("ads.copied") : label || t("ads.copy")}
     </button>
   );
 }
@@ -248,6 +270,7 @@ export function CopyButton({ text, t, light }) {
 export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle }) {
   const [photoError, setPhotoError] = useState("");
   const [logoError, setLogoError] = useState("");
+  const [showColors, setShowColors] = useState(false);
   const photoInput = useRef(null);
   const logoInput = useRef(null);
   const set = (patch) => onChange({ ...value, ...patch });
@@ -263,7 +286,8 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
       const photo = await prepareProductPhoto(file);
       if (value.photo && value.photo.previewUrl) URL.revokeObjectURL(value.photo.previewUrl);
       setPhotoError("");
-      set({ photo });
+      // Colours follow the photo unless the customer chose their own.
+      set(value.customColors ? { photo } : { photo, color1: photo.palette[0], color2: photo.palette[1] });
     } catch (err) {
       setPhotoError(errorText(err.code));
     }
@@ -282,6 +306,12 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
     }
   };
 
+  const resetColors = () => {
+    const palette = value.photo ? value.photo.palette : [EMPTY_DESIGN_FIELDS.color1, EMPTY_DESIGN_FIELDS.color2];
+    set({ color1: palette[0], color2: palette[1], customColors: false });
+    setShowColors(false);
+  };
+
   const pickButton = {
     padding: "0.55rem 1.1rem",
     borderRadius: "8px",
@@ -292,6 +322,24 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
     fontSize: "0.88rem",
     cursor: "pointer",
   };
+  const linkButton = {
+    background: "none",
+    border: "none",
+    padding: 0,
+    color: T.goldLight,
+    fontWeight: 600,
+    fontSize: "0.85rem",
+    cursor: "pointer",
+    textDecoration: "underline",
+  };
+  const swatch = (color) => ({
+    display: "inline-block",
+    width: "26px",
+    height: "26px",
+    borderRadius: "50%",
+    background: color,
+    border: "2px solid rgba(255,255,255,0.7)",
+  });
 
   return (
     <div
@@ -321,6 +369,48 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
       </div>
       {photoError && <p style={{ color: "#fca5a5", fontSize: "0.85rem", margin: "0.5rem 0 0" }}>{photoError}</p>}
       <p style={hintStyle}>{t("ads.photoTip")}</p>
+
+      {/* Brand colours: read from the photo; the pickers only appear on request. */}
+      {value.photo && (
+        <div style={{ marginBottom: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <span style={swatch(value.color1)} />
+            <span style={swatch(value.color2)} />
+            <span style={{ color: T.textMuted, fontSize: "0.85rem" }}>
+              {value.customColors ? t("ads.colorsCustom") : t("ads.colorsAuto")}
+            </span>
+            {!showColors && (
+              <button type="button" style={linkButton} onClick={() => setShowColors(true)}>
+                {t("ads.changeColors")}
+              </button>
+            )}
+            {value.customColors && (
+              <button type="button" style={linkButton} onClick={resetColors}>
+                {t("ads.colorsReset")}
+              </button>
+            )}
+          </div>
+          {showColors && (
+            <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
+              {["color1", "color2"].map((key) => (
+                <label key={key} className="agency-form-label" style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: 0 }}>
+                  <input
+                    type="color"
+                    value={value[key]}
+                    onChange={(e) => {
+                      const next = { ...value, [key]: e.target.value };
+                      const pair = normalizePalette(next.color1, next.color2);
+                      set({ color1: key === "color1" ? pair[0] : next.color1, color2: key === "color2" ? pair[1] : next.color2, customColors: true });
+                    }}
+                    style={{ width: "44px", height: "36px", padding: 0, border: `1px solid ${T.glassBorder}`, borderRadius: "8px", background: "transparent", cursor: "pointer" }}
+                  />
+                  {t(key === "color1" ? "ads.color1Label" : "ads.color2Label")}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <label className="agency-form-label">{t("ads.logoLabel")}</label>
       <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", flexWrap: "wrap" }}>
@@ -353,20 +443,6 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
         placeholder={t("ads.brandPlaceholder")}
         style={fieldStyle}
       />
-
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-        {["color1", "color2"].map((key) => (
-          <label key={key} className="agency-form-label" style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: 0 }}>
-            <input
-              type="color"
-              value={value[key]}
-              onChange={(e) => set({ [key]: e.target.value })}
-              style={{ width: "44px", height: "36px", padding: 0, border: `1px solid ${T.glassBorder}`, borderRadius: "8px", background: "transparent", cursor: "pointer" }}
-            />
-            {t(key === "color1" ? "ads.color1Label" : "ads.color2Label")}
-          </label>
-        ))}
-      </div>
 
       <label className="agency-form-label">{t("ads.styleLabel")}</label>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem", marginBottom: "1rem" }}>
@@ -416,7 +492,7 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
   );
 }
 
-// --- finished designs -------------------------------------------------------
+// --- the ad as a social post -------------------------------------------------
 
 // Loads the scene as a same-origin blob so the canvas can be exported. Tries the fal.ai link
 // first; if the browser is not allowed to read it cross-origin, asks this site's server for a copy.
@@ -442,12 +518,107 @@ async function loadSceneImage(user, sceneUrl, docId, sceneIndex) {
   }
 }
 
-function AdDesignCanvas({ user, docId, sceneIndex, scene, design, t, light }) {
+// A social-post frame: profile row, the media, then the caption with its hashtags and the
+// action buttons. It makes plain that the customer received both a post and a design.
+export function PostShell({ brandName, t, width, media, caption, hashtags, actions }) {
+  const name = (brandName || "").trim() || t("ads.postBrandFallback");
+  const tags = (hashtags || []).join(" ");
+  return (
+    <div
+      style={{
+        width: width || "min(100%, 440px)",
+        background: "#ffffff",
+        color: "#0f1419",
+        borderRadius: "16px",
+        overflow: "hidden",
+        boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
+        textAlign: "start",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem" }}>
+        <span
+          aria-hidden="true"
+          style={{
+            width: "34px",
+            height: "34px",
+            borderRadius: "50%",
+            background: "#0f1419",
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 800,
+            fontSize: "0.9rem",
+            flexShrink: 0,
+          }}
+        >
+          {name.charAt(0).toUpperCase()}
+        </span>
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, minWidth: 0 }}>
+          <span dir="auto" style={{ fontWeight: 700, fontSize: "0.9rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>{t("ads.postSponsored")}</span>
+        </span>
+      </div>
+      {media}
+      {(caption || tags) && (
+        <div style={{ padding: "0.8rem 0.9rem 0.2rem" }}>
+          {caption && (
+            <p dir="auto" style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.5, whiteSpace: "pre-wrap", color: "#0f1419" }}>
+              <b>{name}</b> {caption}
+            </p>
+          )}
+          {tags && (
+            <p dir="auto" style={{ margin: "0.4rem 0 0", fontSize: "0.88rem", lineHeight: 1.5, color: "#1d4ed8" }}>
+              {tags}
+            </p>
+          )}
+        </div>
+      )}
+      {actions && <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", padding: "0.8rem 0.9rem 0.9rem" }}>{actions}</div>}
+    </div>
+  );
+}
+
+const postButton = (primary) => ({
+  flex: "1 1 140px",
+  padding: "0.7rem 0.8rem",
+  borderRadius: "10px",
+  border: primary ? "none" : "1px solid #cbd5e1",
+  background: primary ? "#0f1419" : "#ffffff",
+  color: primary ? "#ffffff" : "#0f1419",
+  fontWeight: 700,
+  fontSize: "0.88rem",
+  cursor: "pointer",
+});
+
+function CopyCaptionButton({ text, t }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      style={postButton(false)}
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+        } catch (_) {
+          // Clipboard access can be refused; the caption stays selectable above.
+        }
+      }}
+    >
+      {copied ? t("ads.copied") : t("ads.copyCaption")}
+    </button>
+  );
+}
+
+function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
   const canvasRef = useRef(null);
   const [state, setState] = useState("loading"); // loading | ready | error
-  const { headline, cta, brandName, logo, style } = design;
+  const { headline, subheadline, badge, cta, brandName, logo, style, variant, landscape } = design;
   const color1 = design.colors && design.colors[0];
   const color2 = design.colors && design.colors[1];
+  const chipsKey = (Array.isArray(design.chips) ? design.chips : []).join("\n");
 
   useEffect(() => {
     let cancelled = false;
@@ -457,14 +628,19 @@ function AdDesignCanvas({ user, docId, sceneIndex, scene, design, t, light }) {
         const [sceneImg, logoImg] = await Promise.all([
           loadSceneImage(user, scene.url, docId, sceneIndex),
           logo ? loadImage(logo).catch(() => null) : Promise.resolve(null),
-          ensureAdFonts((headline || "") + " " + (cta || "") + " " + (brandName || "")),
+          ensureAdFonts([headline, subheadline, badge, cta, brandName, chipsKey].join(" ")),
         ]);
         if (cancelled || !canvasRef.current) return;
         drawAd(canvasRef.current, {
           format: scene.format,
           style,
+          variant,
+          landscape,
           scene: sceneImg,
           headline,
+          subheadline,
+          badge,
+          chips: chipsKey ? chipsKey.split("\n") : [],
           cta,
           brandName,
           colors: [color1, color2],
@@ -478,7 +654,7 @@ function AdDesignCanvas({ user, docId, sceneIndex, scene, design, t, light }) {
     return () => {
       cancelled = true;
     };
-  }, [user, docId, sceneIndex, scene.url, scene.format, style, headline, cta, brandName, color1, color2, logo]);
+  }, [user, docId, sceneIndex, scene.url, scene.format, style, variant, landscape, headline, subheadline, badge, chipsKey, cta, brandName, color1, color2, logo]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -489,7 +665,7 @@ function AdDesignCanvas({ user, docId, sceneIndex, scene, design, t, light }) {
       const link = document.createElement("a");
       const base = (brandName || "ad").trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "ad";
       link.href = url;
-      link.download = base + "-" + scene.format.replace(":", "x") + "-" + scene.variation + ".png";
+      link.download = base + "-" + scene.format.replace(":", "x") + ".png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -498,49 +674,54 @@ function AdDesignCanvas({ user, docId, sceneIndex, scene, design, t, light }) {
   };
 
   const size = AD_FORMATS[scene.format] || AD_FORMATS["1:1"];
-  const muted = light ? "#64748b" : T.textFaint;
+  const story = scene.format === "9:16";
+  const captionText = post ? [post.caption, (post.hashtags || []).join(" ")].filter(Boolean).join("\n\n") : "";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", width: scene.format === "9:16" ? "min(100%, 250px)" : "min(100%, 360px)" }}>
-      <div style={{ fontSize: "0.78rem", color: muted, fontWeight: 600 }}>
-        {t(scene.format === "9:16" ? "ads.format916" : "ads.format11")} · {t("ads.variation", { n: scene.variation })} · {size.label}
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "center", width: story ? "min(100%, 300px)" : "min(100%, 440px)" }}>
+      <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "#94a3b8" }}>
+        {t(story ? "ads.format916" : "ads.format11")} · {size.label}
       </div>
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: size.width + " / " + size.height,
-          borderRadius: "12px",
-          overflow: "hidden",
-          background: light ? "#e2e8f0" : "rgba(255,255,255,0.06)",
-          boxShadow: light ? "0 6px 20px rgba(15,23,42,0.12)" : T.shadow,
-        }}
-      >
-        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: state === "ready" ? "block" : "none" }} />
-        {state !== "ready" && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", textAlign: "center", color: muted, fontSize: "0.85rem" }}>
-            {state === "error" ? t("ads.sceneExpired") : "…"}
+      <PostShell
+        brandName={brandName}
+        t={t}
+        width="100%"
+        caption={post ? post.caption : ""}
+        hashtags={post ? post.hashtags : []}
+        media={
+          <div style={{ position: "relative", width: "100%", aspectRatio: size.width + " / " + size.height, background: "#e2e8f0" }}>
+            <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: state === "ready" ? "block" : "none" }} />
+            {state !== "ready" && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", textAlign: "center", color: "#64748b", fontSize: "0.85rem" }}>
+                {state === "error" ? t("ads.sceneExpired") : "…"}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      {state === "ready" && (
-        <button type="button" onClick={handleDownload} className="apex-btn-gold" style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem 1rem", fontSize: "0.92rem" }}>
-          ⬇ {t("ads.downloadImage")}
-        </button>
-      )}
+        }
+        actions={
+          <>
+            {state === "ready" && (
+              <button type="button" style={postButton(true)} onClick={handleDownload}>
+                ⬇ {t("ads.downloadImage")}
+              </button>
+            )}
+            {captionText && <CopyCaptionButton text={captionText} t={t} />}
+          </>
+        }
+      />
     </div>
   );
 }
 
-// All passing variations of one design (premium: both formats), with the download reminder and
-// the link to the done-for-you video packages.
-export function DesignGallery({ user, docId, scenes, design, t, light, showVideoLink }) {
+// The finished ad: one post per format (premium: 1:1 and 9:16), the caption under the first,
+// the download reminder and the link to the done-for-you video packages.
+export function DesignGallery({ user, docId, scenes, design, post, t, light, showVideoLink }) {
   const list = Array.isArray(scenes) ? scenes : [];
   if (list.length === 0) return null;
   // Keep each scene's original index: the server-side image copy is addressed by it.
   const ordered = list
     .map((scene, index) => ({ scene, index }))
-    .sort((a, b) => (a.scene.format === b.scene.format ? a.scene.variation - b.scene.variation : a.scene.format === "1:1" ? -1 : 1));
+    .sort((a, b) => (a.scene.format === b.scene.format ? 0 : a.scene.format === "1:1" ? -1 : 1));
 
   const scrollToPricing = (e) => {
     const target = document.getElementById("pricing");
@@ -552,9 +733,9 @@ export function DesignGallery({ user, docId, scenes, design, t, light, showVideo
 
   return (
     <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", justifyContent: "center", alignItems: "flex-start" }}>
-        {ordered.map(({ scene, index }) => (
-          <AdDesignCanvas key={scene.format + "-" + scene.variation} user={user} docId={docId} sceneIndex={index} scene={scene} design={design} t={t} light={light} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", justifyContent: "center", alignItems: "flex-start" }}>
+        {ordered.map(({ scene, index }, i) => (
+          <AdPost key={scene.format + "-" + scene.url} user={user} docId={docId} sceneIndex={index} scene={scene} design={design} post={i === 0 ? post : null} t={t} />
         ))}
       </div>
       <p style={{ textAlign: "center", fontSize: "0.82rem", margin: "0.9rem 0 0", color: light ? "#64748b" : T.textFaint }}>

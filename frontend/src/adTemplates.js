@@ -1,16 +1,20 @@
 // ---------------------------------------------------------------------------
-// Ad design templates — layer B of the ad design (text and logo, drawn by code).
+// Ad design templates — everything a customer reads on the ad is drawn here, by code, on a
+// <canvas>: brand, headline, subheadline, benefit chips, call-to-action button, offer badge.
+// The AI only produces the scene (the customer's real product in a setting, no text, no logo).
 //
-// The AI only produces the scene (the customer's product in a setting, with no text and no
-// logo). Everything a customer reads on the ad is drawn here on a <canvas>: headline,
-// call-to-action button, logo. That is what keeps the text exact, in any language, including
-// Arabic (the browser shapes Arabic and handles right-to-left natively).
+// Layout principle: the ad is split in two zones that never overlap.
+//   - a colour PANEL (designed shape, built from the palette) that carries all the text;
+//   - a SCENE region, clipped to its own area, where the product is the hero.
+// The scene is generated at the size of its region with the product boxed inside it (see
+// SCENE_LAYOUTS in backend/adDesign.js — the two tables must stay in step), so text can never
+// cover the product, in any style, format or language.
 //
-// One fixed layout per style and per format. Every layout keeps the text block in the upper
-// 45% of the image and leaves the lower part to the product, which is how the scene is
-// generated (see FORMAT_LAYOUT in backend/adDesign.js).
+// Each style has its own look (panel colour, type, shapes). The "variant" number changes the
+// panel side, the edge shape and, in 9:16, whether the panel is above or below the product, so
+// two ads for the same customer do not look identical.
 //
-// This file has no React and no imports on purpose: it can be run and checked on its own.
+// No React and no imports on purpose: this file can be run and checked on its own.
 // ---------------------------------------------------------------------------
 
 export const AD_FORMATS = {
@@ -38,6 +42,7 @@ export async function ensureAdFonts(sampleText) {
   const wanted = [
     '800 64px "Plus Jakarta Sans"',
     '700 64px "Plus Jakarta Sans"',
+    '500 64px "Plus Jakarta Sans"',
     '600 64px "Cormorant Garamond"',
     '800 64px "Cairo"',
     '700 64px "Cairo"',
@@ -56,6 +61,47 @@ function hexToRgb(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
   const n = parseInt(m ? m[1] : "111111", 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function rgbToHex(r, g, b) {
+  const h = (v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return "#" + h(r) + h(g) + h(b);
+}
+
+function rgbToHsl(r, g, b) {
+  const R = r / 255;
+  const G = g / 255;
+  const B = b / 255;
+  const max = Math.max(R, G, B);
+  const min = Math.min(R, G, B);
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (d === 0) return { h: 0, s: 0, l };
+  const s = d / (1 - Math.abs(2 * l - 1));
+  let h;
+  if (max === R) h = ((G - B) / d) % 6;
+  else if (max === G) h = (B - R) / d + 2;
+  else h = (R - G) / d + 4;
+  return { h: (h * 60 + 360) % 360, s, l };
+}
+
+function hslToHex(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let rgb;
+  if (h < 60) rgb = [c, x, 0];
+  else if (h < 120) rgb = [x, c, 0];
+  else if (h < 180) rgb = [0, c, x];
+  else if (h < 240) rgb = [0, x, c];
+  else if (h < 300) rgb = [x, 0, c];
+  else rgb = [c, 0, x];
+  return rgbToHex((rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255);
+}
+
+function hexToHsl(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  return rgbToHsl(r, g, b);
 }
 
 function luminance(hex) {
@@ -78,9 +124,137 @@ function onColor(hex) {
   return contrastRatio(hex, "#ffffff") >= contrastRatio(hex, "#0e0e10") ? "#ffffff" : "#0e0e10";
 }
 
-// If the brand colour would be unreadable on the given backdrop, fall back to a safe ink.
-function readableOn(hex, backdropHex, fallback) {
-  return contrastRatio(hex, backdropHex) >= 3 ? hex : fallback;
+function mix(hexA, hexB, t) {
+  const a = hexToRgb(hexA);
+  const b = hexToRgb(hexB);
+  return rgbToHex(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t);
+}
+
+function rgba(hex, alpha) {
+  const { r, g, b } = hexToRgb(hex);
+  return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
+}
+
+// Moves the lightness of a colour until it reaches the wanted contrast against "against".
+function ensureContrast(hex, against, ratio) {
+  if (contrastRatio(hex, against) >= ratio) return hex;
+  const { h, s, l } = hexToHsl(hex);
+  const darker = luminance(against) > 0.4;
+  let cur = l;
+  for (let i = 0; i < 40; i++) {
+    cur = darker ? cur - 0.02 : cur + 0.02;
+    if (cur <= 0.04 || cur >= 0.96) break;
+    const candidate = hslToHex(h, s, cur);
+    if (contrastRatio(candidate, against) >= ratio) return candidate;
+  }
+  return darker ? "#111111" : "#ffffff";
+}
+
+// --- automatic brand colours ----------------------------------------------
+
+const DEFAULT_PALETTE = ["#1f2a44", "#d4af37"];
+
+// Turns any pair of colours into a usable one: colour 1 carries white text (panels, buttons),
+// colour 2 is an accent that stands out next to colour 1.
+export function normalizePalette(c1, c2) {
+  const ok = (c) => /^#[0-9a-f]{6}$/i.test(String(c || ""));
+  let a = ok(c1) ? c1.toLowerCase() : DEFAULT_PALETTE[0];
+  let b = ok(c2) ? c2.toLowerCase() : DEFAULT_PALETTE[1];
+  a = ensureContrast(a, "#ffffff", 4.5);
+  if (contrastRatio(a, b) < 1.9) {
+    const hb = hexToHsl(b);
+    b = hslToHex(hb.h, Math.max(hb.s, 0.5), luminance(a) < 0.2 ? 0.62 : 0.3);
+    if (contrastRatio(a, b) < 1.9) b = luminance(a) < 0.2 ? "#f2c14e" : "#111111";
+  }
+  return [a, b];
+}
+
+// Reads a palette from the product photo: the dominant colour of the product (the plain
+// background around it is ignored) and an accent, then makes the pair usable for text.
+// "source" is a loaded image or a canvas. Returns [colour1, colour2] as hex strings.
+export function extractPalette(source) {
+  try {
+    const size = 72;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(source, 0, 0, size, size);
+    const data = ctx.getImageData(0, 0, size, size).data;
+    const px = (x, y) => {
+      const i = (y * size + x) * 4;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+
+    // Background estimate: the average of the border pixels.
+    let br = 0;
+    let bg = 0;
+    let bb = 0;
+    let bn = 0;
+    for (let i = 0; i < size; i++) {
+      [px(i, 0), px(i, size - 1), px(0, i), px(size - 1, i)].forEach((p) => {
+        br += p[0];
+        bg += p[1];
+        bb += p[2];
+        bn += 1;
+      });
+    }
+    br /= bn;
+    bg /= bn;
+    bb /= bn;
+
+    // Hue histogram of the pixels that are not background and carry real colour.
+    const BINS = 24;
+    const bins = [];
+    for (let i = 0; i < BINS; i++) bins.push({ w: 0, r: 0, g: 0, b: 0 });
+    let colourful = 0;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const p = px(x, y);
+        const dist = Math.abs(p[0] - br) + Math.abs(p[1] - bg) + Math.abs(p[2] - bb);
+        if (dist < 60) continue;
+        const hsl = rgbToHsl(p[0], p[1], p[2]);
+        if (hsl.s < 0.22 || hsl.l < 0.12 || hsl.l > 0.9) continue;
+        const centre = 1 - Math.hypot(x / size - 0.5, y / size - 0.5); // the product sits near the centre
+        const w = hsl.s * centre;
+        const bin = bins[Math.floor(hsl.h / (360 / BINS)) % BINS];
+        bin.w += w;
+        bin.r += p[0] * w;
+        bin.g += p[1] * w;
+        bin.b += p[2] * w;
+        colourful += 1;
+      }
+    }
+    if (colourful < size * size * 0.015) return normalizePalette(DEFAULT_PALETTE[0], DEFAULT_PALETTE[1]);
+
+    const order = bins.map((b, i) => ({ i, w: b.w })).sort((a, b) => b.w - a.w);
+    const colourOf = (i) => {
+      const b = bins[i];
+      const hsl = rgbToHsl(b.r / b.w, b.g / b.w, b.b / b.w);
+      return hslToHex(hsl.h, Math.min(0.85, Math.max(hsl.s, 0.45)), Math.min(0.5, Math.max(hsl.l, 0.3)));
+    };
+    const main = order[0];
+    const c1 = colourOf(main.i);
+
+    // Accent: another real hue of the product, at least 45° away; otherwise an analogous,
+    // lighter neighbour of colour 1 on the wheel, which always sits well next to it.
+    const hueGap = (a, b) => {
+      const d = Math.abs(a - b) * (360 / BINS);
+      return Math.min(d, 360 - d);
+    };
+    const second = order.find((o) => o.w > main.w * 0.07 && hueGap(o.i, main.i) >= 45);
+    let c2;
+    if (second) {
+      const hsl = hexToHsl(colourOf(second.i));
+      c2 = hslToHex(hsl.h, Math.max(hsl.s, 0.55), 0.56);
+    } else {
+      const hsl = hexToHsl(c1);
+      c2 = hslToHex((hsl.h + 35) % 360, 0.7, 0.6);
+    }
+    return normalizePalette(c1, c2);
+  } catch (_) {
+    return normalizePalette(DEFAULT_PALETTE[0], DEFAULT_PALETTE[1]);
+  }
 }
 
 // --- drawing helpers -------------------------------------------------------
@@ -96,17 +270,10 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawCover(ctx, img, W, H) {
-  const iw = img.naturalWidth || img.width;
-  const ih = img.naturalHeight || img.height;
-  if (!iw || !ih) return;
-  const scale = Math.max(W / iw, H / ih);
-  const dw = iw * scale;
-  const dh = ih * scale;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  // Anchor to the bottom: the product sits in the lower part and must never be cropped.
-  ctx.drawImage(img, (W - dw) / 2, H - dh, dw, dh);
+// Each string is drawn in its own base direction, so Arabic punctuation and numbers land on the
+// right side. Alignment always uses explicit "left" / "right" / "center", never "start" / "end".
+function setDir(ctx, text) {
+  ctx.direction = isRtlText(text) ? "rtl" : "ltr";
 }
 
 function setFont(ctx, weight, size, family) {
@@ -139,29 +306,38 @@ function wrapLines(ctx, text, maxWidth) {
 function fitText(ctx, text, o) {
   let size = o.maxSize;
   let lines = [];
-  for (; size >= o.minSize; size -= 2) {
+  const floor = Math.min(o.minSize, 22);
+  for (; size >= floor; size -= 2) {
     setFont(ctx, o.weight, size, o.family);
     setTracking(ctx, o.tracking || 0, size);
     lines = wrapLines(ctx, text, o.maxWidth);
     const widest = Math.max.apply(null, lines.map((l) => ctx.measureText(l).width).concat([0]));
     const height = lines.length * size * o.leading;
-    if (lines.length <= o.maxLines && widest <= o.maxWidth && height <= o.maxHeight) break;
+    const fits = widest <= o.maxWidth && height <= o.maxHeight;
+    // Above the preferred minimum size the line limit applies too; below it only "does it fit".
+    if (fits && (lines.length <= o.maxLines || size <= o.minSize)) break;
   }
-  size = Math.max(size, o.minSize);
+  size = Math.max(size, floor);
   setFont(ctx, o.weight, size, o.family);
   setTracking(ctx, o.tracking || 0, size);
-  lines = wrapLines(ctx, text, o.maxWidth).slice(0, o.maxLines + 1);
-  return { size, lines, height: lines.length * size * o.leading };
+  lines = wrapLines(ctx, text, o.maxWidth);
+  setTracking(ctx, 0, size);
+  return { size, lines, height: lines.length * size * o.leading, weight: o.weight, family: o.family, tracking: o.tracking || 0, leading: o.leading };
 }
 
-function drawLines(ctx, fit, x, top, leading, align) {
+function drawFit(ctx, fit, x, top, align, color) {
+  setFont(ctx, fit.weight, fit.size, fit.family);
+  setTracking(ctx, fit.tracking, fit.size);
+  ctx.fillStyle = color;
   ctx.textAlign = align;
   ctx.textBaseline = "alphabetic";
   fit.lines.forEach((line, i) => {
     // The ascent factor makes "top" the visual top of the first line (Arabic sits taller).
     const ascent = isRtlText(line) ? 1.0 : 0.8;
-    ctx.fillText(line, x, top + fit.size * ascent + i * fit.size * leading);
+    setDir(ctx, line);
+    ctx.fillText(line, x, top + fit.size * ascent + i * fit.size * fit.leading);
   });
+  setTracking(ctx, 0, fit.size);
 }
 
 function drawArrow(ctx, x, cy, size, rtl, color) {
@@ -181,60 +357,143 @@ function drawArrow(ctx, x, cy, size, rtl, color) {
   ctx.restore();
 }
 
-// A real button: shape, padding, label, arrow. Returns its box.
-function drawButton(ctx, label, o) {
-  if (!label) return { width: 0, height: 0 };
-  const rtl = o.rtl;
+// x position of a block of the given width inside [left, left + width] for an alignment.
+function alignX(box, width, align) {
+  if (align === "center") return box.x + (box.w - width) / 2;
+  if (align === "right") return box.x + box.w - width;
+  return box.x;
+}
+
+// A real button: shape, padding, label, arrow. measure-only when ctx drawing is skipped.
+function buttonMetrics(ctx, label, o) {
+  const rtl = isRtlText(label);
   const text = o.uppercase && !rtl ? label.toUpperCase() : label;
   const family = rtl ? FONT_SANS_AR : FONT_SANS;
-  let size = o.size;
-  const arrow = size * 0.62;
-  const gap = size * 0.5;
   const tracking = o.uppercase && !rtl ? 0.08 : 0;
-  let textW;
-  for (; size >= 22; size -= 2) {
+  let size = o.size;
+  let textW = 0;
+  const arrow = o.size * 0.62;
+  const gap = o.size * 0.5;
+  for (; size >= 18; size -= 2) {
     setFont(ctx, 700, size, family);
     setTracking(ctx, tracking, size);
     textW = ctx.measureText(text).width;
     if (textW + arrow + gap + o.padX * 2 <= o.maxWidth) break;
   }
-  const width = textW + arrow + gap + o.padX * 2;
-  const height = o.height;
-  let x = o.x;
-  if (o.align === "end") x = o.x - width;
-  if (o.align === "center") x = o.x - width / 2;
+  setTracking(ctx, 0, size);
+  return { rtl, text, family, tracking, size, textW, arrow, gap, width: textW + arrow + gap + o.padX * 2, height: o.height };
+}
 
+function drawButton(ctx, m, x, y, o) {
   ctx.save();
   if (o.shadow) {
     ctx.shadowColor = "rgba(0,0,0,0.22)";
-    ctx.shadowBlur = 28;
+    ctx.shadowBlur = 26;
     ctx.shadowOffsetY = 10;
   }
-  roundRectPath(ctx, x, o.y, width, height, o.radius);
+  roundRectPath(ctx, x, y, m.width, m.height, o.radius);
   if (o.outline) {
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = o.color;
+    ctx.strokeStyle = o.fill;
     ctx.stroke();
   } else {
-    ctx.fillStyle = o.color;
+    ctx.fillStyle = o.fill;
     ctx.fill();
   }
   ctx.restore();
 
-  ctx.fillStyle = o.textColor;
+  setFont(ctx, 700, m.size, m.family);
+  setTracking(ctx, m.tracking, m.size);
+  ctx.fillStyle = o.text;
   ctx.textBaseline = "middle";
-  const cy = o.y + height / 2 + size * 0.04;
-  if (rtl) {
+  setDir(ctx, m.text);
+  const cy = y + m.height / 2 + m.size * 0.04;
+  if (m.rtl) {
     ctx.textAlign = "right";
-    ctx.fillText(text, x + width - o.padX, cy);
-    drawArrow(ctx, x + o.padX + arrow / 2, o.y + height / 2, arrow, true, o.textColor);
+    ctx.fillText(m.text, x + m.width - o.padX, cy);
+    drawArrow(ctx, x + o.padX + m.arrow / 2, y + m.height / 2, m.arrow, true, o.text);
   } else {
     ctx.textAlign = "left";
-    ctx.fillText(text, x + o.padX, cy);
-    drawArrow(ctx, x + width - o.padX - arrow / 2, o.y + height / 2, arrow, false, o.textColor);
+    ctx.fillText(m.text, x + o.padX, cy);
+    drawArrow(ctx, x + m.width - o.padX - m.arrow / 2, y + m.height / 2, m.arrow, false, o.text);
   }
-  setTracking(ctx, 0, size);
-  return { x, width, height };
+  setTracking(ctx, 0, m.size);
+}
+
+// Benefit chips: a small check icon and a short label each, flowing in rows.
+function chipsLayout(ctx, labels, o) {
+  const items = labels.map((label) => {
+    const rtl = isRtlText(label);
+    setFont(ctx, 600, o.size, rtl ? FONT_SANS_AR : FONT_SANS);
+    const textW = Math.min(ctx.measureText(label).width, o.maxWidth - o.height - o.padX);
+    return { label, rtl, width: o.height * 0.5 + o.icon + o.size * 0.4 + textW + o.padX };
+  });
+  const rows = [];
+  let row = [];
+  let rowW = 0;
+  items.forEach((item) => {
+    const add = (row.length ? o.gap : 0) + item.width;
+    if (row.length && rowW + add > o.maxWidth) {
+      rows.push({ items: row, width: rowW });
+      row = [];
+      rowW = 0;
+    }
+    rowW += (row.length ? o.gap : 0) + item.width;
+    row.push(item);
+  });
+  if (row.length) rows.push({ items: row, width: rowW });
+  return { rows, height: rows.length * o.height + Math.max(0, rows.length - 1) * o.rowGap };
+}
+
+function drawChips(ctx, layout, box, top, align, rtlFlow, o, c) {
+  layout.rows.forEach((row, r) => {
+    let x = alignX(box, row.width, align);
+    const y = top + r * (o.height + o.rowGap);
+    const ordered = rtlFlow ? row.items.slice().reverse() : row.items;
+    ordered.forEach((item) => {
+      roundRectPath(ctx, x, y, item.width, o.height, o.radius);
+      if (c.bg) {
+        ctx.fillStyle = c.bg;
+        ctx.fill();
+      }
+      if (c.border) {
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = c.border;
+        ctx.stroke();
+      }
+      // icon: a filled disc with a check mark, on the start side of the label
+      const iconCx = item.rtl ? x + item.width - o.height * 0.5 - o.icon * 0.1 : x + o.height * 0.5 + o.icon * 0.1;
+      const cy = y + o.height / 2;
+      ctx.beginPath();
+      ctx.arc(iconCx, cy, o.icon / 2, 0, Math.PI * 2);
+      ctx.fillStyle = c.icon;
+      ctx.fill();
+      ctx.save();
+      ctx.strokeStyle = c.iconMark;
+      ctx.lineWidth = Math.max(2, o.icon * 0.13);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(iconCx - o.icon * 0.22, cy + o.icon * 0.02);
+      ctx.lineTo(iconCx - o.icon * 0.05, cy + o.icon * 0.19);
+      ctx.lineTo(iconCx + o.icon * 0.24, cy - o.icon * 0.16);
+      ctx.stroke();
+      ctx.restore();
+
+      setFont(ctx, 600, o.size, item.rtl ? FONT_SANS_AR : FONT_SANS);
+      ctx.fillStyle = c.text;
+      ctx.textBaseline = "middle";
+      setDir(ctx, item.label);
+      if (item.rtl) {
+        ctx.textAlign = "right";
+        ctx.fillText(item.label, iconCx - o.icon / 2 - o.size * 0.4, cy + o.size * 0.04, item.width - o.height - o.padX * 0.5);
+      } else {
+        ctx.textAlign = "left";
+        ctx.fillText(item.label, iconCx + o.icon / 2 + o.size * 0.4, cy + o.size * 0.04, item.width - o.height - o.padX * 0.5);
+      }
+      x += item.width + o.gap;
+    });
+  });
 }
 
 // Mean luminance of the logo's opaque pixels, to decide whether it needs a backing chip.
@@ -260,358 +519,570 @@ function logoLuminance(img) {
   }
 }
 
-// Logo (or the brand name as a wordmark when there is no logo file) in the top-start corner.
-// "backdropLum" is how light the area behind it is (0 dark … 1 light). Returns the block height.
-function drawBrand(ctx, o) {
-  const { logo, brandName, rtl, x, y, maxW, maxH, backdropLum } = o;
-  if (logo && (logo.naturalWidth || logo.width)) {
-    const iw = logo.naturalWidth || logo.width;
-    const ih = logo.naturalHeight || logo.height;
+function brandMetrics(ctx, d, maxW, maxH) {
+  if (d.logo && (d.logo.naturalWidth || d.logo.width)) {
+    const iw = d.logo.naturalWidth || d.logo.width;
+    const ih = d.logo.naturalHeight || d.logo.height;
     const scale = Math.min(maxW / iw, maxH / ih);
-    const w = iw * scale;
-    const h = ih * scale;
-    const lx = rtl ? x - w : x;
-    const lum = logoLuminance(logo);
-    const needsChip = lum !== null && Math.abs(lum - backdropLum) < 0.32;
+    return { kind: "logo", width: iw * scale, height: ih * scale };
+  }
+  if (d.brandName) {
+    const rtl = isRtlText(d.brandName);
+    const size = Math.round(maxH * (rtl ? 0.6 : 0.42));
+    setFont(ctx, 800, size, rtl ? FONT_SANS_AR : FONT_SANS);
+    setTracking(ctx, rtl ? 0 : 0.16, size);
+    const text = rtl ? d.brandName : d.brandName.toUpperCase();
+    const width = Math.min(ctx.measureText(text).width, maxW);
+    setTracking(ctx, 0, size);
+    return { kind: "name", width, height: size * 1.2, size, text, rtl };
+  }
+  return { kind: "none", width: 0, height: 0 };
+}
+
+// Logo (or the brand name as a wordmark). "backdropHex" is the colour behind it; a logo that
+// would not stand out gets a small backing chip. forceChip is used when it sits on the scene.
+function drawBrand(ctx, d, m, x, y, backdropHex, ink, forceChip) {
+  if (m.kind === "logo") {
+    const lum = logoLuminance(d.logo);
+    const needsChip = forceChip || (lum !== null && Math.abs(lum - luminance(backdropHex)) < 0.3);
     if (needsChip) {
-      const pad = 18;
+      const pad = 16;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.18)";
       ctx.shadowBlur = 20;
       ctx.shadowOffsetY = 6;
-      ctx.fillStyle = lum > 0.5 ? "rgba(14,14,16,0.92)" : "rgba(255,255,255,0.96)";
-      roundRectPath(ctx, lx - pad, y - pad, w + pad * 2, h + pad * 2, 16);
+      ctx.fillStyle = lum !== null && lum > 0.6 ? "rgba(14,14,16,0.92)" : "rgba(255,255,255,0.96)";
+      roundRectPath(ctx, x - pad, y - pad, m.width + pad * 2, m.height + pad * 2, 16);
       ctx.fill();
       ctx.restore();
     }
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(logo, lx, y, w, h);
-    return h;
-  }
-  if (brandName) {
-    const brandRtl = isRtlText(brandName);
-    const size = Math.round(maxH * (brandRtl ? 0.62 : 0.36));
-    setFont(ctx, 800, size, brandRtl ? FONT_SANS_AR : FONT_SANS);
-    setTracking(ctx, brandRtl ? 0 : 0.16, size);
-    ctx.fillStyle = o.inkColor;
-    ctx.textAlign = rtl ? "right" : "left";
+    ctx.drawImage(d.logo, x, y, m.width, m.height);
+  } else if (m.kind === "name") {
+    if (forceChip) {
+      ctx.save();
+      ctx.fillStyle = "rgba(14,14,16,0.72)";
+      roundRectPath(ctx, x - 18, y - 10, m.width + 36, m.height + 16, 12);
+      ctx.fill();
+      ctx.restore();
+    }
+    setFont(ctx, 800, m.size, m.rtl ? FONT_SANS_AR : FONT_SANS);
+    setTracking(ctx, m.rtl ? 0 : 0.16, m.size);
+    ctx.fillStyle = forceChip ? "#ffffff" : ink;
+    ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(brandRtl ? brandName : brandName.toUpperCase(), x, y + size);
-    setTracking(ctx, 0, size);
-    return size * 1.25;
+    setDir(ctx, m.text);
+    ctx.fillText(m.text, x, y + m.size, m.width + 2);
+    setTracking(ctx, 0, m.size);
   }
-  return 0;
 }
 
-// --- layout metrics per format --------------------------------------------
-
-function metrics(format) {
-  const { width: W, height: H } = AD_FORMATS[format] || AD_FORMATS["1:1"];
-  // zoneBottom: the text block must end above this line. The scene is generated with the product
-  // boxed below it (FORMAT_LAYOUT padding in backend/adDesign.js), so text never covers the product.
-  if (format === "9:16") {
-    // Top 220 px stays free of text: story/reel interfaces cover it.
-    return { W, H, margin: 84, top: 220, zoneBottom: Math.round(H * 0.45), logoH: 84, scale: 1.12 };
-  }
-  return { W, H, margin: 72, top: 60, zoneBottom: Math.round(H * 0.45), logoH: 64, scale: 1 };
-}
-
-// --- the four styles -------------------------------------------------------
-
-function styleCleanStudio(ctx, m, d) {
-  const { W, H, margin, top } = m;
-  drawCover(ctx, d.scene, W, H);
-
-  // Contrast layer: a white veil that fades out before the product.
-  const veil = ctx.createLinearGradient(0, 0, 0, H * 0.56);
-  veil.addColorStop(0, "rgba(255,255,255,0.96)");
-  veil.addColorStop(0.62, "rgba(255,255,255,0.82)");
-  veil.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = veil;
-  ctx.fillRect(0, 0, W, H * 0.56);
-
-  const startX = d.rtl ? W - margin : margin;
-  const align = d.rtl ? "right" : "left";
-  const ink = "#101114";
-  const accent = readableOn(d.colors[0], "#ffffff", ink);
-
-  const brandH = drawBrand(ctx, { ...d, x: startX, y: top, maxW: 300, maxH: m.logoH, backdropLum: 0.95, inkColor: ink });
-  let y = top + brandH + 28 * m.scale;
-
-  // Accent rule
-  ctx.fillStyle = accent;
-  ctx.fillRect(d.rtl ? startX - 72 : startX, y, 72, 8);
-  y += 8 + 24 * m.scale;
-
-  const btnH = 78 * m.scale;
-  const fit = fitText(ctx, d.headline, {
-    weight: 800,
-    family: d.rtl ? FONT_SANS_AR : FONT_SANS,
-    maxSize: 92 * m.scale,
-    minSize: 44,
-    maxWidth: W - margin * 2 - 60,
-    maxLines: 3,
-    maxHeight: m.zoneBottom - y - btnH - 34,
-    leading: d.rtl ? 1.3 : 1.08,
-    tracking: d.rtl ? 0 : -0.025,
-  });
-  ctx.fillStyle = ink;
-  drawLines(ctx, fit, startX, y, d.rtl ? 1.3 : 1.08, align);
-  setTracking(ctx, 0, fit.size);
-  y += fit.height + 30 * m.scale;
-
-  drawButton(ctx, d.cta, {
-    x: startX,
-    y,
-    align: d.rtl ? "end" : "start",
-    height: btnH,
-    padX: 40 * m.scale,
-    size: 31 * m.scale,
-    radius: 999,
-    color: accent,
-    textColor: onColor(accent),
-    maxWidth: W - margin * 2,
-    rtl: d.ctaRtl,
-    shadow: true,
-  });
-}
-
-function styleBoldColor(ctx, m, d) {
-  const { W, H, margin, top } = m;
-  drawCover(ctx, d.scene, W, H);
-
-  // Contrast layer: a solid brand-colour block with a slanted lower edge.
-  const c1 = d.colors[0];
-  const edgeHigh = m.zoneBottom - 56;
-  const edgeLow = m.zoneBottom + 10;
-  ctx.fillStyle = c1;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(W, 0);
-  ctx.lineTo(W, d.rtl ? edgeLow : edgeHigh);
-  ctx.lineTo(0, d.rtl ? edgeHigh : edgeLow);
-  ctx.closePath();
-  ctx.fill();
-  // Thin second-colour edge under the block.
-  ctx.strokeStyle = d.colors[1];
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(0, (d.rtl ? edgeHigh : edgeLow) + 4);
-  ctx.lineTo(W, (d.rtl ? edgeLow : edgeHigh) + 4);
-  ctx.stroke();
-
-  const ink = onColor(c1);
-  const startX = d.rtl ? W - margin : margin;
-  const align = d.rtl ? "right" : "left";
-
-  const brandH = drawBrand(ctx, { ...d, x: startX, y: top, maxW: 280, maxH: m.logoH * 0.9, backdropLum: luminance(c1), inkColor: ink });
-  let y = top + brandH + 30 * m.scale;
-
-  const btnH = 76 * m.scale;
-  const headline = d.rtl ? d.headline : d.headline.toUpperCase();
-  const fit = fitText(ctx, headline, {
-    weight: 800,
-    family: d.rtl ? FONT_SANS_AR : FONT_SANS,
-    maxSize: 104 * m.scale,
-    minSize: 42,
-    maxWidth: W - margin * 2,
-    maxLines: 3,
-    maxHeight: edgeHigh - y - btnH - 40,
-    leading: d.rtl ? 1.28 : 1.02,
-    tracking: d.rtl ? 0 : -0.03,
-  });
-  ctx.fillStyle = ink;
-  drawLines(ctx, fit, startX, y, d.rtl ? 1.28 : 1.02, align);
-  setTracking(ctx, 0, fit.size);
-  y += fit.height + 26 * m.scale;
-
-  const c2 = contrastRatio(d.colors[1], c1) >= 1.6 ? d.colors[1] : ink;
-  drawButton(ctx, d.cta, {
-    x: startX,
-    y,
-    align: d.rtl ? "end" : "start",
-    height: btnH,
-    padX: 36 * m.scale,
-    size: 29 * m.scale,
-    radius: 12,
-    color: c2,
-    textColor: onColor(c2),
-    maxWidth: W - margin * 2,
-    rtl: d.ctaRtl,
-    uppercase: true,
-  });
-}
-
-function styleLuxuryDark(ctx, m, d) {
-  const { W, H, margin, top } = m;
-  drawCover(ctx, d.scene, W, H);
-
-  // Contrast layer: a deep veil from the top, plus a soft vignette.
-  const veil = ctx.createLinearGradient(0, 0, 0, H * 0.6);
-  veil.addColorStop(0, "rgba(6,6,8,0.94)");
-  veil.addColorStop(0.6, "rgba(6,6,8,0.72)");
-  veil.addColorStop(1, "rgba(6,6,8,0)");
-  ctx.fillStyle = veil;
-  ctx.fillRect(0, 0, W, H * 0.6);
-  const vig = ctx.createRadialGradient(W / 2, H * 0.62, H * 0.25, W / 2, H * 0.62, H * 0.85);
-  vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(1, "rgba(0,0,0,0.45)");
-  ctx.fillStyle = vig;
-  ctx.fillRect(0, 0, W, H);
-
-  // Hairline frame
-  const inset = 30;
-  ctx.strokeStyle = "rgba(255,255,255,0.22)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(inset, inset, W - inset * 2, H - inset * 2);
-
-  const cream = "#f6f0e2";
-  const accent = readableOn(d.colors[1], "#0a0a0c", "#d4af37");
-  const startX = d.rtl ? W - margin : margin;
-
-  const brandH = drawBrand(ctx, { ...d, x: startX, y: top, maxW: 260, maxH: m.logoH * 0.85, backdropLum: 0.04, inkColor: cream });
-  let y = top + brandH + 38 * m.scale;
-
-  // Centered accent rule
-  ctx.fillStyle = accent;
-  ctx.fillRect(W / 2 - 44, y, 88, 3);
-  y += 3 + 34 * m.scale;
-
-  const btnH = 72 * m.scale;
-  const fit = fitText(ctx, d.headline, {
-    weight: 600,
-    family: d.rtl ? FONT_SANS_AR : FONT_DISPLAY,
-    maxSize: (d.rtl ? 84 : 108) * m.scale,
-    minSize: 44,
-    maxWidth: W - margin * 2 - 40,
-    maxLines: 3,
-    maxHeight: m.zoneBottom - y - btnH - 36,
-    leading: d.rtl ? 1.32 : 1.06,
-    tracking: 0,
-  });
-  ctx.fillStyle = cream;
-  drawLines(ctx, fit, W / 2, y, d.rtl ? 1.32 : 1.06, "center");
-  y += fit.height + 30 * m.scale;
-
-  drawButton(ctx, d.cta, {
-    x: W / 2,
-    y,
-    align: "center",
-    height: btnH,
-    padX: 40 * m.scale,
-    size: 25 * m.scale,
-    radius: 999,
-    color: accent,
-    textColor: accent,
-    outline: true,
-    maxWidth: W - margin * 2,
-    rtl: d.ctaRtl,
-    uppercase: true,
-  });
-}
-
-function styleLifestyleScene(ctx, m, d) {
-  const { W, H, margin, top } = m;
-  drawCover(ctx, d.scene, W, H);
-
-  const pad = 44 * m.scale;
-  const cardX = margin - 20;
-  const cardW = W - cardX * 2;
-  const cardY = top - 16;
-  const innerW = cardW - pad * 2;
-  const ink = "#14151a";
-  const accent = readableOn(d.colors[0], "#ffffff", ink);
-  const btnH = 72 * m.scale;
-  const logoH = m.logoH * 0.72;
-  const startX = d.rtl ? cardX + cardW - pad : cardX + pad;
-  const align = d.rtl ? "right" : "left";
-
-  // Measure first, then draw the card to the measured height.
-  const headlineTop = cardY + pad + logoH + 26 * m.scale;
-  const fit = fitText(ctx, d.headline, {
-    weight: 700,
-    family: d.rtl ? FONT_SANS_AR : FONT_SANS,
-    maxSize: 74 * m.scale,
-    minSize: 40,
-    maxWidth: innerW,
-    maxLines: 3,
-    maxHeight: m.zoneBottom - headlineTop - btnH - 26 * m.scale - pad,
-    leading: d.rtl ? 1.3 : 1.1,
-    tracking: d.rtl ? 0 : -0.02,
-  });
-  const cardH = pad + logoH + 26 * m.scale + fit.height + (d.cta ? 26 * m.scale + btnH : 0) + pad;
-
-  // Contrast layer: a soft white card.
+// Offer badge: a round sticker with a short text ("20% OFF"), on the panel/scene boundary.
+function drawBadge(ctx, text, cx, cy, r, tk) {
+  if (!text) return;
+  const rtl = isRtlText(text);
+  const label = rtl ? text : text.toUpperCase();
   ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.22)";
-  ctx.shadowBlur = 50;
-  ctx.shadowOffsetY = 18;
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  roundRectPath(ctx, cardX, cardY, cardW, cardH, 34);
+  ctx.translate(cx, cy);
+  ctx.rotate((tk.badge.rotate * Math.PI) / 180);
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.28)";
+  ctx.shadowBlur = 26;
+  ctx.shadowOffsetY = 10;
+  ctx.beginPath();
+  if (tk.badge.burst) {
+    // sticker with a scalloped edge
+    const points = 18;
+    for (let i = 0; i <= points * 2; i++) {
+      const rad = i % 2 === 0 ? r : r * 0.9;
+      const a = (i / (points * 2)) * Math.PI * 2;
+      if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+      else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    ctx.closePath();
+  } else {
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+  }
+  ctx.fillStyle = tk.badge.fill;
   ctx.fill();
   ctx.restore();
-  // Accent tab on the start edge of the card
-  ctx.fillStyle = accent;
-  roundRectPath(ctx, d.rtl ? cardX + cardW - 10 : cardX, cardY + 40, 10, cardH - 80, 5);
-  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = tk.badge.ring;
+  ctx.stroke();
 
-  drawBrand(ctx, { ...d, x: startX, y: cardY + pad, maxW: 260, maxH: logoH, backdropLum: 0.95, inkColor: ink });
-
-  setFont(ctx, 700, fit.size, d.rtl ? FONT_SANS_AR : FONT_SANS);
-  setTracking(ctx, d.rtl ? 0 : -0.02, fit.size);
-  ctx.fillStyle = ink;
-  drawLines(ctx, fit, startX, headlineTop, d.rtl ? 1.3 : 1.1, align);
-  setTracking(ctx, 0, fit.size);
-
-  drawButton(ctx, d.cta, {
-    x: startX,
-    y: headlineTop + fit.height + 26 * m.scale,
-    align: d.rtl ? "end" : "start",
-    height: btnH,
-    padX: 36 * m.scale,
-    size: 28 * m.scale,
-    radius: 999,
-    color: accent,
-    textColor: onColor(accent),
-    maxWidth: innerW,
-    rtl: d.ctaRtl,
+  const fit = fitText(ctx, label, {
+    weight: 800,
+    family: rtl ? FONT_SANS_AR : FONT_SANS,
+    maxSize: r * 0.62,
+    minSize: r * 0.24,
+    maxWidth: r * 1.36,
+    maxLines: 2,
+    maxHeight: r * 1.2,
+    leading: rtl ? 1.25 : 1.0,
+    tracking: 0,
   });
+  drawFit(ctx, fit, 0, -fit.height / 2 + (rtl ? -fit.size * 0.12 : fit.size * 0.06), "center", tk.badge.text);
+  ctx.restore();
 }
 
-const STYLE_RENDERERS = {
-  clean_studio: styleCleanStudio,
-  bold_color: styleBoldColor,
-  luxury_dark: styleLuxuryDark,
-  lifestyle_scene: styleLifestyleScene,
+// --- style tokens -----------------------------------------------------------
+
+const EDGE_BY_STYLE = {
+  clean_studio: ["straight", "curve", "diagonal"],
+  bold_color: ["diagonal", "curve", "diagonal"],
+  luxury_dark: ["straight", "curve", "straight"],
+  lifestyle_scene: ["curve", "diagonal", "curve"],
 };
 
+function styleTokens(style, palette) {
+  const c1 = palette[0];
+  const c2 = palette[1];
+  if (style === "bold_color") {
+    // Saturated full-bleed colour, heavy uppercase type, strong shapes.
+    const hsl = hexToHsl(c1);
+    const bg = ensureContrast(hslToHex(hsl.h, Math.max(hsl.s, 0.72), Math.min(Math.max(hsl.l, 0.36), 0.48)), "#ffffff", 4.5);
+    const ink = "#ffffff";
+    const pop = contrastRatio(c2, bg) >= 1.9 ? c2 : "#ffffff";
+    return {
+      panelBg: bg, ink, subInk: "rgba(255,255,255,0.9)", accent: pop, vignette: 0.16,
+      headline: { family: FONT_SANS, weight: 800, upper: true, tracking: -0.03, leading: 1.0, boost: 1.22 },
+      button: { fill: pop, text: onColor(pop), radius: 12, uppercase: true, outline: false, shadow: true },
+      chip: { bg: "rgba(255,255,255,0.16)", border: null, text: ink, icon: pop, iconMark: onColor(pop) },
+      badge: { fill: pop, text: onColor(pop), ring: rgba(onColor(pop), 0.45), rotate: -12, burst: true },
+      align: "start",
+    };
+  }
+  if (style === "luxury_dark") {
+    const gold = contrastRatio(c2, "#0b0b0d") >= 5 ? c2 : "#d4af37";
+    return {
+      panelBg: "#0b0b0d", ink: "#f6f0e2", subInk: "rgba(246,240,226,0.78)", accent: gold, vignette: 0.42,
+      headline: { family: FONT_DISPLAY, weight: 600, upper: false, tracking: 0, leading: 1.06, boost: 1.12 },
+      button: { fill: gold, text: gold, radius: 999, uppercase: true, outline: true, shadow: false },
+      chip: { bg: null, border: rgba(gold, 0.55), text: "#f6f0e2", icon: gold, iconMark: "#0b0b0d" },
+      badge: { fill: "#0b0b0d", text: gold, ring: gold, rotate: 0, burst: false },
+      align: "center",
+    };
+  }
+  if (style === "lifestyle_scene") {
+    const bg = "#f6f1e7";
+    const accent = ensureContrast(c1, bg, 4.5);
+    return {
+      panelBg: bg, ink: "#1d1b18", subInk: "rgba(29,27,24,0.74)", accent, vignette: 0.14,
+      headline: { family: FONT_SANS, weight: 700, upper: false, tracking: -0.02, leading: 1.1, boost: 1.0 },
+      button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
+      chip: { bg: rgba(accent, 0.12), border: null, text: "#1d1b18", icon: accent, iconMark: onColor(accent) },
+      badge: { fill: c2, text: onColor(c2), ring: rgba(onColor(c2), 0.4), rotate: -10, burst: false },
+      align: "start",
+    };
+  }
+  // clean_studio: airy tint of the brand colour, dark ink, precise shapes.
+  const bg = mix("#ffffff", c1, 0.09);
+  const accent = ensureContrast(c1, bg, 4.5);
+  return {
+    panelBg: bg, ink: "#101114", subInk: "rgba(16,17,20,0.7)", accent, vignette: 0.12,
+    headline: { family: FONT_SANS, weight: 800, upper: false, tracking: -0.025, leading: 1.08, boost: 1.0 },
+    button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
+    chip: { bg: "#ffffff", border: rgba(accent, 0.3), text: "#101114", icon: accent, iconMark: onColor(accent) },
+    badge: { fill: accent, text: onColor(accent), ring: rgba(onColor(accent), 0.45), rotate: -8, burst: false },
+    align: "start",
+  };
+}
+
+// --- geometry ---------------------------------------------------------------
+// Scene regions here must match SCENE_LAYOUTS in backend/adDesign.js.
+
+function geometry(format, variant, landscape, rtl, style) {
+  const edge = EDGE_BY_STYLE[style][variant % 3];
+  if (format === "9:16") {
+    const W = 1080;
+    const H = 1920;
+    const top = variant % 2 === 0;
+    if (top) {
+      // Panel above (content below the 220 px interface zone), product below.
+      const edgeTop = (ctx, move) => {
+        if (edge === "diagonal") {
+          if (move) ctx.moveTo(W, rtl ? 1040 : 962);
+          else ctx.lineTo(W, rtl ? 1040 : 962);
+          ctx.lineTo(0, rtl ? 962 : 1040);
+        } else if (edge === "curve") {
+          if (move) ctx.moveTo(W, 962);
+          else ctx.lineTo(W, 962);
+          ctx.quadraticCurveTo(W / 2, 1086, 0, 962);
+        } else {
+          if (move) ctx.moveTo(W, 1000);
+          else ctx.lineTo(W, 1000);
+          ctx.lineTo(0, 1000);
+        }
+      };
+      return {
+        W, H, kind: "top", edge, mirror: rtl,
+        scene: { x: 0, y: 950, w: W, h: 970 },
+        content: { x: 84, y: 232, w: W - 168, h: 700 },
+        badge: { cx: rtl ? 176 : W - 176, cy: 1040, r: 100 },
+        panel: (ctx) => {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(W, 0);
+          edgeTop(ctx, false);
+          ctx.closePath();
+        },
+        edgeLine: (ctx) => {
+          ctx.beginPath();
+          edgeTop(ctx, true);
+        },
+      };
+    }
+    // Product above, panel below (content above the 300 px interface zone).
+    return {
+      W, H, kind: "bottom", edge, mirror: rtl,
+      scene: { x: 0, y: 0, w: W, h: 1120 },
+      content: { x: 84, y: 1150, w: W - 168, h: 462 },
+      brandOnScene: { x: 84, y: 236 },
+      badge: { cx: rtl ? 176 : W - 176, cy: 336, r: 100 },
+      panel: (ctx) => {
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        ctx.lineTo(W, H);
+        if (edge === "diagonal") {
+          ctx.lineTo(W, rtl ? 1046 : 1114);
+          ctx.lineTo(0, rtl ? 1114 : 1046);
+        } else if (edge === "curve") {
+          ctx.lineTo(W, 1114);
+          ctx.quadraticCurveTo(W / 2, 1000, 0, 1114);
+        } else {
+          ctx.lineTo(W, 1080);
+          ctx.lineTo(0, 1080);
+        }
+        ctx.closePath();
+      },
+      edgeLine: (ctx) => {
+        ctx.beginPath();
+        if (edge === "diagonal") {
+          ctx.moveTo(W, rtl ? 1046 : 1114);
+          ctx.lineTo(0, rtl ? 1114 : 1046);
+        } else if (edge === "curve") {
+          ctx.moveTo(W, 1114);
+          ctx.quadraticCurveTo(W / 2, 1000, 0, 1114);
+        } else {
+          ctx.moveTo(W, 1080);
+          ctx.lineTo(0, 1080);
+        }
+      },
+    };
+  }
+
+  const W = 1080;
+  const H = 1080;
+  if (landscape) {
+    // Wide product photo: panel on top, a wide scene, and a bar for chips and button below.
+    return {
+      W, H, kind: "stack", edge, mirror: rtl,
+      scene: { x: 0, y: 380, w: W, h: 580 },
+      content: { x: 64, y: 52, w: W - 128, h: 318 },
+      bar: { x: 64, y: 960, w: W - 128, h: 120 },
+      badge: { cx: rtl ? 150 : W - 150, cy: 424, r: 84 },
+      panel: (ctx) => {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(W, 0);
+        if (edge === "diagonal") {
+          ctx.lineTo(W, rtl ? 440 : 388);
+          ctx.lineTo(0, rtl ? 388 : 440);
+        } else if (edge === "curve") {
+          ctx.lineTo(W, 388);
+          ctx.quadraticCurveTo(W / 2, 470, 0, 388);
+        } else {
+          ctx.lineTo(W, 412);
+          ctx.lineTo(0, 412);
+        }
+        ctx.closePath();
+        ctx.rect(0, 960, W, 120);
+      },
+      edgeLine: (ctx) => {
+        ctx.beginPath();
+        if (edge === "diagonal") {
+          ctx.moveTo(W, rtl ? 440 : 388);
+          ctx.lineTo(0, rtl ? 388 : 440);
+        } else if (edge === "curve") {
+          ctx.moveTo(W, 388);
+          ctx.quadraticCurveTo(W / 2, 470, 0, 388);
+        } else {
+          ctx.moveTo(W, 412);
+          ctx.lineTo(0, 412);
+        }
+      },
+    };
+  }
+
+  // Side panel: text on one side, the product tall on the other. The variant flips the side.
+  const panelLeft = (variant % 2 === 0) !== rtl;
+  const fx = (x) => (panelLeft ? x : W - x); // mirror helper
+  const edgePath = (ctx, move) => {
+    if (edge === "diagonal") {
+      if (move) ctx.moveTo(fx(540), 0);
+      else ctx.lineTo(fx(540), 0);
+      ctx.lineTo(fx(462), H);
+    } else if (edge === "curve") {
+      if (move) ctx.moveTo(fx(468), 0);
+      else ctx.lineTo(fx(468), 0);
+      ctx.quadraticCurveTo(fx(580), H / 2, fx(468), H);
+    } else {
+      if (move) ctx.moveTo(fx(500), 0);
+      else ctx.lineTo(fx(500), 0);
+      ctx.lineTo(fx(500), H);
+    }
+  };
+  return {
+    W, H, kind: "side", edge, mirror: !panelLeft, panelLeft,
+    scene: { x: panelLeft ? 460 : 0, y: 0, w: 620, h: H },
+    content: { x: panelLeft ? 56 : W - 56 - 376, y: 60, w: 376, h: H - 120 },
+    badge: { cx: fx(506), cy: 150, r: 92 },
+    panel: (ctx) => {
+      ctx.beginPath();
+      ctx.moveTo(fx(0), 0);
+      edgePath(ctx, false);
+      ctx.lineTo(fx(0), H);
+      ctx.closePath();
+    },
+    edgeLine: (ctx) => {
+      ctx.beginPath();
+      edgePath(ctx, true);
+    },
+  };
+}
+
+// --- composition ------------------------------------------------------------
+
+function drawScene(ctx, g, img, tk) {
+  const s = g.scene;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(s.x, s.y, s.w, s.h);
+  ctx.clip();
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (iw && ih) {
+    const scale = Math.max(s.w / iw, s.h / ih);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, s.x + (s.w - iw * scale) / 2, s.y + (s.h - ih * scale) / 2, iw * scale, ih * scale);
+  }
+  // The scene falls off towards its edges so the product reads as the hero.
+  const cx = s.x + s.w / 2;
+  const cy = s.y + s.h * 0.56;
+  const rad = Math.max(s.w, s.h) * 0.78;
+  const vig = ctx.createRadialGradient(cx, cy, rad * 0.42, cx, cy, rad);
+  vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(1, "rgba(0,0,0," + tk.vignette + ")");
+  ctx.fillStyle = vig;
+  ctx.fillRect(s.x, s.y, s.w, s.h);
+  ctx.restore();
+}
+
+function drawPanel(ctx, g, tk, style, palette) {
+  ctx.save();
+  g.panel(ctx);
+  ctx.fillStyle = tk.panelBg;
+  ctx.shadowColor = "rgba(0,0,0,0.28)";
+  ctx.shadowBlur = 40;
+  ctx.fill();
+  ctx.restore();
+
+  // Decorative shapes, clipped to the panel so they never reach the product.
+  ctx.save();
+  g.panel(ctx);
+  ctx.clip();
+  const c = g.content;
+  if (style === "bold_color") {
+    // a big ring and a solid quarter disc in the accent colour
+    ctx.lineWidth = g.kind === "side" ? 34 : 44;
+    ctx.strokeStyle = "rgba(255,255,255,0.13)";
+    ctx.beginPath();
+    ctx.arc(g.mirror ? c.x + c.w + 40 : c.x - 40, c.y + c.h + 40, g.kind === "side" ? 210 : 260, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = rgba(tk.accent, 0.9);
+    ctx.beginPath();
+    ctx.arc(g.mirror ? 0 : g.W, g.kind === "bottom" ? g.H : 0, g.kind === "side" ? 0 : 150, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (style === "luxury_dark") {
+    // hairline frame inside the panel
+    ctx.strokeStyle = rgba(tk.accent, 0.5);
+    ctx.lineWidth = 1.5;
+    const inset = 26;
+    if (g.kind === "side") ctx.strokeRect(g.panelLeft ? inset : g.W - 444, inset, 418, g.H - inset * 2);
+    else ctx.strokeRect(c.x - 34, c.y - 26, c.w + 68, c.h + 52);
+  } else if (style === "lifestyle_scene") {
+    ctx.fillStyle = rgba(tk.accent, 0.1);
+    ctx.beginPath();
+    ctx.arc(g.mirror ? c.x + c.w : c.x, c.y - 20, g.kind === "side" ? 190 : 250, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = rgba(palette[1], 0.16);
+    ctx.beginPath();
+    ctx.arc(g.mirror ? c.x + 30 : c.x + c.w - 30, c.y + c.h + 30, g.kind === "side" ? 120 : 150, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = rgba(tk.accent, 0.09);
+    ctx.beginPath();
+    ctx.arc(g.mirror ? c.x + c.w + 30 : c.x - 30, c.y + c.h + 10, g.kind === "side" ? 230 : 280, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = rgba(tk.accent, 0.22);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(g.mirror ? c.x + c.w + 30 : c.x - 30, c.y + c.h + 10, g.kind === "side" ? 290 : 350, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Accent line along the edge between panel and scene.
+  ctx.save();
+  g.edgeLine(ctx);
+  ctx.strokeStyle = style === "luxury_dark" ? rgba(tk.accent, 0.8) : tk.accent;
+  ctx.lineWidth = style === "bold_color" ? 14 : style === "luxury_dark" ? 2 : 5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Sizes per layout kind.
+function scaleFor(kind) {
+  if (kind === "side") return { headMax: 62, headMin: 34, headLines: 5, sub: 25, subLines: 4, chip: 21, chipH: 44, btnH: 66, btn: 24, logoH: 60, logoW: 240, gap: 26 };
+  if (kind === "stack") return { headMax: 62, headMin: 34, headLines: 2, sub: 25, subLines: 2, chip: 20, chipH: 42, btnH: 62, btn: 23, logoH: 52, logoW: 220, gap: 18 };
+  if (kind === "bottom") return { headMax: 76, headMin: 40, headLines: 3, sub: 32, subLines: 2, chip: 26, chipH: 54, btnH: 82, btn: 30, logoH: 84, logoW: 300, gap: 26 };
+  return { headMax: 92, headMin: 44, headLines: 3, sub: 34, subLines: 3, chip: 27, chipH: 56, btnH: 84, btn: 31, logoH: 84, logoW: 300, gap: 30 };
+}
+
+function drawContent(ctx, g, tk, d) {
+  const sc = scaleFor(g.kind);
+  const box = g.content;
+  const rtl = d.rtl;
+  const align = tk.align === "center" ? "center" : rtl ? "right" : "left";
+  const textX = align === "center" ? box.x + box.w / 2 : align === "right" ? box.x + box.w : box.x;
+  const hd = tk.headline;
+  const headFamily = rtl ? FONT_SANS_AR : hd.family;
+  const headText = hd.upper && !rtl ? d.headline.toUpperCase() : d.headline;
+
+  // Brand: on the panel, except in the "bottom" layout where it sits on the scene's top corner.
+  const brand = brandMetrics(ctx, d, sc.logoW, sc.logoH);
+  let top = box.y;
+  if (g.brandOnScene) {
+    const bx = rtl ? g.W - g.brandOnScene.x - brand.width : g.brandOnScene.x;
+    drawBrand(ctx, d, brand, bx, g.brandOnScene.y, "#808080", tk.ink, true);
+  } else if (brand.kind !== "none") {
+    drawBrand(ctx, d, brand, alignX(box, brand.width, align), box.y, tk.panelBg, tk.ink, false);
+    top = box.y + brand.height + sc.gap * 1.3;
+  }
+
+  // Measure the fixed blocks first, then give the headline what is left.
+  const chipOpts = { size: sc.chip, height: sc.chipH, icon: sc.chipH * 0.5, padX: sc.chipH * 0.42, gap: 10, rowGap: 10, radius: 999, maxWidth: box.w };
+  const inBar = g.kind === "stack";
+  const chips = d.chips.length && !inBar ? chipsLayout(ctx, d.chips, chipOpts) : null;
+  const btnOpts = { size: sc.btn, height: sc.btnH, padX: sc.btnH * 0.5, maxWidth: box.w, uppercase: tk.button.uppercase };
+  const btn = d.cta && !inBar ? buttonMetrics(ctx, d.cta, btnOpts) : null;
+
+  const subFit = d.subheadline
+    ? fitText(ctx, d.subheadline, {
+        weight: 500, family: rtl ? FONT_SANS_AR : FONT_SANS, maxSize: sc.sub, minSize: sc.sub - 6,
+        maxWidth: box.w, maxLines: sc.subLines, maxHeight: sc.sub * 1.4 * sc.subLines, leading: rtl ? 1.5 : 1.36, tracking: 0,
+      })
+    : null;
+
+  const footer = g.kind === "side" && brand.kind === "logo" && d.brandName ? sc.chip * 1.5 : 0;
+  const bottom = box.y + box.h - footer;
+  const subGap = sc.gap * 0.7;
+  const fixed = (subFit ? subFit.height + subGap : 0) + (chips ? chips.height + sc.gap : 0) + (btn ? btn.height + sc.gap : 0);
+  const headFit = fitText(ctx, headText, {
+    weight: hd.weight, family: headFamily,
+    maxSize: sc.headMax * hd.boost * (rtl ? 0.9 : 1), minSize: sc.headMin,
+    maxWidth: box.w, maxLines: sc.headLines, maxHeight: Math.max(sc.headMin * 1.2, bottom - top - fixed - 12),
+    leading: rtl ? 1.3 : hd.leading, tracking: rtl ? 0 : hd.tracking,
+  });
+
+  // The text group is centred vertically in the space under the brand (tall panels breathe).
+  const groupH = 12 + headFit.height + fixed;
+  let y = top + Math.max(0, (bottom - top - groupH) / 2);
+
+  // Accent rule above the headline
+  ctx.fillStyle = tk.accent;
+  const ruleW = g.kind === "side" ? 56 : 80;
+  ctx.fillRect(align === "center" ? textX - ruleW / 2 : align === "right" ? textX - ruleW : textX, y, ruleW, tk.align === "center" ? 2 : 6);
+  y += 12 + sc.gap * 0.4;
+
+  drawFit(ctx, headFit, textX, y, align, tk.ink);
+  y += headFit.height;
+  if (subFit) {
+    y += subGap;
+    drawFit(ctx, subFit, textX, y, align, tk.subInk);
+    y += subFit.height;
+  }
+  if (chips) {
+    y += sc.gap;
+    drawChips(ctx, chips, box, y, align, rtl, chipOpts, tk.chip);
+    y += chips.height;
+  }
+  if (btn) {
+    y += sc.gap;
+    drawButton(ctx, btn, alignX(box, btn.width, align), y, { ...tk.button, padX: btnOpts.padX });
+  }
+
+  // "stack" layout: chips and button live in the bar under the scene.
+  if (inBar) {
+    const bar = g.bar;
+    const b = d.cta ? buttonMetrics(ctx, d.cta, { ...btnOpts, maxWidth: bar.w * 0.4 }) : null;
+    const chipW = bar.w - (b ? b.width + 28 : 0);
+    const barChips = d.chips.length ? chipsLayout(ctx, d.chips, { ...chipOpts, maxWidth: chipW }) : null;
+    const chipBox = { x: rtl ? bar.x + bar.w - chipW : bar.x, y: bar.y, w: chipW, h: bar.h };
+    if (barChips && barChips.rows.length === 1) {
+      drawChips(ctx, barChips, chipBox, bar.y + (bar.h - barChips.height) / 2, rtl ? "right" : "left", rtl, { ...chipOpts, maxWidth: chipW }, tk.chip);
+    }
+    if (b) drawButton(ctx, b, rtl ? bar.x : bar.x + bar.w - b.width, bar.y + (bar.h - b.height) / 2, { ...tk.button, padX: btnOpts.padX, shadow: false });
+  }
+
+  // Footer: the brand name, small, when the logo is at the top.
+  if (footer) {
+    const frtl = isRtlText(d.brandName);
+    setFont(ctx, 600, sc.chip * 0.9, frtl ? FONT_SANS_AR : FONT_SANS);
+    setTracking(ctx, frtl ? 0 : 0.12, sc.chip);
+    ctx.fillStyle = tk.subInk;
+    ctx.textAlign = align;
+    ctx.textBaseline = "alphabetic";
+    setDir(ctx, d.brandName);
+    ctx.fillText(frtl ? d.brandName : d.brandName.toUpperCase(), textX, box.y + box.h, box.w);
+    setTracking(ctx, 0, sc.chip);
+  }
+}
+
 // Draws the finished ad on the canvas at its export size (1080x1080 or 1080x1920).
-//   opts: { format, style, scene (loaded image), headline, cta, brandName, colors [c1, c2], logo (loaded image or null) }
+//   opts: { format, style, variant, landscape, scene (loaded image), headline, subheadline,
+//           badge, chips [..3], cta, brandName, colors [c1, c2], logo (loaded image or null) }
 export function drawAd(canvas, opts) {
   const format = AD_FORMATS[opts.format] ? opts.format : "1:1";
-  const m = metrics(format);
-  canvas.width = m.W;
-  canvas.height = m.H;
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, m.W, m.H);
-
+  const style = AD_STYLES.includes(opts.style) ? opts.style : "clean_studio";
   const headline = String(opts.headline || "").trim();
-  const cta = String(opts.cta || "").trim();
-  const colors = [
-    /^#[0-9a-f]{6}$/i.test(opts.colors && opts.colors[0]) ? opts.colors[0] : "#111111",
-    /^#[0-9a-f]{6}$/i.test(opts.colors && opts.colors[1]) ? opts.colors[1] : "#d4af37",
-  ];
   const data = {
-    scene: opts.scene,
     headline,
-    cta,
+    subheadline: String(opts.subheadline || "").trim(),
+    badge: String(opts.badge || "").trim(),
+    chips: (Array.isArray(opts.chips) ? opts.chips : []).map((c) => String(c || "").trim()).filter(Boolean).slice(0, 3),
+    cta: String(opts.cta || "").trim(),
     brandName: String(opts.brandName || "").trim(),
-    colors,
     logo: opts.logo || null,
     rtl: isRtlText(headline),
-    ctaRtl: isRtlText(cta),
   };
-  ctx.direction = data.rtl ? "rtl" : "ltr";
-  (STYLE_RENDERERS[opts.style] || styleCleanStudio)(ctx, m, data);
+  const palette = normalizePalette(opts.colors && opts.colors[0], opts.colors && opts.colors[1]);
+  const variant = Number.isFinite(Number(opts.variant)) ? Math.abs(Math.round(Number(opts.variant))) : 0;
+  const g = geometry(format, variant, Boolean(opts.landscape), data.rtl, style);
+  const tk = styleTokens(style, palette);
+
+  canvas.width = g.W;
+  canvas.height = g.H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = tk.panelBg;
+  ctx.fillRect(0, 0, g.W, g.H);
+
+  if (opts.scene) drawScene(ctx, g, opts.scene, tk);
+  drawPanel(ctx, g, tk, style, palette);
+  drawContent(ctx, g, tk, data);
+  drawBadge(ctx, data.badge, g.badge.cx, g.badge.cy, g.badge.r, tk);
   return canvas;
 }
