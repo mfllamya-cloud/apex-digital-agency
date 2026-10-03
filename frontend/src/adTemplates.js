@@ -192,12 +192,13 @@ export function extractPalette(source) {
     let bb = 0;
     let bn = 0;
     for (let i = 0; i < size; i++) {
-      [px(i, 0), px(i, size - 1), px(0, i), px(size - 1, i)].forEach((p) => {
-        br += p[0];
-        bg += p[1];
-        bb += p[2];
+      const edge = [px(i, 0), px(i, size - 1), px(0, i), px(size - 1, i)];
+      for (let k = 0; k < edge.length; k++) {
+        br += edge[k][0];
+        bg += edge[k][1];
+        bb += edge[k][2];
         bn += 1;
-      });
+      }
     }
     br /= bn;
     bg /= bn;
