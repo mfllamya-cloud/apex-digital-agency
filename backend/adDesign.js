@@ -8,8 +8,10 @@
 //      panel with the headline, subheadline, benefit chips, button, offer badge and brand.
 //      The panel and the scene are separate zones, so text never covers the product.
 //
-// One design credit = one scene per format (pro: 1:1; premium: 1:1 and 9:16). A scene that
-// fails the quality check (checkScene) is regenerated once, silently. The credit is consumed
+// One design credit = ONE scene, shared by every format of the plan (pro: 4:5 poster and 1:1;
+// premium: 4:5, 1:1 and 9:16): each layout crops the same square scene around the product, so
+// all formats show the same concept and cost one image. A scene that fails the quality check
+// (checkScene) is regenerated once, silently. The credit is consumed
 // only when a scene passes. Each credit also includes ONE free "redo": the customer can ask
 // for a new scene once if they do not like the result.
 //
@@ -30,7 +32,6 @@ export const FAL_UPSCALE_ENDPOINT = null;
 const FAL_QUEUE_URL = "https://queue.fal.run/";
 const FAL_STORAGE_INITIATE_URL = "https://rest.alpha.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3";
 
-const VARIATIONS_PER_CREDIT = 1;
 const LAYOUT_VARIANTS = 6; // see geometry() in frontend/src/adTemplates.js
 const IMAGE_DAILY_CAP_DEFAULT = 150;
 const MAX_FAILED_ATTEMPTS_PER_DAY = 3;
@@ -43,45 +44,42 @@ const MAX_LOGO_CHARS = 260 * 1024;
 const MAX_THUMB_CHARS = 330 * 1024;
 const MAX_SCENE_PROXY_BYTES = 4 * 1024 * 1024;
 
-// Scene size and product box per layout. The browser draws the scene only inside its own region
-// of the ad (the rest is the text panel), so each scene is generated at the shape of that region,
-// about 1 megapixel as Bria recommends. padding is [left, right, top, bottom] in scene pixels:
-// it boxes the product inside the region, leaves a band for the offer badge and, in 9:16, keeps
-// the product clear of the areas that story/reel interfaces cover.
-// ⚠️ These must match the scene regions in geometry() in frontend/src/adTemplates.js.
-const SCENE_LAYOUTS = {
-  side: { shotSize: [784, 1368], padding: [133, 133, 253, 101] }, // 1:1, text panel beside the product
-  stack: { shotSize: [1376, 736], padding: [204, 204, 115, 64] }, // 1:1, wide product photo
-  top: { shotSize: [1056, 944], padding: [147, 147, 176, 244] }, // 9:16, panel above the product
-  bottom: { shotSize: [1008, 1040], padding: [131, 131, 411, 112] }, // 9:16, panel below the product
+// The scene: one square image, about 1 megapixel as Bria recommends, with the product boxed in
+// its centre. padding is [left, right, top, bottom] in scene pixels. Every layout in
+// frontend/src/adTemplates.js crops this same square around the product box (side crop for the
+// 1:1 panel layout, a card for the 4:5 poster, the upper part of the 9:16), so the box below is
+// sized to fit all of them and to leave a band above the product for the offer badge.
+// ⚠️ Keep in step with SCENE_BOX in frontend/src/adTemplates.js.
+const SCENE_SHOT_SIZE = [1024, 1024];
+const SCENE_PADDING = {
+  portrait: [308, 308, 190, 76], // product box 408 x 758
+  landscape: [130, 130, 300, 274], // wide product photo: box 764 x 450
 };
 
-// Same rule as the browser: 1:1 uses "stack" for wide product photos and "side" otherwise;
-// 9:16 alternates with the variant.
-function sceneLayoutFor(format, variant, landscape) {
-  if (format === "9:16") return variant % 2 === 0 ? SCENE_LAYOUTS.top : SCENE_LAYOUTS.bottom;
-  return landscape ? SCENE_LAYOUTS.stack : SCENE_LAYOUTS.side;
-}
-
 const SCENE_SUFFIX =
-  " The product is the hero of the image: sharp, well lit, standing on the surface with a soft realistic contact shadow." +
-  " The background is uncluttered, softly out of focus and slightly darker than the product." +
-  " No text, no letters, no numbers, no logos, no watermark, no people, no hands, no other products.";
+  " The product is the hero: sharp, perfectly lit, standing on the surface with a soft realistic contact shadow." +
+  " The props are arranged around and behind the product and never cover it." +
+  " Professional advertising photography, depth of field, background slightly darker than the product." +
+  " No text, no letters, no numbers, no logos, no watermark, no people, no hands, no other packaged products.";
 
+// Used when the ad has no scene ideas of its own (older ads): still a styled set, not a plain backdrop.
+const FALLBACK_SCENE_IDEAS = [
+  "on a round stone podium, surrounded by natural elements that evoke the product, soft directional light with gentle shadows",
+  "on a reflective surface with a few elegant props related to the product arranged behind it, dramatic side light, depth",
+  "on layered podiums with draped fabric and small natural details around it, warm light from one side",
+];
+
+// Each style sets the mood of the set (surface, backdrop, light). What is IN the set comes from
+// the ad itself: sceneIdeas written with the ad copy from what the customer advertises.
 const STYLE_SCENES = {
   clean_studio: () =>
-    "placed on a seamless soft light-grey studio surface, minimal premium product photography, " +
-    "soft diffused daylight, gentle natural shadow, clean and uncluttered.",
+    "Bright premium studio set, light neutral backdrop, soft diffused daylight, clean and airy.",
   bold_color: (ctx) =>
-    "placed on a smooth matte surface in front of a seamless plain " + ctx.colorName + " backdrop, " +
-    "vibrant colour-block advertising photography, crisp clean shadow, minimal composition.",
+    "Vivid colour-block studio set with a saturated " + ctx.colorName + " backdrop and matching podium, punchy light, crisp shadows.",
   luxury_dark: () =>
-    "placed on polished black marble in front of a dark charcoal backdrop, dramatic low-key lighting " +
-    "with a warm rim light, subtle reflection, premium luxury advertising photography.",
+    "Dark luxurious set, black and charcoal tones, polished stone or glass, dramatic low-key light with a warm rim light and reflections.",
   lifestyle_scene: () =>
-    "placed in a real-life setting such as a wooden table, a bathroom shelf, a kitchen counter or " +
-    "an outdoor terrace, whichever suits the product, natural window light, softly blurred " +
-    "background, authentic lifestyle product photography.",
+    "Real-life setting that suits the product (bathroom shelf, kitchen counter, wooden table or terrace), natural window light, softly blurred background.",
 };
 
 export const DESIGN_STYLES = Object.keys(STYLE_SCENES);
@@ -128,9 +126,12 @@ function hexToColorName(hex) {
 
 function buildSceneDescription(style, ctx) {
   const recipe = STYLE_SCENES[style] || STYLE_SCENES.clean_studio;
-  const what = ctx.product ? "The product (" + ctx.product + ") " : "The product ";
-  const note = ctx.note ? " Scene idea from the client: " + ctx.note + "." : "";
-  return what + recipe(ctx) + note + SCENE_SUFFIX;
+  const what = ctx.product ? "The product (" + ctx.product + ")" : "The product";
+  const note = ctx.note ? " The client asked for: " + ctx.note + "." : "";
+  return (
+    what + " in a styled advertising set built around it: " + (ctx.sceneIdea || FALLBACK_SCENE_IDEAS[0]) + ". " +
+    recipe(ctx) + note + SCENE_SUFFIX
+  );
 }
 
 // --- image helpers ---------------------------------------------------------
@@ -203,7 +204,7 @@ async function uploadToFalStorage(falKey, buffer, mime) {
   }
 }
 
-async function submitScene(falKey, imageRef, style, format, ctx) {
+async function submitScene(falKey, imageRef, style, ctx) {
   const res = await fetch(FAL_QUEUE_URL + FAL_SCENE_ENDPOINT, {
     method: "POST",
     headers: falHeaders(falKey, { "Content-Type": "application/json" }),
@@ -211,8 +212,8 @@ async function submitScene(falKey, imageRef, style, format, ctx) {
       image_url: imageRef,
       scene_description: buildSceneDescription(style, ctx),
       placement_type: "manual_padding",
-      padding_values: sceneLayoutFor(format, ctx.variant || 0, Boolean(ctx.landscape)).padding,
-      shot_size: sceneLayoutFor(format, ctx.variant || 0, Boolean(ctx.landscape)).shotSize,
+      padding_values: ctx.landscape ? SCENE_PADDING.landscape : SCENE_PADDING.portrait,
+      shot_size: SCENE_SHOT_SIZE,
       num_results: 1,
       optimize_description: true,
       // Quality over speed and price: use the full model, not the fast one.
@@ -251,10 +252,9 @@ async function readSceneRequest(falKey, slot) {
 }
 
 // See FAL_UPSCALE_ENDPOINT above. Today this returns the scene URL unchanged.
-async function maybeUpscale(falKey, sceneUrl, format) {
+async function maybeUpscale(falKey, sceneUrl) {
   if (!FAL_UPSCALE_ENDPOINT) return sceneUrl;
   void falKey;
-  void format;
   return sceneUrl;
 }
 
@@ -301,15 +301,16 @@ async function checkScene(deps, job, sceneUrl) {
               type: "text",
               text:
                 "You are the quality controller of an advertising agency. Judge Image 2 strictly. " +
+                "It is a styled set: props around the product (ingredients, petals, water, leaves, fabric, podiums) are wanted. " +
                 "Text and graphics will be added around it later, on a separate panel.\n\n" +
                 "Answer these, true only if clearly satisfied:\n" +
                 '- "product_visible": the product is clearly visible, in focus, fully inside the frame and not cropped.\n' +
                 '- "product_matches": it is the same product as in Image 1 — same shape, same label, same colours. ' +
                 "Text printed on the product's own label is expected and is fine.\n" +
                 '- "no_stray_text": apart from the product\'s own label, the scene contains no text, letters, numbers, logos or watermarks.\n' +
-                '- "no_distortion": no distorted, melted, duplicated or impossible objects, no hands, no people, ' +
+                '- "no_distortion": no distorted, melted or impossible objects, no second copy of the product, no other packaged or labelled products, no hands, no people, no prop covering the product, ' +
                 "and the product sits naturally in the scene (plausible scale, contact shadow, no visible cut-out halo).\n" +
-                '- "product_framed": the whole product stands inside the image with clear background around it on every side; it does not touch or cross the image borders.\n\n' +
+                '- "product_framed": the whole product stands inside the image with room around it on every side; it does not touch or cross the image borders.\n\n' +
                 'Reply with JSON only: {"product_visible": true|false, "product_matches": true|false, "no_stray_text": true|false, ' +
                 '"no_distortion": true|false, "product_framed": true|false, "reason": "one short sentence"}',
             },
@@ -529,7 +530,7 @@ export function registerAdDesignRoutes(app, deps) {
       if (redoCandidate) redoRef = redoCandidate;
 
       const formats = gate.limits.designFormats;
-      const wanted = formats.length * VARIATIONS_PER_CREDIT;
+      const wanted = 1; // one scene per credit, shared by every format
       if (!(await reserveImages(db, wanted))) {
         console.warn("[adDesign] daily image cap reached — design refused for uid=" + uid);
         await restoreRedo();
@@ -541,15 +542,22 @@ export function registerAdDesignRoutes(app, deps) {
       const colors = [cleanHex(body.color1, "#111111"), cleanHex(body.color2, "#d4af37")];
       // Layout variant: random, and always different from the design being redone, so two ads
       // for the same customer do not look identical. Wide product photos get the wide 1:1 layout.
-      let variant = Math.floor(Math.random() * LAYOUT_VARIANTS);
-      if (gate.previousVariant !== null && variant % LAYOUT_VARIANTS === gate.previousVariant % LAYOUT_VARIANTS) {
-        variant = (variant + 1) % LAYOUT_VARIANTS;
-      }
+      // A redo takes the next variant: another layout side, another edge shape and another scene idea.
+      const variant =
+        gate.previousVariant !== null
+          ? (gate.previousVariant + 1) % LAYOUT_VARIANTS
+          : Math.floor(Math.random() * LAYOUT_VARIANTS);
       const landscape = size.width / size.height >= 1.3; // 4:3 and wider
+      // The set is built from what the customer advertises: scene ideas are written with the ad
+      // copy (server.js) and saved on the ad. The variant picks one, so a redo gets another set.
+      const saved = projectSnap.data() || {};
+      const ideas = (Array.isArray(saved.sceneIdeas) ? saved.sceneIdeas : []).map((x) => cleanText(x, 320)).filter(Boolean);
+      const ideaPool = ideas.length ? ideas : FALLBACK_SCENE_IDEAS;
       const ctx = {
         colorName: hexToColorName(colors[0]),
         note: cleanText(body.note, 200),
-        product: cleanText(body.product, 120),
+        product: cleanText(body.product, 120) || cleanText(saved.product, 120),
+        sceneIdea: ideaPool[variant % ideaPool.length],
         variant,
         landscape,
       };
@@ -558,13 +566,8 @@ export function registerAdDesignRoutes(app, deps) {
       const productUrl = await uploadToFalStorage(key, product.buffer, product.mime);
       const imageRef = productUrl || body.productImage;
 
-      const slots = [];
-      for (const format of formats) {
-        for (let v = 1; v <= VARIATIONS_PER_CREDIT; v++) {
-          slots.push({ id: format + "-" + v, format, variation: v, attempt: 1, state: "pending", sceneUrl: null, reason: null, checked: false });
-        }
-      }
-      const submissions = await Promise.allSettled(slots.map((s) => submitScene(key, imageRef, style, s.format, ctx)));
+      const slots = [{ id: "scene", attempt: 1, state: "pending", sceneUrl: null, reason: null, checked: false }];
+      const submissions = await Promise.allSettled(slots.map(() => submitScene(key, imageRef, style, ctx)));
       let submitted = 0;
       submissions.forEach((r, i) => {
         if (r.status === "fulfilled") {
@@ -608,6 +611,13 @@ export function registerAdDesignRoutes(app, deps) {
           subheadline: cleanText(body.subheadline, 140),
           badge: cleanText(body.badge, 24),
           chips: (Array.isArray(body.chips) ? body.chips : []).map((c) => cleanText(c, 32)).filter(Boolean).slice(0, 3),
+          // Feature poster: one line of explanation and an icon per benefit, a highlight used
+          // when there is no offer, and the strip of short product qualities.
+          chipDetails: (Array.isArray(body.chipDetails) ? body.chipDetails : []).map((c) => cleanText(c, 60)).slice(0, 3),
+          chipIcons: (Array.isArray(body.chipIcons) ? body.chipIcons : []).map((c) => cleanText(c, 16)).slice(0, 3),
+          highlight: cleanText(body.highlight, 24),
+          qualities: (Array.isArray(body.qualities) ? body.qualities : []).map((c) => cleanText(c, 24)).filter(Boolean).slice(0, 4),
+          qualityIcons: (Array.isArray(body.qualityIcons) ? body.qualityIcons : []).map((c) => cleanText(c, 16)).slice(0, 4),
           cta: cleanText(body.cta, 40),
           brandName: cleanText(body.brandName, 40),
           colors,
@@ -628,6 +638,13 @@ export function registerAdDesignRoutes(app, deps) {
     }
   });
 
+  // The one passed scene, listed once per format of the plan (same image, different layout).
+  function scenesForFormats(formats, slots) {
+    const passed = (slots || []).find((s) => s.state === "passed");
+    if (!passed) return [];
+    return (formats || []).map((format) => ({ format, variation: 1, url: passed.sceneUrl }));
+  }
+
   function publicJob(job, extra) {
     return {
       success: true,
@@ -638,9 +655,7 @@ export function registerAdDesignRoutes(app, deps) {
       landscape: Boolean(job.sceneContext && job.sceneContext.landscape),
       // The free redo belongs to the original design; a redo cannot be redone.
       redoAvailable: job.status === "passed" && !job.isRedo && !job.redoUsed,
-      scenes: (job.slots || [])
-        .filter((s) => s.state === "passed")
-        .map((s) => ({ format: s.format, variation: s.variation, url: s.sceneUrl })),
+      scenes: scenesForFormats(job.formats, job.slots),
       ...(extra || {}),
     };
   }
@@ -681,7 +696,7 @@ export function registerAdDesignRoutes(app, deps) {
         slot.reason = reason;
         if (slot.attempt === 1 && key && job.productUrl && !timedOut && (await reserveImages(db, 1))) {
           try {
-            const sub = await submitScene(key, job.productUrl, job.style, slot.format, job.sceneContext || {});
+            const sub = await submitScene(key, job.productUrl, job.style, job.sceneContext || {});
             Object.assign(slot, sub, { attempt: 2, state: "pending", sceneUrl: null });
             return;
           } catch (err) {
@@ -705,7 +720,7 @@ export function registerAdDesignRoutes(app, deps) {
               r = { state: "pending" };
             }
             if (r.state === "done") {
-              slot.sceneUrl = await maybeUpscale(key, r.url, slot.format);
+              slot.sceneUrl = await maybeUpscale(key, r.url);
               slot.state = "generated";
             } else if (r.state === "error") {
               await retryOrFail(slot, "generation failed");
@@ -783,7 +798,7 @@ export function registerAdDesignRoutes(app, deps) {
                 ...job.design,
                 createdAt: new Date(),
                 jobId: job.isRedo && job.redoOf ? job.redoOf : jobId,
-                scenes: passed.map((s) => ({ format: s.format, variation: s.variation, url: s.sceneUrl })),
+                scenes: scenesForFormats(job.formats, slots),
               },
             },
             { merge: true }

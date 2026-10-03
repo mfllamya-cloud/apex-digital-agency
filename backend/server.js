@@ -696,7 +696,7 @@ const PLAN_LIMITS = {
     maxDays: 1,
     maxGenerationsPerMonth: 5,
     maxDesignsPerMonth: 2,
-    designFormats: ["1:1"],
+    designFormats: ["4:5", "1:1"],
     designStyles: ["clean_studio", "bold_color"],
     label: "برو",
   },
@@ -704,7 +704,7 @@ const PLAN_LIMITS = {
     maxDays: 1,
     maxGenerationsPerMonth: 10,
     maxDesignsPerMonth: 5,
-    designFormats: ["1:1", "9:16"],
+    designFormats: ["4:5", "1:1", "9:16"],
     designStyles: ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"],
     label: "بريميوم",
   },
@@ -729,7 +729,7 @@ function getPlanLimits(plan) {
 //
 // premium: عاد إلى 25000 بعد رجوع سقف الأيام إلى 7.
 // One ad per generation on every plan since the 2026 model, so one ceiling fits all.
-const PLAN_MAX_TOKENS = { free: 2200, pro: 2200, premium: 2200 };
+const PLAN_MAX_TOKENS = { free: 2600, pro: 2600, premium: 2600 };
 
 function getPlanMaxTokens(plan) {
   return PLAN_MAX_TOKENS[plan] || PLAN_MAX_TOKENS.free;
@@ -963,6 +963,10 @@ const AD_CAPTION_MAX_WORDS = 40;
 const AD_CTA_MAX_WORDS = 4;
 const AD_BADGE_MAX_WORDS = 3;
 const AD_BENEFIT_MAX_WORDS = 3;
+const AD_BENEFIT_DETAIL_MAX_WORDS = 7;
+const AD_QUALITY_MAX_WORDS = 2;
+// Icons the ad design can draw (frontend/src/adTemplates.js). The copy picks one per item.
+const AD_ICONS = ["drop", "leaf", "shield", "sparkle", "clock", "heart", "star", "sun", "bolt", "check", "flower", "award"];
 
 function buildAdPrompt(businessDescription, occasion, options) {
   const opts = options || {};
@@ -990,7 +994,10 @@ Write exactly ONE ad with these fields:
 - "headline": the main line printed on the ad image. At most ${AD_HEADLINE_MAX_WORDS} words. Punchy, specific to this product, no hashtags, no emojis, no quotation marks, no final period.
 - "subheadline": one supporting line printed under the headline. At most ${AD_SUBHEADLINE_MAX_WORDS} words. Says what the product is or does; does not repeat the headline. No emojis.
 - "offerBadge": the offer as a sticker, ${AD_BADGE_MAX_WORDS} words at most (for example "20% OFF" or "Free delivery"). Empty string when no offer was given.
-- "benefits": exactly 3 benefit chips, each 1 to ${AD_BENEFIT_MAX_WORDS} words (for example "24h hydration"). Concrete, true to the description, no emojis, no punctuation at the end.
+- "benefits": exactly 3 benefits, each an object {"title": 1 to ${AD_BENEFIT_MAX_WORDS} words (for example "24h hydration"), "detail": one short line of explanation, ${AD_BENEFIT_DETAIL_MAX_WORDS} words at most, "icon": one of ${AD_ICONS.join(", ")}}. Concrete, true to the description, no emojis, no punctuation at the end.
+- "highlight": the single strongest benefit as a sticker, ${AD_BADGE_MAX_WORDS} words at most. It is shown where the offer badge would be when there is no offer. Never a price or a discount.
+- "qualities": 3 or 4 short product qualities for a strip at the bottom of the image, each an object {"label": 1 to ${AD_QUALITY_MAX_WORDS} words, "icon": one of the icons above}. Use ONLY qualities stated in or directly implied by the description. Never invent certifications, tests, awards, origins or percentages.
+- "sceneIdeas": exactly 3 different descriptions, always in English, 25 to 35 words each, of a styled advertising set for the product photo: props chosen from what the product is made of or evokes (for example petals, water splash, cream swirl, leaves, fruit slices, fabric, stones), a podium or surface, and the lighting. Each idea must be clearly different from the others. No people, no hands, no text, no other packaged products.
 - "caption": the ready-to-post text that goes with the image. At most ${AD_CAPTION_MAX_WORDS} words. Opens with a hook, uses the same benefits as the chips, ends by leading into the call to action.
 - "cta": the call-to-action button label. ${AD_CTA_MAX_WORDS} words at most (for example "Shop now"). No emojis.
 - "hashtags": exactly 5 hashtags specific to this business, each starting with #.
@@ -998,7 +1005,7 @@ ${extraInstructions}
 
 Answer with valid JSON only, no text before or after, no Markdown code fences, exactly in this shape:
 
-{"ad": {"headline": "...", "subheadline": "...", "offerBadge": "...", "benefits": ["...", "...", "..."], "caption": "...", "cta": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."]}}`;
+{"ad": {"headline": "...", "subheadline": "...", "offerBadge": "...", "highlight": "...", "benefits": [{"title": "...", "detail": "...", "icon": "..."}, {"title": "...", "detail": "...", "icon": "..."}, {"title": "...", "detail": "...", "icon": "..."}], "qualities": [{"label": "...", "icon": "..."}, {"label": "...", "icon": "..."}, {"label": "...", "icon": "..."}], "caption": "...", "cta": "...", "hashtags": ["#...", "#...", "#...", "#...", "#..."], "sceneIdeas": ["...", "...", "..."]}}`;
 }
 
 function limitWords(text, maxWords) {
@@ -1024,8 +1031,25 @@ function normalizeAd(raw) {
   const cta = limitWords(raw.cta || raw.callToAction || "", AD_CTA_MAX_WORDS);
   const subheadline = limitWords(String(raw.subheadline || "").replace(/[.\s]+$/, ""), AD_SUBHEADLINE_MAX_WORDS);
   const offerBadge = limitWords(String(raw.offerBadge || raw.badge || "").replace(/[.\s]+$/, ""), AD_BADGE_MAX_WORDS);
-  const benefits = (Array.isArray(raw.benefits) ? raw.benefits : [])
-    .map((b) => limitWords(String(b || "").replace(/[.,;!\s]+$/, ""), AD_BENEFIT_MAX_WORDS))
+  const tidy = (v, max) => limitWords(String(v || "").replace(/[.,;!\s]+$/, ""), max);
+  const icon = (v, fallback) => (AD_ICONS.includes(String(v || "").trim().toLowerCase()) ? String(v).trim().toLowerCase() : fallback);
+  // Benefits arrive as {title, detail, icon}; a plain string is accepted as a title.
+  const benefitItems = (Array.isArray(raw.benefits) ? raw.benefits : [])
+    .map((b) => (b && typeof b === "object" ? b : { title: b }))
+    .map((b) => ({ title: tidy(b.title, AD_BENEFIT_MAX_WORDS), detail: tidy(b.detail, AD_BENEFIT_DETAIL_MAX_WORDS), icon: icon(b.icon, "check") }))
+    .filter((b) => b.title)
+    .slice(0, 3);
+  const benefits = benefitItems.map((b) => b.title);
+  const benefitDetails = benefitItems.map((b) => b.detail);
+  const benefitIcons = benefitItems.map((b) => b.icon);
+  const highlight = tidy(raw.highlight, AD_BADGE_MAX_WORDS) || benefits[0] || "";
+  const qualityItems = (Array.isArray(raw.qualities) ? raw.qualities : [])
+    .map((q) => (q && typeof q === "object" ? q : { label: q }))
+    .map((q) => ({ label: tidy(q.label, AD_QUALITY_MAX_WORDS), icon: icon(q.icon, "star") }))
+    .filter((q) => q.label)
+    .slice(0, 4);
+  const sceneIdeas = (Array.isArray(raw.sceneIdeas) ? raw.sceneIdeas : [])
+    .map((x) => String(x || "").replace(/\s+/g, " ").trim().slice(0, 320))
     .filter(Boolean)
     .slice(0, 3);
   const hashtags = (Array.isArray(raw.hashtags) ? raw.hashtags : [])
@@ -1033,7 +1057,11 @@ function normalizeAd(raw) {
     .filter(Boolean)
     .map((h) => (h.startsWith("#") ? h : "#" + h))
     .slice(0, 5);
-  return { headline, subheadline, offerBadge, benefits, caption, cta, hashtags };
+  return {
+    headline, subheadline, offerBadge, highlight, benefits, benefitDetails, benefitIcons,
+    qualities: qualityItems.map((q) => q.label), qualityIcons: qualityItems.map((q) => q.icon),
+    caption, cta, hashtags, sceneIdeas,
+  };
 }
 
 
@@ -1293,7 +1321,7 @@ app.post("/api/generate-content", async (req, res) => {
       );
     }
 
-    const ad = normalizeAd(rawAd);
+    const { sceneIdeas, ...ad } = normalizeAd(rawAd);
     if (!cleanOffer) ad.offerBadge = ""; // never show a discount the customer did not give
     if (!ad.headline || !ad.caption) {
       throw new Error("model reply is missing the headline or the caption");
@@ -1309,7 +1337,12 @@ app.post("/api/generate-content", async (req, res) => {
         headline: ad.headline,
         subheadline: ad.subheadline,
         offerBadge: ad.offerBadge,
+        highlight: ad.highlight,
         benefits: ad.benefits,
+        benefitDetails: ad.benefitDetails,
+        benefitIcons: ad.benefitIcons,
+        qualities: ad.qualities,
+        qualityIcons: ad.qualityIcons,
         caption: ad.caption,
         cta: ad.cta,
         hashtags: ad.hashtags,
@@ -1329,6 +1362,8 @@ app.post("/api/generate-content", async (req, res) => {
         kind: "ad",
         projectDescription: description,
         product: cleanProduct,
+        // Styled-set descriptions for the ad design, read by the design endpoint (not sent to the browser).
+        sceneIdeas,
         days: limit,
         language: cleanLanguage,
         plan: realPlan,
