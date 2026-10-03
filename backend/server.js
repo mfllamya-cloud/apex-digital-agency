@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
-import { registerAdDesignRoutes } from "./adDesign.js";
+import { registerAdJobRoutes } from "./adJobs.js";
 
 // ---------------------------------------------------------------------------
 // تحويل CommonJS → ES Modules: بعد ضبط package.json على "type": "module"، لم يعد __dirname
@@ -389,13 +389,14 @@ app.post(
   }
 );
 
-// The ad-design start request carries the (browser-downscaled) product photo, so that one route
-// gets a larger JSON limit. Everything else keeps the Express default (100kb). The limit stays
+// Saving a product photo and starting an ad (which may carry a logo) need a larger JSON limit.
+// Everything else keeps the Express default (100kb). The limit stays
 // under Vercel's 4.5 MB request body cap.
 const jsonDefault = express.json();
-const jsonLarge = express.json({ limit: "4mb" });
+const jsonLarge = express.json({ limit: "2mb" });
+const LARGE_JSON_PATHS = ["/api/photos", "/api/ad/start"]; // a product photo, or a logo
 app.use((req, res, next) =>
-  req.path === "/api/design/start" ? jsonLarge(req, res, next) : jsonDefault(req, res, next)
+  LARGE_JSON_PATHS.includes(req.path) ? jsonLarge(req, res, next) : jsonDefault(req, res, next)
 );
 
 // معالج أخطاء CORS: يعيد رسالة JSON واضحة بدل صفحة خطأ HTML افتراضية من Express
@@ -688,14 +689,14 @@ const PLAN_LIMITS = {
   //   maxGenerationsPerMonth = text ads per month (counter: users/{uid}.generationsUsed)
   //   maxDesignsPerMonth     = ad designs per month (separate counter: users/{uid}.designsUsed)
   //   designFormats/designStyles = what one design credit produces on that plan
-  // These values are the binding ones: reserveGenerationSlot() and the design endpoints
-  // (backend/adDesign.js) read them inside Firestore transactions. frontend/src/App.js
+  // A design ad uses one of each; a text-only ad uses one ad credit. These values are the binding
+  // ones: backend/adJobs.js reads them inside Firestore transactions. frontend/src/App.js
   // only mirrors them for display.
   free: { maxDays: 1, maxGenerationsPerMonth: 1, maxDesignsPerMonth: 0, designFormats: [], designStyles: [], label: "المجانية" },
   pro: {
     maxDays: 1,
-    maxGenerationsPerMonth: 5,
-    maxDesignsPerMonth: 2,
+    maxGenerationsPerMonth: 5, // ads per month…
+    maxDesignsPerMonth: 4, // …of which this many can have a design
     designFormats: ["4:5", "1:1"],
     designStyles: ["clean_studio", "bold_color"],
     label: "برو",
@@ -703,7 +704,7 @@ const PLAN_LIMITS = {
   premium: {
     maxDays: 1,
     maxGenerationsPerMonth: 10,
-    maxDesignsPerMonth: 5,
+    maxDesignsPerMonth: 10,
     designFormats: ["4:5", "1:1", "9:16"],
     designStyles: ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"],
     label: "بريميوم",
@@ -979,6 +980,11 @@ function buildAdPrompt(businessDescription, occasion, options) {
   const productNote = product
     ? '\nWhat this ad advertises (the product and what it does): "' + product + '". The whole ad is about this product.\n'
     : "";
+  const avoid = (opts.avoidScenes || []).filter(Boolean).slice(0, 4);
+  const avoidNote = avoid.length
+    ? "\nStyled sets already used for this product — the new sceneIdeas must be clearly different from all of them (other props, other surface, other light):\n" +
+      avoid.map((a) => "- " + a).join("\n") + "\n"
+    : "";
   const offerNote = offer
     ? '\nThe business wants this offer / call to action featured: "' + offer + '". Build the ad around it, base the "cta" on it and write the "offerBadge" from it.\n'
     : '\nNo offer was given: "offerBadge" must be an empty string. Do not invent a discount.\n';
@@ -987,7 +993,7 @@ function buildAdPrompt(businessDescription, occasion, options) {
 
 The business (as described by its owner):
 "${businessDescription}"
-${productNote}${occasionNote}${offerNote}
+${productNote}${occasionNote}${offerNote}${avoidNote}
 LANGUAGE (mandatory): detect the language the business description is written in and write every field in that same language and script. If it is in Moroccan Darija, answer in Darija in the same script. Never switch language unless an instruction below says so.
 
 Write exactly ONE ad with these fields:
@@ -1066,389 +1072,78 @@ function normalizeAd(raw) {
 
 
 // ---------------------------------------------------------------------------
-// حجز محاولة توليد ذرّياً من Firestore (Transaction) — يُنفَّذ إلزامياً قبل أي استدعاء
-// لواجهة Claude API مباشرة، لأي باقة كانت (Free/Pro/Premium) دون استثناء.
+// Ad copy. Writes one complete ad with the stronger model on paid plans (Sonnet) and the
+// cheaper one on the free plan (Haiku). Called by the ad job (backend/adJobs.js), which owns
+// credits, the one-job-at-a-time lock and the polling flow; nothing here touches Firestore.
 //
-// لماذا معاملة (transaction) وليس مجرد "اقرأ ثم تحقق ثم حدّث لاحقاً" كما كان سابقاً؟
-// لأن القراءة والتحديث المنفصلين يفتحان ثغرة سباق حقيقية (race condition/TOCTOU): لو أرسل
-// نفس المستخدم طلبين متزامنين تقريباً (نقرة مزدوجة سريعة على الزر، أو تبويبين مفتوحين لنفس
-// الحساب)، فقد يقرأ الطلبان نفس القيمة القديمة لـ generationsUsed معاً، فيجتاز كلاهما فحص
-// "هل تجاوز الحد؟" رغم أن تنفيذ الاثنين معاً يتجاوز الحصة فعلياً. معاملة Firestore تضمن أن
-// القراءة والتحديث يحدثان كوحدة واحدة غير قابلة للتجزئة (atomic) من منظور الخادم، فإما ينجح
-// طلب واحد فقط في "حجز" الفتحة الأخيرة من الحصة، أو تُعاد المعاملة تلقائياً عند التعارض.
-//
-// الحجز نفسه (زيادة العداد) يحدث هنا فوراً بمجرد اجتياز الفحص — وليس بعد نجاح التوليد كما
-// كان سابقاً — تحديداً لسدّ ثغرة السباق أعلاه. الثمن: لو فشل التوليد لاحقاً (خطأ من Claude
-// API، انقطاع شبكة، JSON غير صالح...) يجب إرجاع هذه المحاولة يدوياً (rollback) حتى لا يخسر
-// المستخدم من رصيده بسبب خطأ ليس من طرفه — راجع كتلة catch في نهاية المسار أدناه.
-//
-// عند تجاوز الحصة: يرمي خطأً بخاصية code = "QUOTA_EXCEEDED" (مع realPlan وlimits المرفقين)
-// دون أي كتابة على المستند إطلاقاً — الطلب يُرفض فوراً قبل الوصول لأي استدعاء لـ Claude API.
-async function reserveGenerationSlot(uid) {
-  const userRef = db.collection("users").doc(uid);
-  const nowKey = currentMonthKey();
+// Returns { ad, sceneIdeas, model, usage: { inputTokens, outputTokens }, clean: {...} }.
+// Throws when the model reply cannot be used.
+// ---------------------------------------------------------------------------
+async function generateAdCopy(description, input, realPlan) {
+  const isFree = realPlan === "free";
+  const str = (v, max) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : "");
+  const upcomingOccasion = findUpcomingOccasion(new Date(), OCCASION_LOOKAHEAD_DAYS);
 
-  return db.runTransaction(async (transaction) => {
-    const userSnap = await transaction.get(userRef);
-    if (!userSnap.exists) {
-      const err = new Error("لا توجد وثيقة Firestore لهذا المستخدم");
-      err.code = "USER_NOT_FOUND";
-      throw err;
-    }
-
-    const userData = userSnap.data();
-    const realPlan = userData.plan || "free";
-    const limits = getPlanLimits(realPlan);
-    const lastResetMonth = userData.lastResetMonth || null;
-
-    // تصفير تلقائي للعداد الشهري إن كنا في شهر جديد — يحدث هنا داخل نفس المعاملة أيضاً
-    // (وليس كخطوة منفصلة قبلها) لضمان أن الفحص التالي مباشرة يعتمد على القيمة الصحيحة دائماً.
-    let generationsUsed = typeof userData.generationsUsed === "number" ? userData.generationsUsed : 0;
-    const wasReset = lastResetMonth !== nowKey;
-    if (wasReset) {
-      generationsUsed = 0;
-    }
-
-    // *** الفحص الحاسم: يجب أن يحدث قبل أي استدعاء لـ Claude API، وهو ما تضمنه بنية
-    // الدالة هذه أصلاً — الدالة بأكملها تُستدعى وتُنتظر (await) قبل أي شيء آخر في المسار. ***
-    if (generationsUsed >= limits.maxGenerationsPerMonth) {
-      const err = new Error("تم تجاوز الحصة الشهرية المسموح بها لهذه الباقة");
-      err.code = "QUOTA_EXCEEDED";
-      err.realPlan = realPlan;
-      err.limits = limits;
-      throw err;
-    }
-
-    const reservedGenerationsUsed = generationsUsed + 1;
-    transaction.update(userRef, {
-      generationsUsed: reservedGenerationsUsed,
-      lastResetMonth: nowKey,
-      // Both monthly counters share lastResetMonth, so a new month resets the design counter too.
-      ...(wasReset ? { designsUsed: 0 } : {}),
-    });
-
-    return { realPlan, limits, generationsUsed: reservedGenerationsUsed, wasReset };
-  });
-}
-
-app.post("/api/generate-content", async (req, res) => {
-  const origin = req.headers.origin || "(بدون origin)";
-  console.log("[server.js] === طلب جديد /api/generate-content من: " + origin + " ===");
-
-  // ⚠️ السبب الحقيقي لخطأ "ReferenceError: uid is not defined" الذي كان يظهر في الـ catch
-  // الخارجي أسفل هذه الدالة: كان "let uid;" مُعرَّفاً داخل كتلة try الخارجية (try { ... })، بينما
-  // كتلة catch (error) { ... } المقابلة لها هي نطاق (scope) منفصل تماماً في JavaScript — أي
-  // متغيّر بـ let/const مُعرَّف داخل try {} لا يكون مرئياً تلقائياً داخل catch {} الخاصة بها،
-  // حتى لو كانتا جزءاً من نفس جملة try/catch. لذلك رفعت التعريف إلى هنا، قبل try الخارجية
-  // مباشرة، ليصبح uid مرئياً داخل try وداخل catch معاً (وهو ما يحتاجه كود الـ rollback في
-  // الـ catch الخارجي لاستدعاء db.collection("users").doc(uid)...).
-  let uid = null;
-
-  try {
-    if (!db) {
-      console.error("[server.js] إيقاف الطلب: Firebase Admin SDK غير مهيأ (serviceAccountKey.json مفقود أو غير صالح).");
-      return res.status(500).json({
-        success: false,
-        errorCode: "SERVER_NOT_READY",
-        error: "الخادم غير مهيأ للتحقق من حسابك حالياً. راجع console الخادم للتفاصيل.",
-      });
-    }
-
-    // 1) التحقق من هوية المستخدم عبر Firebase ID Token — لا نثق بأي شيء يرسله العميل عن نفسه.
-    try {
-      uid = await verifyFirebaseToken(req);
-    } catch (err) {
-      console.warn("[server.js] رفض الطلب (401): " + err.message);
-      return res.status(401).json({
-        success: false,
-        errorCode: "AUTH_REQUIRED",
-        error: "الرجاء تسجيل الدخول أولاً قبل توليد المحتوى.",
-      });
-    }
-
-    const { businessDescription, language, tone, goal, platform, sourceText, offer, product } = req.body;
-
-    const description = typeof businessDescription === "string" ? businessDescription.trim() : "";
-    if (!description) {
-      console.warn("[server.js] رفض الطلب: لم يتم إرسال وصف المشروع (businessDescription فارغ).");
-      return res.status(400).json({
-        success: false,
-        errorCode: "DESCRIPTION_REQUIRED",
-        error: "الرجاء وصف مشروعك أولاً قبل توليد المحتوى.",
-      });
-    }
-
-    if (!ANTHROPIC_API_KEY) {
-      console.error("[server.js] إيقاف الطلب: ANTHROPIC_API_KEY غير محمّل.");
-      return res.status(500).json({
-        success: false,
-        errorCode: "API_KEY_MISSING",
-        error:
-          "لم يتم إعداد مفتاح Claude API على الخادم بعد (تعذّرت قراءته من backend/.env). راجع console الخادم للتفاصيل، ثم أعد تشغيله.",
-      });
-    }
-
-    // 2) حجز محاولة توليد ذرّياً من Firestore عبر معاملة (transaction) — يتحقق من الباقة
-    //    الحقيقية وحد الحصة الشهرية ويزيد العداد فوراً كـ "حجز"، بشكل آمن ضد سباق الطلبات
-    //    المتزامنة. يُطبَّق هذا الفحص إلزامياً على جميع الباقات دون استثناء (راجع الدالة أعلاه
-    //    لشرح تفصيلي لسبب استخدام معاملة بدل قراءة/تحديث منفصلين).
-    let realPlan, limits, generationsUsed, wasReset;
-    try {
-      const reservation = await reserveGenerationSlot(uid);
-      realPlan = reservation.realPlan;
-      limits = reservation.limits;
-      generationsUsed = reservation.generationsUsed;
-      wasReset = reservation.wasReset;
-    } catch (err) {
-      if (err.code === "USER_NOT_FOUND") {
-        console.warn("[server.js] رفض الطلب (404): لا توجد وثيقة Firestore للمستخدم " + uid);
-        return res.status(404).json({
-          success: false,
-          errorCode: "USER_NOT_FOUND",
-          error: "لم يتم العثور على ملف حسابك. حاول تسجيل الخروج والدخول من جديد.",
-        });
-      }
-      if (err.code === "QUOTA_EXCEEDED") {
-        console.warn(
-          "[server.js] رفض الطلب (429): المستخدم " + uid + " تجاوز حد التوليد الشهري لباقة " + err.realPlan +
-          " — تم الرفض قبل أي استدعاء لـ Claude API (لا تكلفة API على هذا الطلب)."
-        );
-        return res.status(429).json({
-          success: false,
-          errorCode: "QUOTA_EXCEEDED",
-          // errorParams.plan هو معرّف الباقة (free/pro/premium) وليس تسمية عربية جاهزة، لأن الواجهة
-          // هي من تترجم اسم الباقة عبر مساحة أسماء "plans" الخاصة بها حسب لغة المستخدم الحالية.
-          errorParams: { plan: err.realPlan, max: err.limits.maxGenerationsPerMonth },
-          error:
-            "لقد استنفدت عدد التوليدات المسموح بها هذا الشهر لباقتك (" + err.limits.label + ": " +
-            err.limits.maxGenerationsPerMonth + " توليد/شهر). سيُجدَّد رصيدك تلقائياً في بداية الشهر القادم، " +
-            "أو يمكنك الترقية للحصول على رصيد أكبر.",
-        });
-      }
-      // أي خطأ آخر غير متوقع أثناء الوصول إلى Firestore (شبكة، صلاحيات، إلخ) — نرفض الطلب
-      // بأمان بدل المتابعة دون تحقق فعلي من الحصة.
-      console.error("[server.js] خطأ غير متوقع أثناء حجز محاولة التوليد (uid=" + uid + "): " + err.message);
-      return res.status(500).json({
-        success: false,
-        errorCode: "SERVER_NOT_READY",
-        error: "تعذّر التحقق من رصيدك حالياً. حاول مرة أخرى بعد قليل.",
-      });
-    }
-
-    if (wasReset) {
-      console.log("[server.js] 🔄 تصفير تلقائي لعداد التوليد الشهري — uid=" + uid + " (شهر جديد)");
-    }
-
-    console.log(
-      "[server.js] المستخدم=" + uid + " الباقة الحقيقية (من Firestore)=" + realPlan +
-      " الاستهلاك الشهري بعد حجز هذه المحاولة=" + generationsUsed + "/" + limits.maxGenerationsPerMonth
-    );
-    // 5) One generation = one complete ad, on every plan (max days is always 1).
-    const isFree = realPlan === "free";
-    const limit = 1;
-
-    const upcomingOccasion = findUpcomingOccasion(new Date(), OCCASION_LOOKAHEAD_DAYS);
-
-    // Paid-only writing options. The real plan (from Firestore) decides, never the client.
-    let extraInstructions = "";
-    let cleanLanguage = "";
-    let cleanTone = "";
-    let cleanGoal = "";
-    let cleanPlatform = "";
-    let cleanSourceText = "";
-    if (!isFree) {
-      cleanLanguage =
-        typeof language === "string" && language.trim() ? language.trim().slice(0, 60) : "";
-      cleanTone =
-        typeof tone === "string" && tone.trim() ? tone.trim().slice(0, 60) : "";
-      cleanGoal =
-        typeof goal === "string" && goal.trim() ? goal.trim().slice(0, 80) : "";
-      cleanPlatform =
-        typeof platform === "string" && platform.trim() ? platform.trim().slice(0, 40) : "";
-      cleanSourceText =
-        realPlan === "premium" && typeof sourceText === "string" && sourceText.trim()
-          ? sourceText.trim().slice(0, 6000)
-          : "";
-
-      extraInstructions = buildExtraInstructions({
-        language: cleanLanguage,
-        tone: cleanTone,
-        goal: cleanGoal,
-        platform: cleanPlatform,
-        sourceText: cleanSourceText,
+  // Paid-only writing options. The real plan (from Firestore) decides, never the client.
+  const clean = {
+    language: isFree ? "" : str(input.language, 60),
+    tone: isFree ? "" : str(input.tone, 60),
+    goal: isFree ? "" : str(input.goal, 80),
+    platform: isFree ? "" : str(input.platform, 40),
+    sourceText: realPlan === "premium" ? str(input.sourceText, 6000) : "",
+    offer: str(input.offer, 120),
+    // "What are you advertising?" — the product name and what it does (all plans).
+    product: str(input.product, 120),
+  };
+  const extraInstructions = isFree
+    ? ""
+    : buildExtraInstructions({
+        language: clean.language,
+        tone: clean.tone,
+        goal: clean.goal,
+        platform: clean.platform,
+        sourceText: clean.sourceText,
         visualStyle: "",
         includeImagePrompt: false,
       });
-    }
 
-    const cleanOffer = typeof offer === "string" && offer.trim() ? offer.trim().slice(0, 120) : "";
-    // "What are you advertising?" — the product name and what it does (all plans).
-    const cleanProduct = typeof product === "string" && product.trim() ? product.trim().slice(0, 120) : "";
+  const model = isFree ? MODEL_FREE : MODEL_PAID;
+  const prompt = buildAdPrompt(description, upcomingOccasion, {
+    extraInstructions,
+    offer: clean.offer,
+    product: clean.product,
+    avoidScenes: Array.isArray(input.avoidScenes) ? input.avoidScenes : [],
+  });
+  const response = await anthropic.messages.create({
+    model,
+    max_tokens: getPlanMaxTokens(realPlan),
+    messages: [{ role: "user", content: prompt }],
+  });
+  const usage = {
+    inputTokens: (response.usage && response.usage.input_tokens) || 0,
+    outputTokens: (response.usage && response.usage.output_tokens) || 0,
+  };
 
-    const model = isFree ? MODEL_FREE : MODEL_PAID;
-    const maxTokens = getPlanMaxTokens(realPlan);
-    const prompt = buildAdPrompt(description, upcomingOccasion, { extraInstructions, offer: cleanOffer, product: cleanProduct });
-    console.log(
-      "[server.js] Calling Claude (model=" + model + ", max_tokens=" + maxTokens + ", plan=" + realPlan + ") for one ad..."
+  const rawText = response.content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("\n");
+  const parsed = extractJson(rawText);
+  const rawAd = parsed && (parsed.ad || (Array.isArray(parsed.content) ? parsed.content[0] : null));
+  if (!rawAd || typeof rawAd !== "object") {
+    throw new Error(
+      response.stop_reason === "max_tokens"
+        ? "model reply was cut off (max_tokens) before the JSON was complete"
+        : "model reply does not contain a valid ad object"
     );
-
-    const response = await anthropic.messages.create({
-      model: model,
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    if (response.usage) {
-      console.log(
-        "[server.js] tokens: input=" + (response.usage.input_tokens ?? 0) +
-        " output=" + (response.usage.output_tokens ?? 0) +
-        " stop_reason=" + (response.stop_reason || "n/a") + " plan=" + realPlan + " model=" + model
-      );
-    }
-
-    const rawText = response.content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("\n");
-
-    const parsed = extractJson(rawText);
-    const rawAd = parsed && (parsed.ad || (Array.isArray(parsed.content) ? parsed.content[0] : null));
-    if (!rawAd || typeof rawAd !== "object") {
-      throw new Error(
-        response.stop_reason === "max_tokens"
-          ? "model reply was cut off (max_tokens) before the JSON was complete"
-          : "model reply does not contain a valid ad object"
-      );
-    }
-
-    const { sceneIdeas, ...ad } = normalizeAd(rawAd);
-    if (!cleanOffer) ad.offerBadge = ""; // never show a discount the customer did not give
-    if (!ad.headline || !ad.caption) {
-      throw new Error("model reply is missing the headline or the caption");
-    }
-
-    // "content" keeps the array shape the frontend already consumes. "idea" mirrors the
-    // headline so any older reader of this response still has a title to show.
-    const content = [
-      {
-        day: 1,
-        locked: false,
-        idea: ad.headline,
-        headline: ad.headline,
-        subheadline: ad.subheadline,
-        offerBadge: ad.offerBadge,
-        highlight: ad.highlight,
-        benefits: ad.benefits,
-        benefitDetails: ad.benefitDetails,
-        benefitIcons: ad.benefitIcons,
-        qualities: ad.qualities,
-        qualityIcons: ad.qualityIcons,
-        caption: ad.caption,
-        cta: ad.cta,
-        hashtags: ad.hashtags,
-      },
-    ];
-
-    console.log(
-      "[server.js] ✅ ad generated — monthly text ads (already reserved)=" +
-      generationsUsed + "/" + limits.maxGenerationsPerMonth + " (plan " + realPlan + ")"
-    );
-
-    try {
-      // "generatedContent" keeps the legacy shape so History can show old 7-day items and
-      // new ads with the same code path; "ad" holds the full new structure.
-      const docRef = await db.collection("generations").doc(uid).collection("projects").add({
-        createdAt: new Date(),
-        kind: "ad",
-        projectDescription: description,
-        product: cleanProduct,
-        // Styled-set descriptions for the ad design, read by the design endpoint (not sent to the browser).
-        sceneIdeas,
-        days: limit,
-        language: cleanLanguage,
-        plan: realPlan,
-        ad: ad,
-        generatedContent: [{ day: 1, post: ad.caption, platform: cleanPlatform || "Instagram" }],
-        tone: cleanTone || "auto",
-        goal: cleanGoal || "auto",
-        platform: cleanPlatform || "auto",
-      });
-      console.log(`✅ محفوظ في Firestore: ${docRef.id}`);
-
-      res.json({
-        success: true,
-        docId: docRef.id,
-        content,
-        plan: realPlan,
-        generationsUsed,
-        maxGenerationsPerMonth: limits.maxGenerationsPerMonth,
-      });
-    } catch (err) {
-      // الخطأ يُطبع بوضوح هنا ولا يُخفى إطلاقاً، كما طُلب صراحة: إن فشل الحفظ، الطلب بأكمله
-      // يُعتبر فاشلاً (500) ولا يصل أي محتوى للواجهة، حتى لو كان Claude قد ولّد محتوى صالحاً فعلاً.
-      console.error("❌ خطأ الحفظ:", err.message);
-
-      // بما أن الطلب يُعتبر فاشلاً بالكامل الآن، نُرجع (rollback) حجز الحصة الذي تم في
-      // reserveGenerationSlot أعلاه — لا يجب أن يخسر المستخدم من رصيده الشهري مقابل توليد
-      // لم يصله فعلياً بسبب فشل الحفظ (نفس منطق rollback الموجود في catch الخارجي أسفل الملف).
-      try {
-        await db.collection("users").doc(uid).update({ generationsUsed: FieldValue.increment(-1) });
-        console.log("[server.js] ↩️ تم إرجاع محاولة التوليد (فشل الحفظ في Firestore) إلى رصيد المستخدم — uid=" + uid);
-      } catch (rollbackError) {
-        console.error(
-          "[server.js] ⚠️ فشل إرجاع محاولة التوليد بعد فشل الحفظ (rollback) — uid=" + uid + ": " + rollbackError.message
-        );
-      }
-
-      res.status(500).json({ success: false, errorCode: "SAVE_FAILED", error: "حفظ فشل" });
-    }
-  } catch (error) {
-    // مطلوب حرفياً: طباعة الخطأ الكامل بهذا الشكل بالضبط.
-    console.error("Claude API Error:", error.message);
-    // سطر إضافي (لم يُطلب، لكن أُبقي عليه لفائدته التشخيصية): يضيف اسم الخطأ ورمز الحالة
-    // HTTP إن وُجدا، لأن error.message وحدها أحياناً لا تكفي لتشخيص أخطاء Anthropic API
-    // (rate limit، مفتاح غير صالح، انقطاع الشبكة...). لا يُخفي أو يستبدل السطر أعلاه.
-    console.error(
-      "[server.js] CLAUDE GENERATION ERROR (تفاصيل إضافية): " +
-        (error.name || "") +
-        " " +
-        (error.status ? "(status " + error.status + ") " : "") +
-        error.message
-    );
-
-    // التوليد فشل بعد أن كانت هذه المحاولة قد "حُجزت" بالفعل من حصة المستخدم الشهرية (زيادة
-    // العداد في reserveGenerationSlot قبل استدعاء Claude API). بما أن الفشل هنا ليس بسبب
-    // استخدام فعلي من المستخدم (خطأ من الخادم أو من Claude API نفسه)، نُرجع هذه المحاولة
-    // (rollback) حتى لا يخسر رصيده الشهري بلا مقابل. decrement عملية ذرّية أيضاً فلا خطر سباق.
-    // نتجاهل عمداً حالات فشل مبكرة جداً (قبل نجاح الحجز، مثل !db أو 401 أو 400) لأنها تُعالَج
-    // بـ return مبكر أعلاه ولا تصل إطلاقاً إلى كتلة catch هذه.
-    //
-    // حارس إضافي (uid): بما أن uid أصبح الآن مُعرَّفاً كـ "let uid = null;" قبل try الخارجية
-    // (راجع التعليق أعلى الدالة)، فهو مضمون أن يكون مرئياً هنا دوماً بدل ReferenceError. لكن
-    // احتياطاً لأي تعديل مستقبلي في الكود قد يجعل خطأً يصل إلى هنا قبل نجاح verifyFirebaseToken
-    // (وبالتالي uid ما زال null)، نتحقق أولاً قبل محاولة استخدامه في استعلام Firestore.
-    if (uid) {
-      try {
-        await db.collection("users").doc(uid).update({ generationsUsed: FieldValue.increment(-1) });
-        console.log("[server.js] ↩️ تم إرجاع محاولة التوليد الفاشلة إلى رصيد المستخدم — uid=" + uid);
-      } catch (rollbackError) {
-        console.error(
-          "[server.js] ⚠️ فشل إرجاع محاولة التوليد الفاشلة (rollback) — uid=" + uid + ": " + rollbackError.message
-        );
-      }
-    } else {
-      console.warn(
-        "[server.js] ⚠️ تعذّر إرجاع (rollback) محاولة التوليد الفاشلة: uid غير معروف بعد (فشل قبل التحقق من الهوية)."
-      );
-    }
-
-    res.status(500).json({
-      success: false,
-      errorCode: "GENERATION_FAILED",
-      error: "حدث خطأ أثناء توليد المحتوى عبر الذكاء الاصطناعي. حاول مرة أخرى بعد قليل.",
-    });
   }
-});
+  const { sceneIdeas, ...ad } = normalizeAd(rawAd);
+  if (!clean.offer) ad.offerBadge = ""; // never show a discount the customer did not give
+  if (!ad.headline || !ad.caption) {
+    throw new Error("model reply is missing the headline or the caption");
+  }
+  return { ad, sceneIdeas, model, usage, clean };
+}
 
 // ---------------------------------------------------------------------------
 // أداة SEO مجانية مصغّرة (Micro-Tool) — الهدف منها جلب زيارات من محركات البحث عبر
@@ -1561,8 +1256,10 @@ app.post("/api/micro-tool", async (req, res) => {
 // "export default app" أدناه)؛ استدعاء app.listen() هناك غير ضروري (Vercel لا يستخدم منفذاً
 // طويل الأمد) وقد يسبب مشاكل مع إعادة استخدام الدالة (lambda) بين الطلبات. process.env.VERCEL
 // يُضبط تلقائياً بالقيمة "1" بواسطة منصة Vercel نفسها في كل بيئة تشغيل هناك.
-// Ad design endpoints (/api/quota, /api/design/*) live in backend/adDesign.js.
-registerAdDesignRoutes(app, {
+// The ad generator (/api/quota, /api/ad/*, /api/photos, /api/design/image) lives in backend/adJobs.js.
+// Models: the stronger one (MODEL_PAID) only writes the ad copy on paid plans; every vision
+// call (photo choice, scene quality check) uses the cheapest suitable one (MODEL_FREE, Haiku).
+registerAdJobRoutes(app, {
   getDb: () => db,
   verifyFirebaseToken,
   anthropic,
@@ -1571,7 +1268,8 @@ registerAdDesignRoutes(app, {
   getPlanLimits,
   currentMonthKey,
   FieldValue,
-  visionModel: MODEL_PAID,
+  generateAdCopy,
+  visionModel: MODEL_FREE,
 });
 
 if (!process.env.VERCEL) {
