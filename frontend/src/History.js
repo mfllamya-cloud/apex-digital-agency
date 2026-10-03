@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { auth, db } from "./firebase";
@@ -21,8 +21,12 @@ const AGENCY_COLORS = {
 
 // ---------------------------------------------------------------------------
 // شاشة "My Projects" (السجل الكامل) — تعرض كل الدورات التي حفظها الخادم فعلياً في
-// Firestore بعد كل توليد ناجح (راجع POST /api/generate-content في backend/server.js،
-// المسار: generations/{uid}/projects/{docId}).
+// Firestore بعد كل توليد ناجح (راجع backend/adJobs.js، المسار:
+// generations/{uid}/projects/{docId}).
+//
+// "My designs" is the same list filtered to the ads that have a design. A design is redrawn
+// from what was saved with it (texts, colours, logo, and the scene image kept by the server),
+// so it can be downloaded again at any time, in every format or as one ZIP.
 //
 // هذا المكوّن مستقل تماماً (self-contained) بنفس نمط SEOTool.js: له مسار خاص به في
 // react-router (/history) ويستمع بنفسه لحالة تسجيل الدخول عبر onAuthStateChanged، بدل
@@ -142,7 +146,7 @@ function ProjectDetailsModal({ project, user, lang, t, isRtl, onClose }) {
         {design && (
           <div style={{ marginBottom: "1.25rem" }}>
             <h3 style={{ margin: "0 0 0.9rem", fontSize: "1.05rem", color: "#1e293b" }}>{t("ads.historyDesign")}</h3>
-            {/* Redrawn from saved data: scene link + headline, button, colours, logo. */}
+            {/* Redrawn from saved data: the saved scene + texts, colours, logo. */}
             <DesignGallery
               user={user}
               docId={project.id}
@@ -212,6 +216,9 @@ export default function History() {
   const [loadError, setLoadError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [viewingProject, setViewingProject] = useState(null);
+  // "all" | "designs" — /history?tab=designs opens straight on "My designs".
+  const location = useLocation();
+  const [tab, setTab] = useState(() => (new URLSearchParams(location.search).get("tab") === "designs" ? "designs" : "all"));
 
   // يستمع لحالة تسجيل الدخول بشكل مستقل عن AppContent (راجع الشرح أعلى الملف).
   useEffect(() => {
@@ -245,6 +252,12 @@ export default function History() {
     if (!window.confirm(t("history.confirmDelete"))) return;
     setDeletingId(projectId);
     try {
+      // The saved scene image lives in small documents under the project; they go with it.
+      const project = projects.find((p) => p.id === projectId);
+      const chunks = project && project.sceneChunks > 0 ? project.sceneChunks : 0;
+      await Promise.all(
+        Array.from({ length: chunks }, (_, i) => deleteDoc(doc(db, "generations", user.uid, "projects", projectId, "scene", String(i))).catch(() => null))
+      );
       await deleteDoc(doc(db, "generations", user.uid, "projects", projectId));
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       setViewingProject((prev) => (prev && prev.id === projectId ? null : prev));
@@ -260,6 +273,9 @@ export default function History() {
   const handleComingSoon = () => alert(t("history.comingSoon"));
 
   const backArrow = isRtl ? "→" : "←";
+  const hasDesign = (p) => Boolean(p.design && Array.isArray(p.design.scenes) && p.design.scenes.length);
+  const designCount = projects.filter(hasDesign).length;
+  const visibleProjects = tab === "designs" ? projects.filter(hasDesign) : projects;
 
   // شاشة تحميل أولية (قبل معرفة حالة تسجيل الدخول) — بنفس أسلوب شاشة التحميل في App.js.
   if (!authChecked) {
@@ -367,8 +383,41 @@ export default function History() {
           )}
 
           {!loadingProjects && !loadError && projects.length > 0 && (
+            <div style={{ display: "flex", gap: "0.6rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "1.25rem" }}>
+              {[
+                { key: "all", label: t("ads.tabAll") + " (" + projects.length + ")" },
+                { key: "designs", label: t("ads.myDesigns") + " (" + designCount + ")" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  aria-pressed={tab === item.key}
+                  onClick={() => setTab(item.key)}
+                  style={{
+                    padding: "0.5rem 1.2rem",
+                    borderRadius: "999px",
+                    border: `1px solid ${tab === item.key ? AGENCY_COLORS.navy : AGENCY_COLORS.border}`,
+                    background: tab === item.key ? AGENCY_COLORS.navy : "white",
+                    color: tab === item.key ? "white" : "#334155",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!loadingProjects && !loadError && projects.length > 0 && visibleProjects.length === 0 && (
+            <div className="agency-card" style={{ background: "white", borderRadius: "12px", padding: "2rem", textAlign: "center", color: "#475569" }}>
+              {t("ads.noDesigns")}
+            </div>
+          )}
+
+          {!loadingProjects && !loadError && visibleProjects.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {projects.map((project) => {
+              {visibleProjects.map((project) => {
                 const postsCount = Array.isArray(project.generatedContent) ? project.generatedContent.length : 0;
                 const isDeleting = deletingId === project.id;
                 return (
@@ -401,8 +450,9 @@ export default function History() {
                       </span>
                     </div>
 
-                    <p style={{ color: "#334155", margin: "0 0 0.75rem 0", lineHeight: 1.5 }}>
-                      {project.projectDescription || t("history.noDescription")}
+                    <p dir="auto" style={{ color: "#334155", margin: "0 0 0.75rem 0", lineHeight: 1.5 }}>
+                      {hasDesign(project) && project.design.headline ? <b>{project.design.headline} — </b> : null}
+                      {project.product || project.projectDescription || t("history.noDescription")}
                     </p>
 
                     <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap", color: "#64748b", fontSize: "0.85rem", marginBottom: "1rem" }}>
@@ -428,7 +478,7 @@ export default function History() {
                           borderRadius: "8px",
                         }}
                       >
-                        {t("history.viewBtn")}
+                        {hasDesign(project) ? t("ads.viewDownload") : t("history.viewBtn")}
                       </button>
                       <button
                         onClick={handleComingSoon}

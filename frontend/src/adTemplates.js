@@ -7,7 +7,7 @@
 //   - colour PANELS and shapes (built from the palette) carry all the text;
 //   - the SCENE is clipped to its own region, where the product is the hero.
 // One square scene is generated per design, with the product boxed in its centre (SCENE_PADDING
-// in backend/adDesign.js). Every layout here crops that same square around the product box, so
+// in backend/adJobs.js). Every layout here crops that same square around the product box, so
 // all formats show the same concept and text can never cover the product.
 //
 // Formats: 4:5 is the "feature poster" (brand, headline, tagline, product, three benefits with
@@ -657,7 +657,7 @@ function styleTokens(style, palette) {
       button: { fill: pop, text: onColor(pop), radius: 12, uppercase: true, outline: false, shadow: true },
       chip: { bg: "rgba(255,255,255,0.16)", border: null, text: ink, icon: pop, iconMark: onColor(pop) },
       badge: { fill: pop, text: onColor(pop), ring: rgba(onColor(pop), 0.45), rotate: -12, burst: true },
-      align: "start", strip: { bg: "#0e0e10", ink: "#ffffff", icon: pop }, iconDisc: "rgba(255,255,255,0.16)", iconInk: "#ffffff",
+      align: "start", strip: { bg: "#0e0e10", ink: "#ffffff", icon: pop }, iconDisc: "rgba(255,255,255,0.16)", iconInk: "#ffffff", rowBg: "rgba(255,255,255,0.10)",
     };
   }
   if (style === "luxury_dark") {
@@ -668,7 +668,7 @@ function styleTokens(style, palette) {
       button: { fill: gold, text: gold, radius: 999, uppercase: true, outline: true, shadow: false },
       chip: { bg: null, border: rgba(gold, 0.55), text: "#f6f0e2", icon: gold, iconMark: "#0b0b0d" },
       badge: { fill: "#0b0b0d", text: gold, ring: gold, rotate: 0, burst: false },
-      align: "center", strip: { bg: "#16161a", ink: "#f6f0e2", icon: gold }, iconDisc: rgba(gold, 0.14), iconInk: gold,
+      align: "center", strip: { bg: "#16161a", ink: "#f6f0e2", icon: gold }, iconDisc: rgba(gold, 0.14), iconInk: gold, rowBg: rgba(gold, 0.07),
     };
   }
   if (style === "lifestyle_scene") {
@@ -680,7 +680,7 @@ function styleTokens(style, palette) {
       button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
       chip: { bg: rgba(accent, 0.12), border: null, text: "#1d1b18", icon: accent, iconMark: onColor(accent) },
       badge: { fill: c2, text: onColor(c2), ring: rgba(onColor(c2), 0.4), rotate: -10, burst: false },
-      align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.13), iconInk: accent,
+      align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.13), iconInk: accent, rowBg: "rgba(255,255,255,0.62)",
     };
   }
   // clean_studio: airy tint of the brand colour, dark ink, precise shapes.
@@ -692,14 +692,14 @@ function styleTokens(style, palette) {
     button: { fill: accent, text: onColor(accent), radius: 999, uppercase: false, outline: false, shadow: true },
     chip: { bg: "#ffffff", border: rgba(accent, 0.3), text: "#101114", icon: accent, iconMark: onColor(accent) },
     badge: { fill: accent, text: onColor(accent), ring: rgba(onColor(accent), 0.45), rotate: -8, burst: false },
-    align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.12), iconInk: accent,
+    align: "start", strip: { bg: accent, ink: onColor(accent), icon: onColor(accent) }, iconDisc: rgba(accent, 0.12), iconInk: accent, rowBg: "rgba(255,255,255,0.8)",
   };
 }
 
 // --- geometry ---------------------------------------------------------------
 // The scene is one 1024 x 1024 image with the product boxed in its centre. Each region below
 // crops it ("cover", centred), so the product box always lands inside the region.
-// ⚠️ SCENE_BOX mirrors SCENE_PADDING in backend/adDesign.js (fractions of the scene size).
+// ⚠️ SCENE_BOX mirrors SCENE_PADDING in backend/adJobs.js (fractions of the scene size).
 export const SCENE_BOX = {
   portrait: { x0: 308 / 1024, x1: 716 / 1024, y0: 190 / 1024, y1: 948 / 1024 },
   landscape: { x0: 130 / 1024, x1: 894 / 1024, y0: 300 / 1024, y1: 750 / 1024 },
@@ -1112,6 +1112,14 @@ function drawIcon(ctx, name, cx, cy, r, color) {
 // --- 4:5 feature poster -----------------------------------------------------
 
 // Clip path of the product card. The variant changes its shape.
+// Two labels are "the same" when they match once case, accents, spaces and punctuation are ignored.
+function sameKey(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
 function cardPath(ctx, x, y, w, h, shape) {
   if (shape === "arch") {
     const r = w / 2;
@@ -1129,14 +1137,30 @@ function cardPath(ctx, x, y, w, h, shape) {
   }
 }
 
-function drawSceneInto(ctx, img, x, y, w, h, vignette) {
+// "focus" (a SCENE_BOX entry) zooms in on the product box so the product fills more of the
+// region, the way it does in the 1:1 format. Without it the scene is cropped "cover", centred.
+function drawSceneInto(ctx, img, x, y, w, h, vignette, focus) {
   const iw = img.naturalWidth || img.width;
   const ih = img.naturalHeight || img.height;
   if (iw && ih) {
-    const scale = Math.max(w / iw, h / ih);
+    const cover = Math.max(w / iw, h / ih);
+    let scale = cover;
+    let dx = x + (w - iw * scale) / 2;
+    let dy = y + (h - ih * scale) / 2;
+    if (focus) {
+      const bw = (focus.x1 - focus.x0) * iw;
+      const bh = (focus.y1 - focus.y0) * ih;
+      // The product box takes up to 86% of the region's height and 82% of its width.
+      scale = Math.max(cover, Math.min((h * 0.86) / bh, (w * 0.82) / bw));
+      const bcx = ((focus.x0 + focus.x1) / 2) * iw * scale;
+      const bcy = ((focus.y0 + focus.y1) / 2) * ih * scale;
+      // Centre the box (a little below the middle), without ever showing past the scene's edges.
+      dx = Math.min(x, Math.max(x + w - iw * scale, x + w / 2 - bcx));
+      dy = Math.min(y, Math.max(y + h - ih * scale, y + h * 0.53 - bcy));
+    }
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, x + (w - iw * scale) / 2, y + (h - ih * scale) / 2, iw * scale, ih * scale);
+    ctx.drawImage(img, dx, dy, iw * scale, ih * scale);
   }
   const cx = x + w / 2;
   const cy = y + h * 0.56;
@@ -1157,6 +1181,15 @@ function drawPoster(ctx, tk, d, o) {
   ctx.fillStyle = tk.panelBg;
   ctx.fillRect(0, 0, W, H);
 
+  // Bottom strip: product qualities, minus anything the poster already says (a benefit title,
+  // the badge). With nothing new to say there is no strip, and the middle zone takes its place.
+  const said = d.chips.concat([d.badge]).map(sameKey).filter(Boolean);
+  const stripItems = d.qualities
+    .map((label, i) => ({ label, icon: d.qualityIcons[i] || "star", key: sameKey(label) }))
+    .filter((it, i, all) => it.key && !said.some((k) => k === it.key || k.includes(it.key) || it.key.includes(k)) && all.findIndex((x) => x.key === it.key) === i)
+    .slice(0, 4);
+  const stripH = stripItems.length ? 160 : 0;
+
   // Backdrop shapes from the palette, behind everything.
   ctx.save();
   ctx.fillStyle = rgba(tk.accent, o.style === "bold_color" ? 0.22 : 0.1);
@@ -1172,7 +1205,7 @@ function drawPoster(ctx, tk, d, o) {
   if (o.style === "luxury_dark") {
     ctx.strokeStyle = rgba(tk.accent, 0.5);
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(26, 26, W - 52, H - 52 - 160);
+    ctx.strokeRect(26, 26, W - 52, H - 52 - stripH);
   }
 
   // ---- header: brand, headline, tagline (centred) ----
@@ -1205,14 +1238,14 @@ function drawPoster(ctx, tk, d, o) {
 
   // ---- middle: product card + three benefits ----
   const y0 = 432;
-  const y1 = 1150;
+  const y1 = H - stripH - 40 - (stripH ? 0 : 24);
   const benefits = d.chips.map((title, i) => ({ title, detail: d.chipDetails[i] || "", icon: d.chipIcons[i] || "check" }));
   const btnOpts = { size: 27, height: 74, padX: 38, uppercase: tk.button.uppercase };
   let card;
   let badgeAt;
 
   if (o.landscape) {
-    card = { x: M, y: y0, w: W - M * 2, h: 450 };
+    card = { x: M, y: y0, w: W - M * 2, h: 425 + (stripH ? 0 : 110) };
     badgeAt = { cx: rtl ? M + 70 : W - M - 70, cy: y0 + 40, r: 84 };
   } else {
     card = { x: o.sceneLeft ? M : W - M - 520, y: y0, w: 520, h: y1 - y0 };
@@ -1238,7 +1271,7 @@ function drawPoster(ctx, tk, d, o) {
   ctx.save();
   cardPath(ctx, card.x, card.y, card.w, card.h, o.landscape ? "rect" : o.shape);
   ctx.clip();
-  if (o.scene) drawSceneInto(ctx, o.scene, card.x, card.y, card.w, card.h, tk.vignette);
+  if (o.scene) drawSceneInto(ctx, o.scene, card.x, card.y, card.w, card.h, tk.vignette, o.landscape ? null : SCENE_BOX.portrait);
   ctx.restore();
   ctx.save();
   cardPath(ctx, card.x, card.y, card.w, card.h, o.landscape ? "rect" : o.shape);
@@ -1247,7 +1280,7 @@ function drawPoster(ctx, tk, d, o) {
   ctx.stroke();
   ctx.restore();
 
-  const drawBenefit = (b, bx, by, bw, centered) => {
+  const drawBenefit = (b, bx, by, bw, centered, bh) => {
     const disc = 34;
     const textRtl = isRtlText(b.title);
     if (centered) {
@@ -1264,20 +1297,29 @@ function drawPoster(ctx, tk, d, o) {
       }
       return;
     }
-    const iconCx = rtl ? bx + bw - disc : bx + disc;
+    // A row is a card of fixed height (bh); its content is centred in it, so the three
+    // benefits always look the same size whatever the length of their texts.
+    const pad = 16;
+    ctx.fillStyle = tk.rowBg;
+    roundRectPath(ctx, bx, by, bw, bh, 22);
+    ctx.fill();
+    const iconCx = rtl ? bx + bw - pad - disc : bx + pad + disc;
     ctx.fillStyle = tk.iconDisc;
     ctx.beginPath();
-    ctx.arc(iconCx, by + disc, disc, 0, Math.PI * 2);
+    ctx.arc(iconCx, by + bh / 2, disc, 0, Math.PI * 2);
     ctx.fill();
-    drawIcon(ctx, b.icon, iconCx, by + disc, disc * 0.52, tk.iconInk);
-    const tx = rtl ? bx + bw - disc * 2 - 18 : bx + disc * 2 + 18;
-    const tw = bw - disc * 2 - 18;
-    const tf = fitText(ctx, b.title, { weight: 700, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 29, minSize: 20, maxWidth: tw, maxLines: 2, maxHeight: 76, leading: 1.15, tracking: 0 });
-    drawFit(ctx, tf, tx, by + 2, rtl ? "right" : "left", tk.ink);
-    if (b.detail) {
-      const df = fitText(ctx, b.detail, { weight: 500, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 22, minSize: 17, maxWidth: tw, maxLines: 3, maxHeight: 92, leading: 1.35, tracking: 0 });
-      drawFit(ctx, df, tx, by + 2 + tf.height + 6, rtl ? "right" : "left", tk.subInk);
-    }
+    drawIcon(ctx, b.icon, iconCx, by + bh / 2, disc * 0.52, tk.iconInk);
+    const tx = rtl ? bx + bw - pad - disc * 2 - 16 : bx + pad + disc * 2 + 16;
+    const tw = bw - pad * 2 - disc * 2 - 16;
+    const inner = bh - pad * 2;
+    const tf = fitText(ctx, b.title, { weight: 700, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 27, minSize: 19, maxWidth: tw, maxLines: 2, maxHeight: b.detail ? inner * 0.5 : inner, leading: 1.15, tracking: 0 });
+    const df = b.detail
+      ? fitText(ctx, b.detail, { weight: 500, family: textRtl ? FONT_SANS_AR : FONT_SANS, maxSize: 21, minSize: 15, maxWidth: tw, maxLines: 2, maxHeight: inner - tf.height - 6, leading: 1.3, tracking: 0 })
+      : null;
+    const blockH = tf.height + (df ? df.height + 6 : 0);
+    const ty = by + (bh - blockH) / 2;
+    drawFit(ctx, tf, tx, ty, rtl ? "right" : "left", tk.ink);
+    if (df) drawFit(ctx, df, tx, ty + tf.height + 6, rtl ? "right" : "left", tk.subInk);
   };
 
   if (o.landscape) {
@@ -1290,16 +1332,19 @@ function drawPoster(ctx, tk, d, o) {
     });
     if (d.cta) {
       const btn = buttonMetrics(ctx, d.cta, { ...btnOpts, height: 58, size: 23, maxWidth: 520 });
-      drawButton(ctx, btn, (W - btn.width) / 2, y1 - 54, { ...tk.button, padX: btnOpts.padX });
+      drawButton(ctx, btn, (W - btn.width) / 2, y1 - 38, { ...tk.button, padX: btnOpts.padX });
     }
   } else {
     const colX = o.sceneLeft ? card.x + card.w + 44 : M;
     const colW = W - M * 2 - card.w - 44;
-    const rowsTop = y0 + 150; // the badge sits above the first row
-    const rowsBottom = y1 - (d.cta ? btnOpts.height + 30 : 0);
+    const rowsTop = y0 + (d.badge ? 162 : 8); // the badge sits above the first row
+    const rowsBottom = y1 - (d.cta ? btnOpts.height + 52 : 0); // clear air above the button
+    const rowGap = 16;
     const n = Math.max(1, benefits.length);
-    const rowH = (rowsBottom - rowsTop) / n;
-    benefits.forEach((b, i) => drawBenefit(b, colX, rowsTop + i * rowH, colW, false));
+    // Same height for every row, never taller than a comfortable card.
+    const rowH = Math.min(168, (rowsBottom - rowsTop - rowGap * (n - 1)) / n);
+    const rowsY = rowsTop + (rowsBottom - rowsTop - (rowH * n + rowGap * (n - 1))) / 2;
+    benefits.forEach((b, i) => drawBenefit(b, colX, rowsY + i * (rowH + rowGap), colW, false, rowH));
     if (d.cta) {
       const btn = buttonMetrics(ctx, d.cta, { ...btnOpts, maxWidth: colW });
       drawButton(ctx, btn, rtl ? colX + colW - btn.width : colX, y1 - btnOpts.height, { ...tk.button, padX: btnOpts.padX });
@@ -1310,16 +1355,16 @@ function drawPoster(ctx, tk, d, o) {
   drawBadge(ctx, d.badge, badgeAt.cx, badgeAt.cy, badgeAt.r, tk);
 
   // ---- bottom strip: short product qualities with icons ----
-  const stripY = H - 160;
+  if (!stripH) return;
+  const stripY = H - stripH;
   ctx.fillStyle = tk.strip.bg;
-  ctx.fillRect(0, stripY, W, 160);
+  ctx.fillRect(0, stripY, W, stripH);
   if (o.style === "luxury_dark") {
     ctx.fillStyle = tk.accent;
     ctx.fillRect(0, stripY, W, 2);
   }
-  const items = (d.qualities.length ? d.qualities.map((label, i) => ({ label, icon: d.qualityIcons[i] || "star" })) : d.chips.map((label, i) => ({ label, icon: d.chipIcons[i] || "check" }))).slice(0, 4);
-  const cells = rtl ? items.slice().reverse() : items;
-  const cellW = (W - M) / Math.max(1, cells.length);
+  const cells = rtl ? stripItems.slice().reverse() : stripItems;
+  const cellW = (W - M) / cells.length;
   cells.forEach((it, i) => {
     const cxm = M / 2 + cellW * i + cellW / 2;
     drawIcon(ctx, it.icon, cxm, stripY + 54, 20, tk.strip.icon);

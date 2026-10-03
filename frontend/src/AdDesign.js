@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
-// Ad design UI: the form fields, the calls to the design endpoints, and the finished ad shown
-// as a social post (the design on top, the caption and hashtags under it).
+// Ad design UI: the form fields (product photo library, logo, style), the calls to this site's
+// own endpoints, the progress steps, and the finished ad shown as a social post (the design on
+// top, the caption and hashtags under it).
 // Used by App.js (new ads) and History.js (saved designs, redrawn from saved data).
 //
 // No secret key is used here. The browser only talks to this site's own /api endpoints, with the
@@ -11,23 +12,28 @@ import { T } from "./theme";
 import { AD_FORMATS, drawAd, ensureAdFonts, extractPalette, normalizePalette } from "./adTemplates";
 
 export const DESIGN_STYLE_KEYS = ["clean_studio", "bold_color", "luxury_dark", "lifestyle_scene"];
+export const MAX_PHOTOS_PER_AD = 5;
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const MIN_PHOTO_SHORT_SIDE = 800;
-const PHOTO_MAX_SIDE = 2048; // sent to the server; keeps the request under Vercel's body limit
-const PHOTO_MAX_DATAURL_CHARS = 3200000;
-const THUMB_MAX_SIDE = 768; // reference copy used by the automatic quality check
+// The photo is kept in the customer's account (one Firestore document, 1 MB), so it is saved as
+// a JPEG of at most this many characters. The scene is 1024 px, so 1600 px is plenty.
+const PHOTO_MAX_DATAURL_CHARS = 790000;
+const THUMB_MAX_DATAURL_CHARS = 58000; // preview + reference copy for the automatic checks
 const LOGO_MAX_SIDE = 480;
 const LOGO_MAX_DATAURL_CHARS = 250000;
-const POLL_INTERVAL_MS = 3500;
-const POLL_MAX_MS = 8 * 60 * 1000;
+const POLL_INTERVAL_MS = 2500;
+const POLL_MAX_MS = 9 * 60 * 1000;
 const FORMAT_ORDER = ["4:5", "1:1", "9:16"]; // the 4:5 feature poster comes first and carries the caption
 
 export const EMPTY_DESIGN_FIELDS = {
-  photo: null, // { dataUrl, thumb, previewUrl, palette }
+  photoIds: [], // saved photos offered for this ad (same product, up to 5)
+  chosenId: "", // the one the design is built from
+  chosenBy: "", // "auto" (picked for the customer) | "user"
+  pickedFor: "", // the selection the automatic choice was made for
   logo: "", // PNG data URL
   brandName: "",
-  // Brand colours are read from the product photo. customColors turns true only when the
+  // Brand colours are read from the chosen photo. customColors turns true only when the
   // customer overrides them with "Change colors".
   color1: "#1f2a44",
   color2: "#d4af37",
@@ -71,40 +77,37 @@ function fileError(code) {
 }
 
 // Validates the product photo (JPG/PNG, 5 MB, 800 px on the short side), prepares the two
-// copies the server needs and reads the brand colours from it.
+// copies kept in the account and reads the brand colours from it.
 // Rejects with err.code = "type" | "size" | "dims" | "read".
 export async function prepareProductPhoto(file) {
   if (!file || !["image/jpeg", "image/png"].includes(file.type)) throw fileError("type");
   if (file.size > MAX_PHOTO_BYTES) throw fileError("size");
   const objectUrl = URL.createObjectURL(file);
-  let img;
   try {
-    img = await loadImage(objectUrl);
-  } catch (_) {
+    let img;
+    try {
+      img = await loadImage(objectUrl);
+    } catch (_) {
+      throw fileError("read");
+    }
+    if (Math.min(img.naturalWidth, img.naturalHeight) < MIN_PHOTO_SHORT_SIDE) throw fileError("dims");
+    const fit = (attempts, limit) => {
+      let out = "";
+      let canvas = null;
+      for (let i = 0; i < attempts.length; i++) {
+        canvas = drawScaled(img, attempts[i][0], "#ffffff");
+        out = canvas.toDataURL("image/jpeg", attempts[i][1]);
+        if (out.length <= limit) break;
+      }
+      return { dataUrl: out, canvas };
+    };
+    const full = fit([[1600, 0.9], [1600, 0.82], [1400, 0.8], [1200, 0.78], [1024, 0.74], [900, 0.68]], PHOTO_MAX_DATAURL_CHARS);
+    const thumb = fit([[512, 0.8], [448, 0.74], [384, 0.7], [320, 0.62]], THUMB_MAX_DATAURL_CHARS);
+    if (full.dataUrl.length > PHOTO_MAX_DATAURL_CHARS || thumb.dataUrl.length > THUMB_MAX_DATAURL_CHARS) throw fileError("read");
+    return { dataUrl: full.dataUrl, thumb: thumb.dataUrl, palette: extractPalette(thumb.canvas) };
+  } finally {
     URL.revokeObjectURL(objectUrl);
-    throw fileError("read");
   }
-  if (Math.min(img.naturalWidth, img.naturalHeight) < MIN_PHOTO_SHORT_SIDE) {
-    URL.revokeObjectURL(objectUrl);
-    throw fileError("dims");
-  }
-  let dataUrl = "";
-  const attempts = [
-    [PHOTO_MAX_SIDE, 0.92],
-    [PHOTO_MAX_SIDE, 0.82],
-    [1600, 0.82],
-  ];
-  for (let i = 0; i < attempts.length; i++) {
-    dataUrl = drawScaled(img, attempts[i][0], "#ffffff").toDataURL("image/jpeg", attempts[i][1]);
-    if (dataUrl.length <= PHOTO_MAX_DATAURL_CHARS) break;
-  }
-  const thumbCanvas = drawScaled(img, THUMB_MAX_SIDE, "#ffffff");
-  return {
-    dataUrl,
-    thumb: thumbCanvas.toDataURL("image/jpeg", 0.82),
-    previewUrl: objectUrl,
-    palette: extractPalette(thumbCanvas),
-  };
 }
 
 // The logo is drawn by code on the design, so it is kept as a small PNG (transparency preserved).
@@ -147,75 +150,119 @@ export async function fetchQuota(user) {
   }
 }
 
-// Starts a design job and waits for it. Resolves with
-//   { status: "passed", jobId, scenes, variant, landscape, redoAvailable, quota }
-//   or { status: "failed", reason } where reason is "quality" | "unavailable" | a server code.
-// payload.redoOf (a job id) asks for the free redo of an earlier design.
-export async function runDesignJob(user, payload, isCancelled) {
-  let jobId;
+async function postJson(user, url, body) {
+  const res = await authedFetch(user, url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  return res.json();
+}
+
+// Product photos saved in the account: [{ id, thumb, width, height, palette, usedCount }].
+export async function listPhotos(user) {
   try {
-    const res = await authedFetch(user, "/api/design/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await authedFetch(user, "/api/photos");
     const data = await res.json();
-    if (!data.success) return { status: "failed", reason: data.errorCode || "unavailable" };
-    jobId = data.jobId;
+    return data && data.success ? data.photos : [];
   } catch (_) {
-    return { status: "failed", reason: "unavailable" };
+    return [];
+  }
+}
+
+// Saves the customer's edits to the texts of a finished design (no generation, no credit).
+export async function saveDesignTexts(user, docId, texts) {
+  try {
+    const data = await postJson(user, "/api/ad/texts", { docId, ...texts });
+    return Boolean(data && data.success);
+  } catch (_) {
+    return false;
+  }
+}
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Starts an ad job on the server (or picks up one that is already running) and follows it.
+// One call = the whole ad: copy, scene, quality check, saved result.
+//   options: { resumeJobId, onStage(stage, includeDesign), isCancelled() }
+// Resolves with
+//   { status: "done", result: { docId, plan, content, design }, quota }
+//   { status: "failed", reason, quota }      the job ran and failed: no credit was used
+//   { status: "rejected", data }             the server refused to start it (limits, input…)
+//   { status: "cancelled" }
+export async function runAdJob(user, payload, options) {
+  const o = options || {};
+  let jobId = o.resumeJobId || "";
+  if (!jobId) {
+    try {
+      const data = await postJson(user, "/api/ad/start", payload);
+      if (data.success) jobId = data.jobId;
+      // Already running (a second tab, a reloaded page): follow that job instead of starting another.
+      else if (data.errorCode === "JOB_IN_PROGRESS" && data.jobId) jobId = data.jobId;
+      else return { status: "rejected", data };
+    } catch (_) {
+      return { status: "rejected", data: null };
+    }
   }
 
   const startedAt = Date.now();
   let consecutiveErrors = 0;
+  let lastStage = "";
+  if (o.onStage) o.onStage("copy");
   while (Date.now() - startedAt < POLL_MAX_MS) {
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-    if (isCancelled && isCancelled()) return { status: "cancelled" };
+    if (o.isCancelled && o.isCancelled()) return { status: "cancelled" };
+    let delay = POLL_INTERVAL_MS;
     try {
-      const res = await authedFetch(user, "/api/design/poll?jobId=" + encodeURIComponent(jobId));
+      const res = await authedFetch(user, "/api/ad/poll?jobId=" + encodeURIComponent(jobId));
       const data = await res.json();
       if (!data.success) throw new Error("poll failed");
       consecutiveErrors = 0;
-      if (data.status === "passed") {
-        return {
-          status: "passed",
-          jobId,
-          scenes: data.scenes || [],
-          variant: data.variant || 0,
-          landscape: Boolean(data.landscape),
-          redoAvailable: Boolean(data.redoAvailable),
-          quota: data.quota || null,
-        };
-      }
+      if (data.status === "done" && data.result) return { status: "done", result: data.result, quota: data.quota || null };
       if (data.status === "failed") return { status: "failed", reason: data.failure || "unavailable", quota: data.quota || null };
+      if (data.stage && data.stage !== lastStage) {
+        lastStage = data.stage;
+        if (o.onStage) o.onStage(data.stage, Boolean(data.includeDesign));
+        delay = 500; // a step just finished: ask for the next one straight away
+      }
     } catch (_) {
       consecutiveErrors += 1;
-      if (consecutiveErrors >= 6) return { status: "failed", reason: "unavailable" };
+      if (consecutiveErrors >= 8) return { status: "failed", reason: "connection" };
     }
+    await wait(delay);
   }
-  return { status: "failed", reason: "unavailable" };
+  return { status: "failed", reason: "connection" };
 }
 
-// Maps a failure reason to the message shown in the design area.
-export function designFailureMessage(reason, t) {
+// Message for a job that ran and failed. Every one of these means: no credit was used.
+export function adFailureMessage(reason, t) {
   switch (reason) {
     case "quality":
       return t("ads.designQualityFail");
+    case "copy":
+      return t("ads.adFailed");
+    case "connection":
+      return t("ads.connectionLost");
+    default:
+      return t("ads.designUnavailable");
+  }
+}
+
+// Message for a start request the server refused, or "" when the code is not one of ours.
+export function adRejectMessage(code, t) {
+  switch (code) {
     case "DESIGN_ATTEMPTS_EXCEEDED":
       return t("ads.designAttemptsExceeded");
     case "DESIGN_QUOTA_EXCEEDED":
       return t("ads.designQuotaExceeded");
-    case "DESIGN_IN_PROGRESS":
-      return t("ads.designInProgress");
+    case "JOB_IN_PROGRESS":
+      return t("ads.jobInProgress");
     case "DESIGN_INVALID_PHOTO":
       return t("ads.designInvalidPhoto");
-    case "DESIGN_REDO_USED":
-      return t("ads.redoUsed");
     case "DESIGN_NOT_IN_PLAN":
     case "DESIGN_STYLE_NOT_IN_PLAN":
       return t("ads.designNotInPlan");
-    default:
+    case "DESIGN_UNAVAILABLE":
       return t("ads.designUnavailable");
+    case "PRODUCT_REQUIRED":
+      return t("ads.productRequired");
+    default:
+      return "";
   }
 }
 
@@ -267,32 +314,260 @@ export function CopyButton({ text, t, light, label }) {
   );
 }
 
-// Form fields shown when "Include ad design" is ticked.
-export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle }) {
-  const [photoError, setPhotoError] = useState("");
-  const [logoError, setLogoError] = useState("");
-  const [showColors, setShowColors] = useState(false);
-  const photoInput = useRef(null);
-  const logoInput = useRef(null);
-  const set = (patch) => onChange({ ...value, ...patch });
+// Progress of the one-click generation: the steps, the one in progress, and the reminder to
+// keep the page open. "stage" is the server's: copy | scene | wait | check | done.
+export function GenerationProgress({ t, stage, includeDesign }) {
+  const steps = includeDesign ? ["copy", "scene", "check"] : ["copy"];
+  const current = stage === "check" ? 2 : stage === "scene" || stage === "wait" ? 1 : stage === "done" ? steps.length : 0;
+  const labels = { copy: t("ads.stepCopy"), scene: t("ads.stepScene"), check: t("ads.stepCheck") };
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{ marginTop: "1rem", padding: "1rem 1.25rem", borderRadius: "10px", border: `1px solid ${T.glassBorderGold}`, background: "rgba(212,175,55,0.06)" }}
+    >
+      <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+        {steps.map((key, i) => {
+          const done = i < current;
+          const active = i === current;
+          return (
+            <li key={key} style={{ display: "flex", alignItems: "center", gap: "0.7rem", color: done || active ? T.text : T.textFaint, fontWeight: active ? 700 : 500, fontSize: "0.95rem" }}>
+              <span
+                aria-hidden="true"
+                className={active ? "agency-loading-step" : undefined}
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  background: done ? T.gold : "transparent",
+                  color: done ? "#1A1305" : active ? T.goldLight : T.textFaint,
+                  border: `2px solid ${done || active ? T.gold : T.glassBorder}`,
+                }}
+              >
+                {done ? "✓" : i + 1}
+              </span>
+              {labels[key]}
+              {active ? "…" : ""}
+            </li>
+          );
+        })}
+      </ol>
+      <p style={{ margin: "0.9rem 0 0", color: T.goldLight, fontSize: "0.88rem", fontWeight: 600, lineHeight: 1.5 }}>⚠ {t("ads.progressWarning")}</p>
+    </div>
+  );
+}
+
+// Product photos of the account: the customer selects up to 5 photos of the same product, the
+// best one is picked for them (they can choose another), and new uploads are saved for next time.
+function PhotoLibrary({ user, t, value, set, photos, onPhotos }) {
+  const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const input = useRef(null);
+  const known = value.photoIds.filter((id) => photos.some((p) => p.id === id));
+  const selectionKey = known.join(",");
+  const { chosenId, chosenBy, pickedFor, customColors } = value;
 
   const errorText = (code) =>
     t(code === "type" ? "ads.photoErrType" : code === "size" ? "ads.photoErrSize" : code === "dims" ? "ads.photoErrDims" : "ads.photoErrRead");
 
-  const handlePhoto = async (e) => {
-    const file = e.target.files && e.target.files[0];
+  // Keeps the chosen photo in step with the selection. With several photos, the server's cheap
+  // vision model picks the best one — unless the customer already chose one of them.
+  useEffect(() => {
+    const ids = selectionKey ? selectionKey.split(",") : [];
+    if (ids.length === 0) {
+      if (chosenId) set({ chosenId: "", chosenBy: "", pickedFor: "" });
+      return undefined;
+    }
+    if (ids.includes(chosenId) && (chosenBy === "user" || pickedFor === selectionKey)) return undefined;
+    if (ids.length === 1) {
+      set({ chosenId: ids[0], chosenBy: "auto", pickedFor: selectionKey });
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setPicking(true);
+      let bestId = ids[0];
+      try {
+        const data = await postJson(user, "/api/photos/pick", { ids });
+        if (data && data.success && ids.includes(data.bestId)) bestId = data.bestId;
+      } catch (_) {
+        // The first selected photo is used when the automatic choice cannot be made.
+      }
+      if (cancelled) return;
+      setPicking(false);
+      set({ chosenId: bestId, chosenBy: "auto", pickedFor: selectionKey });
+    }, 900);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      setPicking(false);
+    };
+    // "set" and "user" are stable for the life of the form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionKey, chosenId, chosenBy, pickedFor]);
+
+  // Brand colours follow the chosen photo unless the customer set their own.
+  const chosen = photos.find((p) => p.id === chosenId) || null;
+  const paletteKey = chosen && chosen.palette ? chosen.palette.join(",") : "";
+  useEffect(() => {
+    if (!paletteKey || customColors) return;
+    const pair = paletteKey.split(",");
+    set({ color1: pair[0], color2: pair[1] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paletteKey, customColors]);
+
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || []).slice(0, MAX_PHOTOS_PER_AD);
     e.target.value = "";
-    if (!file) return;
-    try {
-      const photo = await prepareProductPhoto(file);
-      if (value.photo && value.photo.previewUrl) URL.revokeObjectURL(value.photo.previewUrl);
-      setPhotoError("");
-      // Colours follow the photo unless the customer chose their own.
-      set(value.customColors ? { photo } : { photo, color1: photo.palette[0], color2: photo.palette[1] });
-    } catch (err) {
-      setPhotoError(errorText(err.code));
+    if (files.length === 0) return;
+    setUploading(true);
+    setError("");
+    const added = [];
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const prepared = await prepareProductPhoto(files[i]);
+        const data = await postJson(user, "/api/photos", prepared);
+        if (data && data.success) added.push(data.photo);
+        else setError(t(data && data.errorCode === "DESIGN_INVALID_PHOTO" ? "ads.designInvalidPhoto" : "ads.photoErrRead"));
+      } catch (err) {
+        setError(errorText(err.code));
+      }
+    }
+    setUploading(false);
+    if (added.length === 0) return;
+    onPhotos((prev) => added.slice().reverse().concat(prev));
+    // New uploads are selected for this ad, up to the limit; the newest take the place of older picks.
+    const ids = added.map((p) => p.id).concat(known).slice(0, MAX_PHOTOS_PER_AD);
+    set({ photoIds: ids });
+  };
+
+  const toggle = (id) => {
+    setError("");
+    if (known.includes(id)) {
+      set({ photoIds: known.filter((x) => x !== id) });
+    } else if (known.length >= MAX_PHOTOS_PER_AD) {
+      setError(t("ads.photoMax"));
+    } else {
+      set({ photoIds: known.concat([id]) });
     }
   };
+
+  const remove = async (id) => {
+    if (!window.confirm(t("ads.photoDeleteConfirm"))) return;
+    onPhotos((prev) => prev.filter((p) => p.id !== id));
+    set({ photoIds: known.filter((x) => x !== id) });
+    try {
+      await postJson(user, "/api/photos/delete", { id });
+    } catch (_) {
+      // The photo comes back on the next load if the request did not reach the server.
+    }
+  };
+
+  const tile = 86;
+  return (
+    <div style={{ marginBottom: "1rem" }}>
+      <label className="agency-form-label">
+        {t("ads.photosLabel")} <span style={{ color: "#ef4444" }}>*</span>
+      </label>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.7rem", alignItems: "flex-start" }}>
+        {photos.map((p) => {
+          const selected = known.includes(p.id);
+          const isChosen = selected && p.id === chosenId;
+          return (
+            <div key={p.id} style={{ width: tile + "px", textAlign: "center" }}>
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => toggle(p.id)}
+                  style={{
+                    display: "block",
+                    width: tile + "px",
+                    height: tile + "px",
+                    padding: 0,
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    background: "#fff",
+                    border: isChosen ? `3px solid ${T.gold}` : selected ? `2px solid ${T.goldLight}` : `1px solid ${T.glassBorder}`,
+                    opacity: selected ? 1 : 0.55,
+                  }}
+                >
+                  <img src={p.thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("ads.photoDelete")}
+                  title={t("ads.photoDelete")}
+                  onClick={() => remove(p.id)}
+                  style={{ position: "absolute", top: "-7px", insetInlineEnd: "-7px", width: "22px", height: "22px", borderRadius: "50%", border: "none", background: "#0f1419", color: "#fff", fontSize: "0.75rem", lineHeight: 1, cursor: "pointer" }}
+                >
+                  ✕
+                </button>
+              </div>
+              {isChosen ? (
+                <span style={{ display: "block", marginTop: "0.3rem", fontSize: "0.72rem", fontWeight: 800, color: T.goldLight }}>★ {t("ads.photoChosenBadge")}</span>
+              ) : selected ? (
+                <button
+                  type="button"
+                  onClick={() => set({ chosenId: p.id, chosenBy: "user" })}
+                  style={{ marginTop: "0.3rem", background: "none", border: "none", padding: 0, color: T.goldLight, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+                >
+                  {t("ads.photoUseThis")}
+                </button>
+              ) : (
+                p.usedCount > 0 && <span style={{ display: "block", marginTop: "0.3rem", fontSize: "0.7rem", color: T.textFaint }}>{t("ads.photoUsed", { n: p.usedCount })}</span>
+              )}
+            </div>
+          );
+        })}
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => input.current && input.current.click()}
+          style={{
+            width: photos.length ? tile + "px" : "auto",
+            minHeight: photos.length ? tile + "px" : "auto",
+            padding: photos.length ? "0.3rem" : "0.6rem 1.1rem",
+            borderRadius: "10px",
+            border: `1px dashed ${T.glassBorderGold}`,
+            background: "rgba(212,175,55,0.10)",
+            color: T.goldLight,
+            fontWeight: 700,
+            fontSize: "0.82rem",
+            cursor: uploading ? "wait" : "pointer",
+          }}
+        >
+          {uploading ? t("ads.photoUploading") : "+ " + t("ads.photosAdd")}
+        </button>
+        <input ref={input} type="file" accept="image/jpeg,image/png" multiple onChange={handleFiles} style={{ display: "none" }} />
+      </div>
+      {error && <p style={{ color: "#fca5a5", fontSize: "0.85rem", margin: "0.5rem 0 0" }}>{error}</p>}
+      {known.length > 0 && (
+        <p style={{ color: T.text, fontSize: "0.85rem", fontWeight: 600, margin: "0.6rem 0 0" }}>
+          {picking ? t("ads.photoPicking") : !chosen ? "" : chosenBy === "user" ? t("ads.photoChosenUser") : known.length > 1 ? t("ads.photoChosenAuto") : t("ads.photoChosenSingle")}
+        </p>
+      )}
+      <p style={{ color: T.textFaint, fontSize: "0.8rem", margin: "0.35rem 0 0" }}>{t("ads.photosTip")}</p>
+    </div>
+  );
+}
+
+// Form fields shown when "Include ad design" is ticked.
+// onChange receives an updater function (prev => next), like a React state setter.
+export function DesignFields({ user, t, value, onChange, photos, onPhotos, allowedStyles, onLockedStyle }) {
+  const [logoError, setLogoError] = useState("");
+  const [showColors, setShowColors] = useState(false);
+  const logoInput = useRef(null);
+  const set = (patch) => onChange((prev) => ({ ...prev, ...patch }));
+  const chosen = photos.find((p) => p.id === value.chosenId) || null;
 
   const handleLogo = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -303,12 +578,12 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
       setLogoError("");
       set({ logo });
     } catch (err) {
-      setLogoError(errorText(err.code === "dims" ? "read" : err.code));
+      setLogoError(t(err.code === "type" ? "ads.photoErrType" : err.code === "size" ? "ads.photoErrSize" : "ads.photoErrRead"));
     }
   };
 
   const resetColors = () => {
-    const palette = value.photo ? value.photo.palette : [EMPTY_DESIGN_FIELDS.color1, EMPTY_DESIGN_FIELDS.color2];
+    const palette = chosen && chosen.palette ? chosen.palette : [EMPTY_DESIGN_FIELDS.color1, EMPTY_DESIGN_FIELDS.color2];
     set({ color1: palette[0], color2: palette[1], customColors: false });
     setShowColors(false);
   };
@@ -352,27 +627,10 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
         background: "rgba(212,175,55,0.05)",
       }}
     >
-      <label className="agency-form-label">
-        {t("ads.photoLabel")} <span style={{ color: "#ef4444" }}>*</span>
-      </label>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", flexWrap: "wrap" }}>
-        {value.photo && (
-          <img
-            src={value.photo.previewUrl}
-            alt=""
-            style={{ width: "72px", height: "72px", objectFit: "cover", borderRadius: "10px", border: `1px solid ${T.glassBorder}` }}
-          />
-        )}
-        <button type="button" style={pickButton} onClick={() => photoInput.current && photoInput.current.click()}>
-          {value.photo ? t("ads.photoChange") : t("ads.photoChoose")}
-        </button>
-        <input ref={photoInput} type="file" accept="image/jpeg,image/png" onChange={handlePhoto} style={{ display: "none" }} />
-      </div>
-      {photoError && <p style={{ color: "#fca5a5", fontSize: "0.85rem", margin: "0.5rem 0 0" }}>{photoError}</p>}
-      <p style={hintStyle}>{t("ads.photoTip")}</p>
+      <PhotoLibrary user={user} t={t} value={value} set={set} photos={photos} onPhotos={onPhotos} />
 
-      {/* Brand colours: read from the photo; the pickers only appear on request. */}
-      {value.photo && (
+      {/* Brand colours: read from the chosen photo; the pickers only appear on request. */}
+      {chosen && (
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
             <span style={swatch(value.color1)} />
@@ -495,28 +753,39 @@ export function DesignFields({ t, value, onChange, allowedStyles, onLockedStyle 
 
 // --- the ad as a social post -------------------------------------------------
 
-// Loads the scene as a same-origin blob so the canvas can be exported. Tries the fal.ai link
-// first; if the browser is not allowed to read it cross-origin, asks this site's server for a copy.
-async function loadSceneImage(user, sceneUrl, docId, sceneIndex) {
-  let blob = null;
-  try {
-    const res = await fetch(sceneUrl, { mode: "cors" });
-    if (res.ok) blob = await res.blob();
-  } catch (_) {
-    blob = null;
-  }
-  if (!blob && user && docId) {
-    const res = await authedFetch(user, "/api/design/image?docId=" + encodeURIComponent(docId) + "&i=" + sceneIndex);
-    if (res.ok) blob = await res.blob();
-  }
-  if (!blob) throw new Error("scene unavailable");
-  const objectUrl = URL.createObjectURL(blob);
-  try {
-    return await loadImage(objectUrl);
-  } finally {
-    // The decoded image stays usable after the object URL is released.
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
-  }
+// One download per scene, shared by every format drawn from it. Loads it as a same-origin blob
+// so the canvas can be exported: the fal.ai link first, then the copy saved on this site's
+// server (which is what remains once the fal.ai link has expired).
+const sceneCache = new Map();
+
+function loadSceneImage(user, sceneUrl, docId, sceneIndex) {
+  const key = (docId || "") + "|" + sceneUrl;
+  if (sceneCache.has(key)) return sceneCache.get(key);
+  const promise = (async () => {
+    let blob = null;
+    try {
+      const res = await fetch(sceneUrl, { mode: "cors" });
+      if (res.ok) blob = await res.blob();
+    } catch (_) {
+      blob = null;
+    }
+    if (!blob && user && docId) {
+      const res = await authedFetch(user, "/api/design/image?docId=" + encodeURIComponent(docId) + "&i=" + sceneIndex);
+      if (res.ok) blob = await res.blob();
+    }
+    if (!blob) throw new Error("scene unavailable");
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      return await loadImage(objectUrl);
+    } finally {
+      // The decoded image stays usable after the object URL is released.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+    }
+  })();
+  sceneCache.set(key, promise);
+  promise.catch(() => sceneCache.delete(key));
+  if (sceneCache.size > 12) sceneCache.delete(sceneCache.keys().next().value);
+  return promise;
 }
 
 // A social-post frame: profile row, the media, then the caption with its hashtags and the
@@ -613,86 +882,181 @@ function CopyCaptionButton({ text, t }) {
   );
 }
 
-function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
+// --- downloads ----------------------------------------------------------------
+
+function fileBase(brandName) {
+  return (brandName || "ad").trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "ad";
+}
+
+function saveBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+const canvasToPng = (canvas) => new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+
+let crcTable = null;
+function crc32(bytes) {
+  if (!crcTable) {
+    crcTable = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      crcTable[n] = c >>> 0;
+    }
+  }
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+// A plain ZIP archive (files stored as they are: PNGs are already compressed), built in the
+// browser. files: [{ name, bytes: Uint8Array }].
+export function makeZip(files) {
+  const encoder = new TextEncoder();
+  const parts = [];
+  const central = [];
+  let offset = 0;
+  files.forEach((file) => {
+    const name = encoder.encode(file.name);
+    const crc = crc32(file.bytes);
+    const size = file.bytes.length;
+    const local = new DataView(new ArrayBuffer(30));
+    local.setUint32(0, 0x04034b50, true);
+    local.setUint16(4, 20, true);
+    local.setUint16(6, 0x0800, true); // file names are UTF-8
+    local.setUint16(8, 0, true); // stored
+    local.setUint16(10, 0, true);
+    local.setUint16(12, 0x21, true); // 1980-01-01
+    local.setUint32(14, crc, true);
+    local.setUint32(18, size, true);
+    local.setUint32(22, size, true);
+    local.setUint16(26, name.length, true);
+    local.setUint16(28, 0, true);
+    parts.push(new Uint8Array(local.buffer), name, file.bytes);
+
+    const entry = new DataView(new ArrayBuffer(46));
+    entry.setUint32(0, 0x02014b50, true);
+    entry.setUint16(4, 20, true);
+    entry.setUint16(6, 20, true);
+    entry.setUint16(8, 0x0800, true);
+    entry.setUint16(10, 0, true);
+    entry.setUint16(12, 0, true);
+    entry.setUint16(14, 0x21, true);
+    entry.setUint32(16, crc, true);
+    entry.setUint32(20, size, true);
+    entry.setUint32(24, size, true);
+    entry.setUint16(28, name.length, true);
+    entry.setUint32(42, offset, true);
+    central.push(new Uint8Array(entry.buffer), name);
+    offset += 30 + name.length + size;
+  });
+  const centralSize = central.reduce((sum, part) => sum + part.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, files.length, true);
+  end.setUint16(10, files.length, true);
+  end.setUint32(12, centralSize, true);
+  end.setUint32(16, offset, true);
+  return new Blob(parts.concat(central, [new Uint8Array(end.buffer)]), { type: "application/zip" });
+}
+
+function AdPost({ user, docId, sceneIndex, scene, design, post, t, onCanvas }) {
   const canvasRef = useRef(null);
+  const [assets, setAssets] = useState(null); // { scene, logo } once loaded
   const [state, setState] = useState("loading"); // loading | ready | error
   const { headline, subheadline, badge, highlight, cta, brandName, logo, style, variant, landscape } = design;
   const color1 = design.colors && design.colors[0];
   const color2 = design.colors && design.colors[1];
-  // Lists are joined into strings so the effect below only reruns when their content changes.
+  // Lists are joined into strings so the effects below only rerun when their content changes.
   const list = (v) => (Array.isArray(v) ? v : []).join("\n");
   const chipsKey = list(design.chips);
   const detailsKey = list(design.chipDetails);
   const iconsKey = list(design.chipIcons);
   const qualitiesKey = list(design.qualities);
   const qualityIconsKey = list(design.qualityIcons);
+  const format = scene.format;
 
+  // The scene and the logo are loaded once…
   useEffect(() => {
     let cancelled = false;
     setState("loading");
-    (async () => {
-      try {
-        const [sceneImg, logoImg] = await Promise.all([
-          loadSceneImage(user, scene.url, docId, sceneIndex),
-          logo ? loadImage(logo).catch(() => null) : Promise.resolve(null),
-          ensureAdFonts([headline, subheadline, badge, highlight, cta, brandName, chipsKey, detailsKey, qualitiesKey].join(" ")),
-        ]);
+    setAssets(null);
+    Promise.all([loadSceneImage(user, scene.url, docId, sceneIndex), logo ? loadImage(logo).catch(() => null) : Promise.resolve(null)])
+      .then(([sceneImg, logoImg]) => {
+        if (!cancelled) setAssets({ scene: sceneImg, logo: logoImg });
+      })
+      .catch(() => {
+        if (!cancelled) setState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, docId, sceneIndex, scene.url, logo]);
+
+  // …then the design is redrawn in the browser whenever a text changes: instant, and free.
+  useEffect(() => {
+    if (!assets) return undefined;
+    let cancelled = false;
+    const split = (key) => (key ? key.split("\n") : []);
+    ensureAdFonts([headline, subheadline, badge, highlight, cta, brandName, chipsKey, detailsKey, qualitiesKey].join(" "))
+      .catch(() => null)
+      .then(() => {
         if (cancelled || !canvasRef.current) return;
         drawAd(canvasRef.current, {
-          format: scene.format,
+          format,
           style,
           variant,
           landscape,
-          scene: sceneImg,
+          scene: assets.scene,
           headline,
           subheadline,
           badge,
           highlight,
-          chips: chipsKey ? chipsKey.split("\n") : [],
-          chipDetails: detailsKey ? detailsKey.split("\n") : [],
-          chipIcons: iconsKey ? iconsKey.split("\n") : [],
-          qualities: qualitiesKey ? qualitiesKey.split("\n") : [],
-          qualityIcons: qualityIconsKey ? qualityIconsKey.split("\n") : [],
+          chips: split(chipsKey),
+          chipDetails: split(detailsKey),
+          chipIcons: split(iconsKey),
+          qualities: split(qualitiesKey),
+          qualityIcons: split(qualityIconsKey),
           cta,
           brandName,
           colors: [color1, color2],
-          logo: logoImg,
+          logo: assets.logo,
         });
         setState("ready");
-      } catch (_) {
-        if (!cancelled) setState("error");
-      }
-    })();
+      });
     return () => {
       cancelled = true;
     };
-  }, [user, docId, sceneIndex, scene.url, scene.format, style, variant, landscape, headline, subheadline, badge, highlight, chipsKey, detailsKey, iconsKey, qualitiesKey, qualityIconsKey, cta, brandName, color1, color2, logo]);
+  }, [assets, format, style, variant, landscape, headline, subheadline, badge, highlight, chipsKey, detailsKey, iconsKey, qualitiesKey, qualityIconsKey, cta, brandName, color1, color2]);
 
-  const handleDownload = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const base = (brandName || "ad").trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "ad";
-      link.href = url;
-      link.download = base + "-" + scene.format.replace(":", "x") + ".png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    }, "image/png");
+  // The gallery needs the finished canvases for "Download all formats".
+  useEffect(() => {
+    if (!onCanvas) return undefined;
+    onCanvas(format, state === "ready" ? canvasRef.current : null);
+    return () => onCanvas(format, null);
+  }, [onCanvas, format, state]);
+
+  const handleDownload = async () => {
+    if (!canvasRef.current) return;
+    const blob = await canvasToPng(canvasRef.current);
+    if (blob) saveBlob(blob, fileBase(brandName) + "-" + format.replace(":", "x") + ".png");
   };
 
-  const size = AD_FORMATS[scene.format] || AD_FORMATS["1:1"];
-  const story = scene.format === "9:16";
+  const size = AD_FORMATS[format] || AD_FORMATS["1:1"];
+  const story = format === "9:16";
   const captionText = post ? [post.caption, (post.hashtags || []).join(" ")].filter(Boolean).join("\n\n") : "";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "center", width: story ? "min(100%, 300px)" : "min(100%, 440px)" }}>
       <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "#94a3b8" }}>
-        {t(story ? "ads.format916" : scene.format === "4:5" ? "ads.format45" : "ads.format11")} · {size.label}
+        {t(story ? "ads.format916" : format === "4:5" ? "ads.format45" : "ads.format11")} · {size.label}
       </div>
       <PostShell
         brandName={brandName}
@@ -726,15 +1090,45 @@ function AdPost({ user, docId, sceneIndex, scene, design, post, t }) {
 }
 
 // The finished ad: one post per format (4:5 poster, 1:1, and 9:16 on premium), all drawn from
-// the same scene. The caption sits under the first,
-// the download reminder and the link to the done-for-you video packages.
-export function DesignGallery({ user, docId, scenes, design, post, t, light, showVideoLink }) {
+// the same scene. The caption sits under the first. Below: "Download all formats" (one ZIP with
+// every image and the caption), and the link to the done-for-you video packages.
+export function DesignGallery({ user, docId, scenes, design, post, t, light, showVideoLink, footer }) {
+  const canvases = useRef({});
+  const [readyCount, setReadyCount] = useState(0);
+  const [zipping, setZipping] = useState(false);
+  // Stable across renders, so the posts do not re-register on every keystroke.
+  const onCanvas = useRef((format, canvas) => {
+    if (canvas) canvases.current[format] = canvas;
+    else delete canvases.current[format];
+    setReadyCount(Object.keys(canvases.current).length);
+  }).current;
+
   const list = Array.isArray(scenes) ? scenes : [];
   if (list.length === 0) return null;
   // Keep each scene's original index: the server-side image copy is addressed by it.
   const ordered = list
     .map((scene, index) => ({ scene, index }))
     .sort((a, b) => FORMAT_ORDER.indexOf(a.scene.format) - FORMAT_ORDER.indexOf(b.scene.format));
+
+  const handleDownloadAll = async () => {
+    if (zipping) return;
+    setZipping(true);
+    try {
+      const base = fileBase(design.brandName);
+      const files = [];
+      for (let i = 0; i < FORMAT_ORDER.length; i++) {
+        const canvas = canvases.current[FORMAT_ORDER[i]];
+        if (!canvas) continue;
+        const blob = await canvasToPng(canvas);
+        if (blob) files.push({ name: base + "-" + FORMAT_ORDER[i].replace(":", "x") + ".png", bytes: new Uint8Array(await blob.arrayBuffer()) });
+      }
+      const captionText = post ? [post.caption, (post.hashtags || []).join(" ")].filter(Boolean).join("\n\n") : "";
+      if (captionText) files.push({ name: base + "-caption.txt", bytes: new TextEncoder().encode(captionText) });
+      if (files.length) saveBlob(makeZip(files), base + "-all-formats.zip");
+    } finally {
+      setZipping(false);
+    }
+  };
 
   const scrollToPricing = (e) => {
     const target = document.getElementById("pricing");
@@ -748,12 +1142,35 @@ export function DesignGallery({ user, docId, scenes, design, post, t, light, sho
     <div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", justifyContent: "center", alignItems: "flex-start" }}>
         {ordered.map(({ scene, index }, i) => (
-          <AdPost key={scene.format + "-" + scene.url} user={user} docId={docId} sceneIndex={index} scene={scene} design={design} post={i === 0 ? post : null} t={t} />
+          <AdPost key={scene.format + "-" + scene.url} user={user} docId={docId} sceneIndex={index} scene={scene} design={design} post={i === 0 ? post : null} t={t} onCanvas={onCanvas} />
         ))}
       </div>
+      {readyCount > 0 && (
+        <div style={{ textAlign: "center", marginTop: "1.2rem" }}>
+          <button
+            type="button"
+            onClick={handleDownloadAll}
+            disabled={zipping || readyCount < ordered.length}
+            style={{
+              padding: "0.8rem 1.6rem",
+              borderRadius: "10px",
+              border: "none",
+              background: light ? "#0f1419" : T.goldGradient,
+              color: light ? "#ffffff" : "#1A1305",
+              fontWeight: 800,
+              fontSize: "0.95rem",
+              cursor: zipping || readyCount < ordered.length ? "wait" : "pointer",
+              opacity: zipping || readyCount < ordered.length ? 0.6 : 1,
+            }}
+          >
+            ⬇ {t("ads.downloadAll")}
+          </button>
+        </div>
+      )}
       <p style={{ textAlign: "center", fontSize: "0.82rem", margin: "0.9rem 0 0", color: light ? "#64748b" : T.textFaint }}>
         {t("ads.downloadHint")}
       </p>
+      {footer}
       {showVideoLink && (
         <p style={{ textAlign: "center", margin: "0.5rem 0 0" }}>
           <a href="/#pricing" onClick={scrollToPricing} style={{ color: light ? "#b45309" : T.goldLight, fontSize: "0.88rem", fontWeight: 600 }}>

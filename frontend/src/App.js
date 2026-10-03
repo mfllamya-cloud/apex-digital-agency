@@ -21,9 +21,13 @@ import {
   PostShell,
   CopyButton,
   EMPTY_DESIGN_FIELDS,
+  GenerationProgress,
   fetchQuota,
-  runDesignJob,
-  designFailureMessage,
+  listPhotos,
+  runAdJob,
+  saveDesignTexts,
+  adFailureMessage,
+  adRejectMessage,
 } from "./AdDesign";
 import "./App.css";
 
@@ -59,7 +63,8 @@ const AGENCY_COLORS = {
 // inside Firestore transactions; these mirror them for the moments before /api/quota answers.
 // One generation = one complete ad on every plan (no "days" any more).
 const PLAN_MAX_GENERATIONS = { free: 1, pro: 5, premium: 10 };
-const PLAN_MAX_DESIGNS = { free: 0, pro: 2, premium: 5 };
+// Ads per month, and how many of them can have a design (a design ad uses one of each).
+const PLAN_MAX_DESIGNS = { free: 0, pro: 4, premium: 10 };
 const PLAN_DESIGN_STYLES = {
   free: [],
   pro: ["clean_studio", "bold_color"],
@@ -209,7 +214,7 @@ const CONTENT_PLATFORM_OPTIONS = [
   { value: "X (Twitter)", key: "twitter" },
 ];
 
-// يحوّل استجابة خطأ من الباكند (data من /api/generate-content) إلى رسالة مترجمة بلغة الواجهة
+// يحوّل استجابة خطأ من الباكند (data من /api/ad/start) إلى رسالة مترجمة بلغة الواجهة
 // الحالية، بدل عرض نص عربي ثابت دائماً كما كان الحال سابقاً. يعتمد على errorCode الذي أصبح
 // الخادم يرسله الآن (مثل "QUOTA_EXCEEDED"، "AUTH_REQUIRED"...) ويترجمه عبر مساحة الأسماء
 // apiErrors في i18n.js. إن كان الكود غير معروف أو مفقود (خادم قديم مثلاً)، تعود الدالة إلى
@@ -632,20 +637,21 @@ function AppContent() {
   const [quota, setQuota] = useState(null); // /api/quota: real plan, counters, design limits
   const [adDocId, setAdDocId] = useState(""); // Firestore id of the ad just generated
   const [product, setProduct] = useState(""); // "What are you advertising?" (required, all plans)
-  // Texts drawn on the design. Prefilled from the generated ad, editable before the design is made.
-  const [designTexts, setDesignTexts] = useState(EMPTY_DESIGN_TEXTS);
-  const [designResult, setDesignResult] = useState(null); // { jobId, scenes, design, redoAvailable }
-  const [designBusy, setDesignBusy] = useState(false);
-  const [designError, setDesignError] = useState(""); // failure reason of the last attempt
-  const [showRedoEditor, setShowRedoEditor] = useState(false);
-  const designRunRef = useRef(0);
+  // Texts drawn on the design. Filled from the generated ad; the customer can edit them after
+  // the result and the design is redrawn in the browser at once (no generation, no credit).
+  const [editTexts, setEditTexts] = useState(EMPTY_DESIGN_TEXTS);
+  const [designResult, setDesignResult] = useState(null); // { scenes, design }
+  const [saveState, setSaveState] = useState(""); // "" | saving | saved | error (edited texts)
+  const saveTimer = useRef(null);
+  const [photos, setPhotos] = useState([]); // product photos saved in the account
+  // One press = one job on the server. jobStage is the server's stage while it runs
+  // (copy | scene | wait | check); jobError is the message of the last failed attempt.
   const [loading, setLoading] = useState(false);
-  // loadingStepIndex: يتقدّم كل 2.5 ثانية أثناء التحميل فقط، لعرض "تجربة الوكالة النفسية
-  // متعددة المراحل" (Strategy Directors are analyzing... ثم Senior Copywriters...، إلخ)
-  // بدل مؤشر تحميل عام بلا معنى — أربع رسائل ثابتة معرَّفة في i18n.js (app.loadingStep1..4).
-  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [jobStage, setJobStage] = useState("");
+  const [jobHasDesign, setJobHasDesign] = useState(false);
+  const [jobError, setJobError] = useState("");
+  const runRef = useRef(0);
   const [results, setResults] = useState([]);
-  const [quotaInfo, setQuotaInfo] = useState(null); // {plan, generationsUsed, maxGenerationsPerMonth} من آخر رد ناجح من الباكند
   // quotaExceeded: يصبح true فور استلام errorCode="QUOTA_EXCEEDED" من الخادم (بعد الفحص المسبق
   // الصارم في server.js — الطلب يُرفض هناك قبل أي استدعاء لـ Claude API). يبقى true ليعطّل زر
   // التوليد باستمرار (بدل السماح بإعادة المحاولة والحصول على نفس الرفض في كل مرة)، إلى أن ينجح
@@ -709,21 +715,6 @@ function AppContent() {
     setShowLoginModal(false);
   };
 
-  // يُشغِّل "تجربة الوكالة النفسية متعددة المراحل": كل 2.5 ثانية، أثناء التحميل فقط، يتقدّم
-  // للرسالة التالية من بين 4 رسائل ثابتة (app.loadingStep1..4)، ويعيد الفهرس للصفر بمجرد
-  // انتهاء التحميل حتى تبدأ من جديد من أول رسالة في المرة القادمة. التنظيف (clearInterval)
-  // ضروري لتفادي تسريب المؤقّت إذا تغيّر loading أو أُزيل المكوّن قبل انتهاء الدورة.
-  useEffect(() => {
-    if (!loading) {
-      setLoadingStepIndex(0);
-      return;
-    }
-    const intervalId = setInterval(() => {
-      setLoadingStepIndex((prev) => (prev + 1) % 4);
-    }, 2500);
-    return () => clearInterval(intervalId);
-  }, [loading]);
-
   const handleLogout = async () => {
     await signOut(auth);
   };
@@ -776,11 +767,19 @@ function AppContent() {
   useEffect(() => {
     if (!user) {
       setQuota(null);
+      setPhotos([]);
       return;
     }
     let cancelled = false;
     fetchQuota(user).then((data) => {
-      if (!cancelled && data) setQuota(data);
+      if (cancelled || !data) return;
+      setQuota(data);
+      // Saved product photos are only used by the ad design (paid plans).
+      if (data.designsMax > 0) {
+        listPhotos(user).then((list) => {
+          if (!cancelled) setPhotos(list);
+        });
+      }
     });
     return () => {
       cancelled = true;
@@ -788,111 +787,175 @@ function AppContent() {
   }, [user]);
 
   const realPlan = (quota && quota.plan) || (profile && profile.plan) || "free";
+  const adsMax = quota ? quota.textMax : PLAN_MAX_GENERATIONS[realPlan] || 1;
+  const adsLeft = Math.max(0, adsMax - (quota ? quota.textUsed : 0));
   const designsMax = quota ? quota.designsMax : PLAN_MAX_DESIGNS[realPlan] || 0;
-  const designsLeft = designsMax - (quota ? quota.designsUsed : 0);
+  // A design ad uses one ad credit and one design credit, so it needs both.
+  const designsLeft = Math.max(0, Math.min(designsMax - (quota ? quota.designsUsed : 0), adsLeft));
   const allowedStyles = quota ? quota.designStyles : PLAN_DESIGN_STYLES[realPlan] || [];
   const ad = results.find((item) => !item.locked) || null;
-  const isRedo = Boolean(designResult);
-  const canStartDesign =
-    !designBusy &&
-    Boolean(adDocId) &&
-    Boolean(designFields.photo) &&
-    designTexts.headline.trim().length > 0 &&
-    (isRedo ? designResult.redoAvailable : designsLeft > 0);
+  const wantsDesign = realPlan !== "free" && includeDesign && designsLeft > 0;
+  // The copy listed under the ad: the texts as edited on the design when there is one.
+  const shownDesign = designResult ? designResult.design : null;
+  const shown = {
+    headline: (shownDesign ? shownDesign.headline : ad && (ad.headline || ad.idea)) || "",
+    subheadline: (shownDesign ? shownDesign.subheadline : ad && ad.subheadline) || "",
+    benefits: (shownDesign ? shownDesign.chips : ad && ad.benefits) || [],
+    benefitDetails: (shownDesign ? shownDesign.chipDetails : ad && ad.benefitDetails) || [],
+    qualities: (shownDesign ? shownDesign.qualities : ad && ad.qualities) || [],
+    badge: (shownDesign ? shownDesign.badge : ad && ad.offerBadge) || "",
+    cta: (shownDesign ? shownDesign.cta : ad && ad.cta) || "",
+  };
 
   const limitWords = (text, max) => String(text || "").trim().split(/\s+/).filter(Boolean).slice(0, max).join(" ");
 
-  // Generates the design, or regenerates it once for free ("redo") when one already exists.
-  const handleGenerateDesign = async () => {
-    if (!user || !canStartDesign) return;
-    const style = allowedStyles.includes(designFields.style) ? designFields.style : allowedStyles[0];
+  // The editor's fields -> the texts drawn on the design (word limits applied, each benefit
+  // kept with its explanation and icon, each quality with its icon).
+  const cleanDesignTexts = (raw) => {
     const texts = {
-      headline: limitWords(designTexts.headline, 8),
-      subheadline: limitWords(designTexts.subheadline, 10),
-      badge: limitWords(designTexts.badge, 3),
-      highlight: limitWords(designTexts.highlight, 3),
-      cta: limitWords(designTexts.cta, 4),
+      headline: limitWords(raw.headline, 8),
+      subheadline: limitWords(raw.subheadline, 10),
+      badge: limitWords(raw.badge, 3),
+      highlight: limitWords(raw.highlight, 3),
+      cta: limitWords(raw.cta, 4),
       chips: [],
       chipDetails: [],
       chipIcons: [],
       qualities: [],
       qualityIcons: [],
     };
-    // Keep each benefit with its explanation and icon, and each quality with its icon.
-    designTexts.chips.forEach((title, i) => {
+    raw.chips.forEach((title, i) => {
       const clean = limitWords(title, 3);
       if (!clean) return;
       texts.chips.push(clean);
-      texts.chipDetails.push(limitWords(designTexts.chipDetails[i], 7));
-      texts.chipIcons.push(designTexts.chipIcons[i] || "check");
+      texts.chipDetails.push(limitWords(raw.chipDetails[i], 7));
+      texts.chipIcons.push(raw.chipIcons[i] || "check");
     });
-    designTexts.qualities.forEach((label, i) => {
+    raw.qualities.forEach((label, i) => {
       const clean = limitWords(label, 2);
       if (!clean) return;
       texts.qualities.push(clean);
-      texts.qualityIcons.push(designTexts.qualityIcons[i] || "star");
+      texts.qualityIcons.push(raw.qualityIcons[i] || "star");
     });
-    const base = {
-      ...texts,
-      brandName: designFields.brandName.trim(),
-      colors: [designFields.color1, designFields.color2],
-      logo: designFields.logo,
-      style,
-    };
-    const runId = designRunRef.current + 1;
-    designRunRef.current = runId;
-    setDesignBusy(true);
-    setDesignError("");
-    const result = await runDesignJob(
-      user,
-      {
-        docId: adDocId,
-        redoOf: isRedo ? designResult.jobId : "",
-        style,
-        ...texts,
-        brandName: base.brandName,
-        color1: designFields.color1,
-        color2: designFields.color2,
-        note: designFields.note.trim(),
-        product: product.trim(),
-        logo: designFields.logo,
-        productImage: designFields.photo.dataUrl,
-        productThumb: designFields.photo.thumb,
+    return texts;
+  };
+
+  // Editing a text after the result: the design is redrawn in the browser straight away, and
+  // the new texts are saved with the design a moment later. Nothing is generated again.
+  const updateDesignTexts = (patch) => {
+    const next = { ...editTexts, ...patch };
+    setEditTexts(next);
+    const clean = cleanDesignTexts(next);
+    if (!clean.headline) return; // a design always keeps a headline
+    setDesignResult((prev) => (prev ? { ...prev, design: { ...prev.design, ...clean } } : prev));
+    const docId = adDocId;
+    setSaveState("saving");
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const ok = auth.currentUser ? await saveDesignTexts(auth.currentUser, docId, clean) : false;
+      setSaveState(ok ? "saved" : "error");
+    }, 1200);
+  };
+
+  const showResult = (result, usedPhotoId) => {
+    const arr = (v) => (Array.isArray(v) ? v : []);
+    const pad = (v, n) => Array.from({ length: n }, (_, i) => arr(v)[i] || "");
+    setResults(result.content || []);
+    setAdDocId(result.docId || "");
+    setSaveState("");
+    clearTimeout(saveTimer.current);
+    const d = result.design;
+    if (!d) {
+      setDesignResult(null);
+      setEditTexts(EMPTY_DESIGN_TEXTS);
+      return;
+    }
+    // The logo is drawn from the copy already in the browser (the server does not send it back).
+    setDesignResult({ scenes: d.scenes || [], design: { ...d, logo: designFields.logo } });
+    setEditTexts({
+      headline: d.headline || "",
+      subheadline: d.subheadline || "",
+      badge: d.badge || "",
+      highlight: d.highlight || "",
+      chips: pad(d.chips, 3),
+      chipDetails: pad(d.chipDetails, 3),
+      chipIcons: arr(d.chipIcons),
+      qualities: pad(d.qualities, 4),
+      qualityIcons: arr(d.qualityIcons),
+      cta: d.cta || "",
+    });
+    // For the next design of this product, a photo not used yet is preferred: the photo just
+    // used is counted, and the automatic choice is made again (a choice made by hand is kept).
+    const usedId = usedPhotoId || d.photoId;
+    setPhotos((prev) => prev.map((p) => (p.id === usedId ? { ...p, usedCount: (p.usedCount || 0) + 1 } : p)));
+    setDesignFields((prev) => (prev.chosenBy === "user" ? prev : { ...prev, chosenBy: "", pickedFor: "" }));
+  };
+
+  // Starts the job (payload) or picks up one already running on the server (resumeJobId), then
+  // follows it to the end. Everything happens from this one call: copy, scene, quality check.
+  const followJob = async (payload, resumeJobId) => {
+    const runId = runRef.current + 1;
+    runRef.current = runId;
+    setLoading(true);
+    setJobError("");
+    setJobStage("copy");
+    setJobHasDesign(Boolean(payload && payload.includeDesign));
+    const outcome = await runAdJob(auth.currentUser, payload, {
+      resumeJobId,
+      isCancelled: () => runRef.current !== runId,
+      onStage: (stage, hasDesign) => {
+        if (runRef.current !== runId) return;
+        setJobStage(stage);
+        if (typeof hasDesign === "boolean") setJobHasDesign(hasDesign);
       },
-      () => designRunRef.current !== runId
-    );
-    if (designRunRef.current !== runId || result.status === "cancelled") return;
-    setDesignBusy(false);
-    if (result.quota) setQuota(result.quota);
+    });
+    if (runRef.current !== runId || outcome.status === "cancelled") return;
+    setLoading(false);
+    setJobStage("");
+    if (outcome.quota) setQuota(outcome.quota);
     else refreshQuota();
-    if (result.status === "passed") {
-      setDesignResult({
-        // The free redo belongs to the first design of this credit, so its job id is kept.
-        jobId: isRedo ? designResult.jobId : result.jobId,
-        scenes: result.scenes,
-        design: { ...base, variant: result.variant, landscape: result.landscape },
-        redoAvailable: isRedo ? false : result.redoAvailable,
-      });
-      setShowRedoEditor(false);
+
+    if (outcome.status === "done") {
+      showResult(outcome.result, payload ? payload.photoId : "");
+      setQuotaExceeded(false);
+      setQuotaErrorMessage("");
+    } else if (outcome.status === "failed") {
+      // The job ran and did not finish: the server gave every credit back.
+      setJobError(adFailureMessage(outcome.reason, t));
+    } else if (!outcome.data) {
+      alert(t("app.alertBackendDown"));
+    } else if (outcome.data.errorCode === "QUOTA_EXCEEDED") {
+      // الخادم رفض الطلب فوراً قبل أي استدعاء لـ Claude API — نعطّل زر التوليد ونعرض رسالة
+      // واضحة مترجمة بدل تنبيه (alert) عابر، حتى لا يستمر المستخدم بمحاولات لا طائل منها.
+      setQuotaErrorMessage(getBackendErrorMessage(outcome.data, t));
+      setQuotaExceeded(true);
     } else {
-      // A failed redo is given back by the server; the earlier design stays on screen.
-      setDesignError(result.reason || "unavailable");
+      setJobError(adRejectMessage(outcome.data.errorCode, t) || getBackendErrorMessage(outcome.data, t));
     }
   };
+
+  // A job still running on the server for this account (the page was reloaded, or the ad was
+  // started in another tab): follow it instead of leaving the customer without their ad.
+  const activeJobId = (quota && quota.activeJobId) || "";
+  useEffect(() => {
+    if (activeJobId && !loading) followJob(null, activeJobId);
+    // Only a new job id should trigger this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeJobId]);
 
   const isDescriptionValid = businessDescription.trim().length > 0;
   const isProductValid = product.trim().length > 0;
 
-  const handleGenerate = async () => {
-    // بوابة "Authentication UI" الجديدة (سقالة/mock — راجع التعليق أعلى تعريف isAuthenticated
-    // وأعلى LoginModal): تحجب التوليد فوراً وتفتح نافذة تسجيل الدخول الفاخرة بدل أي استدعاء
-    // للخادم. عملياً غير قابلة للوصول اليوم لأي مستخدم حقيقي (AppContent كلها خلف بوابة
-    // Firebase حقيقية أصلاً، وisAuthenticated تتزامن تلقائياً مع ذلك)، لكنها مكتوبة هنا تماماً
-    // كما طُلب صراحة، تمهيداً لأي تخفيف مستقبلي لتلك البوابة (تصفح عام قبل تسجيل الدخول).
+  const handleGenerate = () => {
+    // بوابة "Authentication UI" (سقالة/mock — راجع التعليق أعلى تعريف isAuthenticated وأعلى
+    // LoginModal): تحجب التوليد فوراً وتفتح نافذة تسجيل الدخول بدل أي استدعاء للخادم.
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
+    // One press does everything; a second press while it runs does nothing (the server also
+    // refuses a second job for the same account).
+    if (loading || quotaExceeded) return;
     if (!isDescriptionValid) {
       alert(t("app.alertDescribeFirst"));
       return;
@@ -902,101 +965,40 @@ function AppContent() {
       return;
     }
     // The product photo is required when an ad design is requested.
-    if (realPlan !== "free" && includeDesign && designsLeft > 0 && !designFields.photo) {
+    if (wantsDesign && !designFields.chosenId) {
       alert(t("ads.photoRequired"));
       return;
     }
-    // حماية إضافية: الزر أصلاً معطّل (disabled) بمجرد quotaExceeded=true، لكن نتحقق هنا أيضاً
-    // تحسباً لأي استدعاء غير مباشر لهذه الدالة، لتفادي طلب شبكة لن يُقبل من الخادم على أي حال.
-    if (quotaExceeded) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // الباكند يتحقق من الهوية والباقة الحقيقية والحد الشهري بنفسه اعتماداً على هذا التوكن —
-      // لا يكفي إرسال userTier من هنا، لأنه لا يُعتمد عليه في التحقق (يمكن التلاعب به من المتصفح).
-      const idToken = await user.getIdToken();
-
-      // مسار نسبي بدل رابط localhost ثابت: على Vercel يُخدَّم الفرونت والباكند من نفس الدومين
-      // (راجع vercel.json في جذر المشروع)، فالمسار النسبي يعمل تلقائياً في الإنتاج، ومحلياً
-      // يعمل عبر حقل "proxy" في frontend/package.json الذي يوجّه /api/* إلى localhost:5000.
-      const res = await fetch("/api/generate-content", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + idToken,
-        },
-        body: JSON.stringify({
-          businessDescription: businessDescription.trim(),
-          product: product.trim(),
-          offer: offer.trim(),
-          // Paid-only options. The server ignores them unless the real plan allows them.
-          language: tier === "free" ? "" : language,
-          tone: tier === "free" ? "" : tone,
-          goal: tier === "free" ? "" : goal,
-          platform: tier === "free" ? "" : platform,
-          sourceText: tier === "premium" ? sourceText.trim() : "",
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setResults(data.content);
-        setAdDocId(data.docId || "");
-        const first = (data.content || []).find((item) => !item.locked) || {};
-        const arr = (v) => (Array.isArray(v) ? v : []);
-        const pad = (v, n) => Array.from({ length: n }, (_, i) => arr(v)[i] || "");
-        setDesignTexts({
-          headline: first.headline || first.idea || "",
-          subheadline: first.subheadline || "",
-          badge: first.offerBadge || "",
-          highlight: first.highlight || "",
-          chips: pad(first.benefits, 3),
-          chipDetails: pad(first.benefitDetails, 3),
-          chipIcons: arr(first.benefitIcons),
-          qualities: pad(first.qualities, 4),
-          qualityIcons: arr(first.qualityIcons),
-          cta: first.cta || "",
-        });
-        designRunRef.current += 1; // drops any design still running for the previous ad
-        setDesignResult(null);
-        setDesignBusy(false);
-        setDesignError("");
-        setShowRedoEditor(false);
-        setQuotaInfo({
-          plan: data.plan,
-          generationsUsed: data.generationsUsed,
-          maxGenerationsPerMonth: data.maxGenerationsPerMonth,
-        });
-        // أي توليد ناجح يعني أن الحصة لم تُستنفد بعد
-        setQuotaExceeded(false);
-        setQuotaErrorMessage("");
-        refreshQuota();
-      } else if (data.errorCode === "QUOTA_EXCEEDED") {
-        // الخادم رفض الطلب فوراً قبل أي استدعاء لـ Claude API (الفحص المسبق الصارم في
-        // server.js) — نعطّل زر التوليد بشكل دائم ونعرض رسالة واضحة مترجمة بدل تنبيه (alert)
-        // عابر، حتى لا يستمر المستخدم بمحاولات لا طائل منها.
-        const message = getBackendErrorMessage(data, t);
-        setQuotaErrorMessage(message);
-        setQuotaExceeded(true);
-        // نحدّث أيضاً عرض الاستهلاك (quotaInfo) اعتماداً على المعطيات المرفقة مع رفض 429،
-        // حتى لو لم ينجح أي توليد بعد في هذه الجلسة.
-        if (data.errorParams) {
-          setQuotaInfo({
-            plan: data.errorParams.plan,
-            generationsUsed: data.errorParams.max,
-            maxGenerationsPerMonth: data.errorParams.max,
-          });
-        }
-      } else {
-        // بقية أنواع الأخطاء (تسجيل الدخول، وصف مفقود، خطأ خادم عام...) تبقى كتنبيه فوري كما
-        // كانت، مترجمة عبر errorCode أيضاً (راجع getBackendErrorMessage أعلاه).
-        alert(getBackendErrorMessage(data, t));
-      }
-    } catch (e) {
-      alert(t("app.alertBackendDown"));
-    }
-    setLoading(false);
+    const style = allowedStyles.includes(designFields.style) ? designFields.style : allowedStyles[0];
+    // الباكند يتحقق من الهوية والباقة الحقيقية والحدود الشهرية بنفسه اعتماداً على توكن Firebase —
+    // لا شيء مما يُرسَل من هنا يُعتمد عليه في التحقق (يمكن التلاعب به من المتصفح).
+    followJob(
+      {
+        businessDescription: businessDescription.trim(),
+        product: product.trim(),
+        offer: offer.trim(),
+        // Paid-only options. The server ignores them unless the real plan allows them.
+        language: tier === "free" ? "" : language,
+        tone: tier === "free" ? "" : tone,
+        goal: tier === "free" ? "" : goal,
+        platform: tier === "free" ? "" : platform,
+        sourceText: tier === "premium" ? sourceText.trim() : "",
+        includeDesign: wantsDesign,
+        ...(wantsDesign
+          ? {
+              photoId: designFields.chosenId,
+              style,
+              brandName: designFields.brandName.trim(),
+              color1: designFields.color1,
+              color2: designFields.color2,
+              customColors: designFields.customColors,
+              note: designFields.note.trim(),
+              logo: designFields.logo,
+            }
+          : {}),
+      },
+      ""
+    );
   };
 
   // شاشة تحميل بسيطة أثناء التحقق من حالة تسجيل الدخول
@@ -1482,6 +1484,33 @@ function AppContent() {
               </>
             )}
 
+            {/* What is left this month, straight from the server: ads, and ads with a design. */}
+            {quota && (
+              <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", margin: "0 0 1rem" }}>
+                {[
+                  { key: "ads", text: t("ads.adsLeft", { n: adsLeft, max: adsMax }), empty: adsLeft <= 0 },
+                  ...(designsMax > 0
+                    ? [{ key: "designs", text: t("ads.designsLeft", { n: Math.max(0, designsMax - quota.designsUsed), max: designsMax }), empty: designsMax - quota.designsUsed <= 0 }]
+                    : []),
+                ].map((c) => (
+                  <span
+                    key={c.key}
+                    style={{
+                      padding: "0.4rem 0.9rem",
+                      borderRadius: "999px",
+                      border: `1px solid ${c.empty ? "rgba(239,68,68,0.45)" : T.glassBorderGold}`,
+                      background: c.empty ? "rgba(239,68,68,0.10)" : "rgba(212,175,55,0.08)",
+                      color: c.empty ? "#FCA5A5" : T.goldLight,
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {c.text}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Ad design: the tick box sits right above the generate button. The fields open when it
                 is ticked. Plan and remaining designs come from the server (/api/quota). */}
             {realPlan === "free" ? (
@@ -1511,7 +1540,7 @@ function AppContent() {
                   <input
                     type="checkbox"
                     checked={includeDesign && designsLeft > 0}
-                    disabled={designsLeft <= 0}
+                    disabled={designsLeft <= 0 || loading}
                     onChange={(e) => setIncludeDesign(e.target.checked)}
                     style={{ width: "18px", height: "18px", accentColor: T.gold }}
                   />
@@ -1519,9 +1548,12 @@ function AppContent() {
                 </label>
                 {includeDesign && designsLeft > 0 && (
                   <DesignFields
+                    user={user}
                     t={t}
                     value={designFields}
                     onChange={setDesignFields}
+                    photos={photos}
+                    onPhotos={setPhotos}
                     allowedStyles={allowedStyles}
                     onLockedStyle={() => handleUpgradeClick("premium")}
                   />
@@ -1545,35 +1577,24 @@ function AppContent() {
               {loading ? t("ads.generating") : t("ads.generateBtn")}
             </button>
 
-            {/* "تجربة الوكالة النفسية متعددة المراحل": أثناء التحميل فقط، تُستبدل لوحة الانتظار
-                العامة برسائل نصية متتالية توحي بفريق بشري حقيقي يعمل خلف الكواليس (مدراء
-                استراتيجية، ثم كتّاب محتوى، ثم مسؤولو إبداع، ثم لمسة أخيرة) — كل رسالة تظهر
-                لمدة 2.5 ثانية (loadingStepIndex أعلاه)، مع تأثير تلاشٍ (agency-loading-step في
-                App.css) يُعاد تشغيله في كل تبديل بفضل key={loadingStepIndex} (تغيير الـ key
-                يجعل React يعامل العنصر كعنصر جديد فيعيد تشغيل حركة CSS من الصفر). */}
-            {loading && (
+            {/* One press does everything. While it runs: the steps, and the reminder to keep the
+                page open and not to press again (the button is disabled, and the server refuses
+                a second job for the same account anyway). */}
+            {loading && <GenerationProgress t={t} stage={jobStage} includeDesign={jobHasDesign} />}
+
+            {!loading && jobError && (
               <div
+                role="alert"
                 style={{
-                  marginTop: "1rem",
-                  padding: "1rem 1.25rem",
-                  borderRadius: "10px",
-                  background: AGENCY_COLORS.pearl,
-                  border: `1px solid ${AGENCY_COLORS.border}`,
+                  marginTop: "0.85rem",
+                  padding: "0.9rem 1rem",
+                  borderRadius: "8px",
+                  background: "rgba(239,68,68,0.10)",
+                  border: "1px solid rgba(239,68,68,0.35)",
                   textAlign: "center",
                 }}
               >
-                <p
-                  key={loadingStepIndex}
-                  className="agency-loading-step"
-                  style={{
-                    margin: 0,
-                    color: T.text,
-                    fontWeight: "600",
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {t(`app.loadingStep${loadingStepIndex + 1}`)}
-                </p>
+                <p style={{ margin: 0, color: "#FCA5A5", fontSize: "0.9rem", fontWeight: "600" }}>{jobError}</p>
               </div>
             )}
 
@@ -1615,20 +1636,6 @@ function AppContent() {
               </div>
             )}
 
-            {quotaInfo && (
-              <p style={{ textAlign: "center", color: T.textFaint, fontSize: "0.85rem", marginTop: "0.75rem", marginBottom: 0 }}>
-                {t("app.quotaUsed", {
-                  used: quotaInfo.generationsUsed,
-                  max: quotaInfo.maxGenerationsPerMonth,
-                  plan: t("plans." + quotaInfo.plan) || quotaInfo.plan,
-                })}
-              </p>
-            )}
-            {quota && quota.designsMax > 0 && (
-              <p style={{ textAlign: "center", color: T.textFaint, fontSize: "0.85rem", marginTop: "0.35rem", marginBottom: 0 }}>
-                {t("ads.designsUsed", { used: quota.designsUsed, max: quota.designsMax })}
-              </p>
-            )}
           </div>
 
           {/* 3 بطاقات ميزات مقفلة (Locked Feature Cards) — TASK 1 (إصلاح الظهور): نُقلت لتظهر
@@ -1737,8 +1744,8 @@ function AppContent() {
           )}
 
           {/* Result: one integrated ad, shown as a social post — the design on top, the caption
-              and hashtags under it. Above it, the design editor (texts are editable before the
-              design is generated, and again for the one free redo). */}
+              and hashtags under it. Under it, the text editor: every change is redrawn on the
+              design at once, in the browser, at no cost. */}
           {ad && (
             <div style={{ maxWidth: "920px", margin: "0 auto" }}>
               <h2
@@ -1753,175 +1760,6 @@ function AppContent() {
                 {t("ads.outputHeading")}
               </h2>
 
-              {realPlan !== "free" && (includeDesign || designResult) && (!designResult || showRedoEditor) && (
-                <div
-                  className="agency-card"
-                  style={{
-                    background: T.glass,
-                    border: `1px solid ${T.glassBorderGold}`,
-                    borderRadius: "12px",
-                    padding: "1.5rem",
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  <h3 style={{ margin: "0 0 0.35rem", color: T.text }}>
-                    {isRedo ? t("ads.redoPanelTitle") : t("ads.designPanelTitle")}
-                  </h3>
-                  <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.85rem" }}>{t("ads.designPanelHint")}</p>
-                  {designBusy ? (
-                    <p className="agency-loading-step" style={{ margin: 0, color: T.text, fontWeight: 600, textAlign: "center" }}>
-                      {t("ads.designWorking")}
-                    </p>
-                  ) : (
-                    <>
-                      {designError && (
-                        <p
-                          style={{
-                            margin: "0 0 1rem",
-                            padding: "0.8rem 1rem",
-                            borderRadius: "8px",
-                            background: "rgba(239,68,68,0.10)",
-                            border: "1px solid rgba(239,68,68,0.35)",
-                            color: "#FCA5A5",
-                            fontSize: "0.9rem",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {designFailureMessage(designError, t)}
-                        </p>
-                      )}
-                      <label className="agency-form-label">{t("ads.headlineEditLabel")}</label>
-                      <input
-                        type="text"
-                        dir="auto"
-                        value={designTexts.headline}
-                        maxLength={120}
-                        onChange={(e) => setDesignTexts({ ...designTexts, headline: e.target.value })}
-                        style={adInputStyle}
-                      />
-                      <label className="agency-form-label">{t("ads.subheadlineEditLabel")}</label>
-                      <input
-                        type="text"
-                        dir="auto"
-                        value={designTexts.subheadline}
-                        maxLength={140}
-                        onChange={(e) => setDesignTexts({ ...designTexts, subheadline: e.target.value })}
-                        style={adInputStyle}
-                      />
-                      <label className="agency-form-label">{t("ads.chipsEditLabel")}</label>
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(140px, 1fr) minmax(180px, 2fr)", gap: "0 0.6rem" }}>
-                          <input
-                            type="text"
-                            dir="auto"
-                            value={designTexts.chips[i] || ""}
-                            maxLength={32}
-                            onChange={(e) => {
-                              const chips = designTexts.chips.slice();
-                              chips[i] = e.target.value;
-                              setDesignTexts({ ...designTexts, chips });
-                            }}
-                            style={adInputStyle}
-                          />
-                          <input
-                            type="text"
-                            dir="auto"
-                            value={designTexts.chipDetails[i] || ""}
-                            maxLength={60}
-                            placeholder={t("ads.benefitDetailPlaceholder")}
-                            onChange={(e) => {
-                              const chipDetails = designTexts.chipDetails.slice();
-                              chipDetails[i] = e.target.value;
-                              setDesignTexts({ ...designTexts, chipDetails });
-                            }}
-                            style={adInputStyle}
-                          />
-                        </div>
-                      ))}
-                      <label className="agency-form-label">{t("ads.qualitiesEditLabel")}</label>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0 0.6rem" }}>
-                        {[0, 1, 2, 3].map((i) => (
-                          <input
-                            key={i}
-                            type="text"
-                            dir="auto"
-                            value={designTexts.qualities[i] || ""}
-                            maxLength={24}
-                            onChange={(e) => {
-                              const qualities = designTexts.qualities.slice();
-                              qualities[i] = e.target.value;
-                              setDesignTexts({ ...designTexts, qualities });
-                            }}
-                            style={{ ...adInputStyle, marginBottom: "0.4rem" }}
-                          />
-                        ))}
-                      </div>
-                      <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.8rem" }}>{t("ads.qualitiesHint")}</p>
-                      <label className="agency-form-label">{t("ads.highlightEditLabel")}</label>
-                      <input
-                        type="text"
-                        dir="auto"
-                        value={designTexts.highlight}
-                        maxLength={24}
-                        onChange={(e) => setDesignTexts({ ...designTexts, highlight: e.target.value })}
-                        style={adInputStyle}
-                      />
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0 0.8rem" }}>
-                        <div>
-                          <label className="agency-form-label">{t("ads.badgeEditLabel")}</label>
-                          <input
-                            type="text"
-                            dir="auto"
-                            value={designTexts.badge}
-                            maxLength={24}
-                            onChange={(e) => setDesignTexts({ ...designTexts, badge: e.target.value })}
-                            placeholder={t("ads.badgePlaceholder")}
-                            style={adInputStyle}
-                          />
-                        </div>
-                        <div>
-                          <label className="agency-form-label">{t("ads.ctaEditLabel")}</label>
-                          <input
-                            type="text"
-                            dir="auto"
-                            value={designTexts.cta}
-                            maxLength={40}
-                            onChange={(e) => setDesignTexts({ ...designTexts, cta: e.target.value })}
-                            style={adInputStyle}
-                          />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleGenerateDesign}
-                        disabled={!canStartDesign}
-                        className="agency-btn-primary"
-                        style={{
-                          width: "100%",
-                          padding: "0.9rem",
-                          borderRadius: "8px",
-                          fontSize: "1rem",
-                          cursor: canStartDesign ? "pointer" : "not-allowed",
-                          opacity: canStartDesign ? 1 : 0.6,
-                        }}
-                      >
-                        {isRedo ? t("ads.redoConfirmBtn") : t("ads.generateDesignBtn")}
-                      </button>
-                      {!designFields.photo && (
-                        <p style={{ margin: "0.6rem 0 0", color: T.textFaint, fontSize: "0.85rem", textAlign: "center" }}>
-                          {t("ads.photoRequired")}
-                        </p>
-                      )}
-                      {!isRedo && designsLeft <= 0 && (
-                        <p style={{ margin: "0.6rem 0 0", color: T.textFaint, fontSize: "0.85rem", textAlign: "center" }}>
-                          {t("ads.designQuotaExceeded")}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
               {designResult ? (
                 <>
                   <DesignGallery
@@ -1932,26 +1770,138 @@ function AppContent() {
                     post={{ caption: ad.caption || "", hashtags: ad.hashtags || [] }}
                     t={t}
                     showVideoLink
+                    footer={
+                      <p style={{ textAlign: "center", margin: "0.4rem 0 0" }}>
+                        <Link to="/history?tab=designs" style={{ color: T.goldLight, fontSize: "0.88rem", fontWeight: 600 }}>
+                          {t("ads.openMyDesigns")}
+                        </Link>
+                      </p>
+                    }
                   />
-                  {!showRedoEditor && (
-                    <div style={{ textAlign: "center", marginTop: "1rem" }}>
-                      {designResult.redoAvailable ? (
-                        <button
-                          type="button"
-                          className="agency-btn-outline"
-                          onClick={() => {
-                            setDesignError("");
-                            setShowRedoEditor(true);
-                          }}
-                          style={{ padding: "0.65rem 1.4rem", borderRadius: "8px", cursor: "pointer" }}
-                        >
-                          ↻ {t("ads.redoBtn")}
-                        </button>
-                      ) : (
-                        <span style={{ color: T.textFaint, fontSize: "0.82rem" }}>{t("ads.redoUsed")}</span>
+
+                  <div
+                    className="agency-card"
+                    style={{
+                      background: T.glass,
+                      border: `1px solid ${T.glassBorderGold}`,
+                      borderRadius: "12px",
+                      padding: "1.5rem",
+                      marginTop: "1.5rem",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.75rem", flexWrap: "wrap" }}>
+                      <h3 style={{ margin: "0 0 0.35rem", color: T.text }}>{t("ads.editTitle")}</h3>
+                      {saveState && (
+                        <span style={{ fontSize: "0.8rem", fontWeight: 600, color: saveState === "error" ? "#FCA5A5" : T.textFaint }}>
+                          {t(saveState === "saved" ? "ads.editSaved" : saveState === "error" ? "ads.editSaveError" : "ads.editSaving")}
+                        </span>
                       )}
                     </div>
-                  )}
+                    <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.85rem" }}>{t("ads.editHint")}</p>
+                    <label className="agency-form-label">{t("ads.headlineEditLabel")}</label>
+                    <input
+                      type="text"
+                      dir="auto"
+                      value={editTexts.headline}
+                      maxLength={120}
+                      onChange={(e) => updateDesignTexts({ headline: e.target.value })}
+                      style={adInputStyle}
+                    />
+                    <label className="agency-form-label">{t("ads.subheadlineEditLabel")}</label>
+                    <input
+                      type="text"
+                      dir="auto"
+                      value={editTexts.subheadline}
+                      maxLength={140}
+                      onChange={(e) => updateDesignTexts({ subheadline: e.target.value })}
+                      style={adInputStyle}
+                    />
+                    <label className="agency-form-label">{t("ads.chipsEditLabel")}</label>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(140px, 1fr) minmax(180px, 2fr)", gap: "0 0.6rem" }}>
+                        <input
+                          type="text"
+                          dir="auto"
+                          value={editTexts.chips[i] || ""}
+                          maxLength={32}
+                          onChange={(e) => {
+                            const chips = editTexts.chips.slice();
+                            chips[i] = e.target.value;
+                            updateDesignTexts({ chips });
+                          }}
+                          style={adInputStyle}
+                        />
+                        <input
+                          type="text"
+                          dir="auto"
+                          value={editTexts.chipDetails[i] || ""}
+                          maxLength={60}
+                          placeholder={t("ads.benefitDetailPlaceholder")}
+                          onChange={(e) => {
+                            const chipDetails = editTexts.chipDetails.slice();
+                            chipDetails[i] = e.target.value;
+                            updateDesignTexts({ chipDetails });
+                          }}
+                          style={adInputStyle}
+                        />
+                      </div>
+                    ))}
+                    <label className="agency-form-label">{t("ads.qualitiesEditLabel")}</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0 0.6rem" }}>
+                      {[0, 1, 2, 3].map((i) => (
+                        <input
+                          key={i}
+                          type="text"
+                          dir="auto"
+                          value={editTexts.qualities[i] || ""}
+                          maxLength={24}
+                          onChange={(e) => {
+                            const qualities = editTexts.qualities.slice();
+                            qualities[i] = e.target.value;
+                            updateDesignTexts({ qualities });
+                          }}
+                          style={{ ...adInputStyle, marginBottom: "0.4rem" }}
+                        />
+                      ))}
+                    </div>
+                    <p style={{ margin: "0 0 1rem", color: T.textFaint, fontSize: "0.8rem" }}>{t("ads.qualitiesHint")}</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0 0.8rem" }}>
+                      <div>
+                        <label className="agency-form-label">{t("ads.badgeEditLabel")}</label>
+                        <input
+                          type="text"
+                          dir="auto"
+                          value={editTexts.badge}
+                          maxLength={24}
+                          onChange={(e) => updateDesignTexts({ badge: e.target.value })}
+                          placeholder={t("ads.badgePlaceholder")}
+                          style={adInputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label className="agency-form-label">{t("ads.highlightEditLabel")}</label>
+                        <input
+                          type="text"
+                          dir="auto"
+                          value={editTexts.highlight}
+                          maxLength={24}
+                          onChange={(e) => updateDesignTexts({ highlight: e.target.value })}
+                          style={adInputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label className="agency-form-label">{t("ads.ctaEditLabel")}</label>
+                        <input
+                          type="text"
+                          dir="auto"
+                          value={editTexts.cta}
+                          maxLength={40}
+                          onChange={(e) => updateDesignTexts({ cta: e.target.value })}
+                          style={adInputStyle}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <div style={{ display: "flex", justifyContent: "center" }}>
@@ -2010,18 +1960,18 @@ function AppContent() {
                 }}
               >
                 {[
-                  { key: "headline", label: t("ads.headlineLabel"), text: ad.headline || ad.idea || "" },
-                  { key: "subheadline", label: t("ads.subheadlineLabel"), text: ad.subheadline || "" },
+                  { key: "headline", label: t("ads.headlineLabel"), text: shown.headline },
+                  { key: "subheadline", label: t("ads.subheadlineLabel"), text: shown.subheadline },
                   {
                     key: "benefits",
                     label: t("ads.benefitsLabel"),
-                    text: (ad.benefits || [])
-                      .map((b, i) => (ad.benefitDetails && ad.benefitDetails[i] ? b + " — " + ad.benefitDetails[i] : b))
-                      .join("\n"),
+                    text: shown.benefits.map((b, i) => (shown.benefitDetails[i] ? b + " — " + shown.benefitDetails[i] : b)).join("\n"),
                   },
-                  { key: "qualities", label: t("ads.qualitiesLabel"), text: (ad.qualities || []).join(" · ") },
-                  { key: "badge", label: t("ads.badgeLabel"), text: ad.offerBadge || "" },
-                  { key: "cta", label: t("ads.ctaLabel"), text: ad.cta || "" },
+                  { key: "qualities", label: t("ads.qualitiesLabel"), text: shown.qualities.join(" · ") },
+                  { key: "badge", label: t("ads.badgeLabel"), text: shown.badge },
+                  { key: "cta", label: t("ads.ctaLabel"), text: shown.cta },
+                  { key: "caption", label: t("ads.captionLabel"), text: ad.caption || "" },
+                  { key: "hashtags", label: t("ads.hashtagsLabel"), text: (ad.hashtags || []).join(" ") },
                 ]
                   .filter((row) => row.text)
                   .map((row, i) => (
