@@ -22,8 +22,8 @@ export const agencyTranslations = {
   en: {
     self: {
       eyebrow: "Self-Service",
-      title: "AI Content Planning & Strategy",
-      sub: "Describe your business and get a ready-to-post content plan in minutes. Monthly plans, you run the tool yourself.",
+      title: "Professional Content Planning & Strategy",
+      sub: "Describe your business and get a ready-to-post content plan in minutes. You run the tool yourself.",
     },
     // تسميات أسعار باقات المولّد. الأرقام نفسها معرَّفة في PLAN_PRICES داخل App.js
     // (مكان واحد فقط)، وهذه النصوص هي ما يُترجم.
@@ -50,7 +50,7 @@ export const agencyTranslations = {
       perMonth: "/mo",
     },
     pricing: {
-      eyebrow: "AI Video Software",
+      eyebrow: "Professional Video Ads",
       title: "Done-For-You Video Ads",
       sub: "We produce the ads for you from scratch — scripting, editing, voiceover and copy included. One-time payment, no subscription.",
       popular: "Most Popular",
@@ -169,8 +169,8 @@ export const agencyTranslations = {
   ar: {
     self: {
       eyebrow: "خدمة ذاتية",
-      title: "تخطيط المحتوى والاستراتيجية بالذكاء الاصطناعي",
-      sub: "صِف مشروعك واحصل على خطة محتوى جاهزة للنشر في دقائق. اشتراك شهري، وأنت من يشغّل الأداة بنفسك.",
+      title: "تخطيط احترافي للمحتوى والاستراتيجية",
+      sub: "صِف مشروعك واحصل على خطة محتوى جاهزة للنشر في دقائق. أنت من يشغّل الأداة بنفسك.",
     },
     checkout: {
       eyebrow: "دفع آمن",
@@ -193,7 +193,7 @@ export const agencyTranslations = {
       perMonth: "/شهرياً",
     },
     pricing: {
-      eyebrow: "برنامج فيديو بالذكاء الاصطناعي",
+      eyebrow: "إعلانات فيديو احترافية",
       title: "إعلانات فيديو تُنفَّذ لك بالكامل",
       sub: "ننتج لك الإعلانات من الصفر — السيناريو والمونتاج والتعليق الصوتي والنصوص الإعلانية. دفعة واحدة، بلا اشتراك.",
       popular: "الأكثر طلباً",
@@ -309,8 +309,8 @@ export const agencyTranslations = {
   fr: {
     self: {
       eyebrow: "En autonomie",
-      title: "Planification de contenu & stratégie par IA",
-      sub: "Décrivez votre activité et obtenez un plan de contenu prêt à publier en quelques minutes. Abonnement mensuel, vous pilotez l'outil vous-même.",
+      title: "Planification de contenu & stratégie professionnelles",
+      sub: "Décrivez votre activité et obtenez un plan de contenu prêt à publier en quelques minutes. Vous pilotez l'outil vous-même.",
     },
     checkout: {
       eyebrow: "Paiement sécurisé",
@@ -333,7 +333,7 @@ export const agencyTranslations = {
       perMonth: "/mois",
     },
     pricing: {
-      eyebrow: "Logiciel vidéo IA",
+      eyebrow: "Publicités vidéo professionnelles",
       title: "Publicités vidéo clés en main",
       sub: "Nous produisons vos publicités de A à Z — scénario, montage, voix off et textes inclus. Paiement unique, sans abonnement.",
       popular: "Le plus demandé",
@@ -453,8 +453,8 @@ export const agencyTranslations = {
   es: {
     self: {
       eyebrow: "Autoservicio",
-      title: "Planificación de contenido y estrategia con IA",
-      sub: "Describe tu negocio y obtén un plan de contenido listo para publicar en minutos. Planes mensuales; la herramienta la manejas tú.",
+      title: "Planificación de contenido y estrategia profesional",
+      sub: "Describe tu negocio y obtén un plan de contenido listo para publicar en minutos. La herramienta la manejas tú.",
     },
     checkout: {
       eyebrow: "Pago seguro",
@@ -477,7 +477,7 @@ export const agencyTranslations = {
       perMonth: "/mes",
     },
     pricing: {
-      eyebrow: "Software de vídeo con IA",
+      eyebrow: "Anuncios de vídeo profesionales",
       title: "Anuncios en vídeo llave en mano",
       sub: "Producimos tus anuncios desde cero: guion, edición, locución y textos incluidos. Pago único, sin suscripción.",
       popular: "El más solicitado",
@@ -597,8 +597,8 @@ export const agencyTranslations = {
   it: {
     self: {
       eyebrow: "In autonomia",
-      title: "Pianificazione dei contenuti e strategia con l'IA",
-      sub: "Descrivi la tua attività e ottieni un piano editoriale pronto da pubblicare in pochi minuti. Piani mensili, lo strumento lo usi tu.",
+      title: "Pianificazione dei contenuti e strategia professionale",
+      sub: "Descrivi la tua attività e ottieni un piano editoriale pronto da pubblicare in pochi minuti. Lo strumento lo usi tu.",
     },
     checkout: {
       eyebrow: "Pagamento sicuro",
@@ -621,7 +621,7 @@ export const agencyTranslations = {
       perMonth: "/mese",
     },
     pricing: {
-      eyebrow: "Software video con IA",
+      eyebrow: "Annunci video professionali",
       title: "Video pubblicitari chiavi in mano",
       sub: "Produciamo noi i tuoi annunci da zero: sceneggiatura, montaggio, voce fuori campo e testi inclusi. Pagamento unico, senza abbonamento.",
       popular: "Il più richiesto",
@@ -752,9 +752,9 @@ export const agencyTranslations = {
 const CURRENT_OFFER = {
   en: {
     pricing: {
-      eyebrow: "AI Video Software",
+      eyebrow: "Professional Video Ads",
       title: "Video Ad Packages",
-      sub: "Upload your product photos and choose a package. Our automated AI pipeline produces your ad assets. One-time payment per package, no subscription.",
+      sub: "Upload your product photos and choose a package. Our automated pipeline produces your ad assets. One-time payment per package, no subscription.",
       notIncluded: "Not included",
     },
     packages: {
@@ -812,7 +812,7 @@ const CURRENT_OFFER = {
       },
       results: {
         q: "Do you guarantee results?",
-        a: "No. The assets are generated by AI and can contain imperfections, so review them before you publish. Results also depend on your offer, price, targeting and budget.",
+        a: "No. The assets are generated automatically and can contain imperfections, so review them before you publish. Results also depend on your offer, price, targeting and budget.",
       },
       refunds: {
         q: "Can I get a refund?",
@@ -827,9 +827,9 @@ const CURRENT_OFFER = {
 
   ar: {
     pricing: {
-      eyebrow: "برنامج فيديو بالذكاء الاصطناعي",
+      eyebrow: "إعلانات فيديو احترافية",
       title: "باقات إعلانات الفيديو",
-      sub: "ارفع صور منتجك واختر الباقة، ونظامنا الآلي بالذكاء الاصطناعي ينتج موادك الإعلانية. دفعة واحدة لكل باقة، بلا اشتراك.",
+      sub: "ارفع صور منتجك واختر الباقة، ونظامنا الآلي ينتج موادك الإعلانية. دفعة واحدة لكل باقة، بلا اشتراك.",
       notIncluded: "غير مشمول",
     },
     packages: {
@@ -887,7 +887,7 @@ const CURRENT_OFFER = {
       },
       results: {
         q: "هل تضمنون النتائج؟",
-        a: "لا. المواد تُولَّد بالذكاء الاصطناعي وقد تحتوي على عيوب، لذا راجعها قبل النشر. والنتائج تعتمد أيضاً على عرضك وسعرك واستهدافك وميزانيتك.",
+        a: "لا. المواد تُولَّد آلياً وقد تحتوي على عيوب، لذا راجعها قبل النشر. والنتائج تعتمد أيضاً على عرضك وسعرك واستهدافك وميزانيتك.",
       },
       refunds: {
         q: "هل يمكنني استرجاع أموالي؟",
@@ -902,9 +902,9 @@ const CURRENT_OFFER = {
 
   fr: {
     pricing: {
-      eyebrow: "Logiciel vidéo IA",
+      eyebrow: "Publicités vidéo professionnelles",
       title: "Forfaits publicités vidéo",
-      sub: "Importez les photos de votre produit et choisissez un forfait. Notre pipeline IA automatisé produit vos supports publicitaires. Paiement unique par forfait, sans abonnement.",
+      sub: "Importez les photos de votre produit et choisissez un forfait. Notre pipeline automatisé produit vos supports publicitaires. Paiement unique par forfait, sans abonnement.",
       notIncluded: "Non inclus",
     },
     packages: {
@@ -962,7 +962,7 @@ const CURRENT_OFFER = {
       },
       results: {
         q: "Garantissez-vous des résultats ?",
-        a: "Non. Les contenus sont générés par IA et peuvent comporter des imperfections : vérifiez-les avant de les publier. Les résultats dépendent aussi de votre offre, de votre prix, de votre ciblage et de votre budget.",
+        a: "Non. Les contenus sont générés automatiquement et peuvent comporter des imperfections : vérifiez-les avant de les publier. Les résultats dépendent aussi de votre offre, de votre prix, de votre ciblage et de votre budget.",
       },
       refunds: {
         q: "Puis-je être remboursé ?",
@@ -977,9 +977,9 @@ const CURRENT_OFFER = {
 
   es: {
     pricing: {
-      eyebrow: "Software de vídeo con IA",
+      eyebrow: "Anuncios de vídeo profesionales",
       title: "Paquetes de anuncios en vídeo",
-      sub: "Sube las fotos de tu producto y elige un paquete. Nuestro sistema automatizado de IA produce tus materiales publicitarios. Pago único por paquete, sin suscripción.",
+      sub: "Sube las fotos de tu producto y elige un paquete. Nuestro sistema automatizado produce tus materiales publicitarios. Pago único por paquete, sin suscripción.",
       notIncluded: "No incluido",
     },
     packages: {
@@ -1037,7 +1037,7 @@ const CURRENT_OFFER = {
       },
       results: {
         q: "¿Garantizáis resultados?",
-        a: "No. Los materiales se generan con IA y pueden tener imperfecciones, así que revísalos antes de publicarlos. Los resultados dependen también de tu oferta, tu precio, tu segmentación y tu presupuesto.",
+        a: "No. Los materiales se generan automáticamente y pueden tener imperfecciones, así que revísalos antes de publicarlos. Los resultados dependen también de tu oferta, tu precio, tu segmentación y tu presupuesto.",
       },
       refunds: {
         q: "¿Puedo pedir un reembolso?",
@@ -1052,9 +1052,9 @@ const CURRENT_OFFER = {
 
   it: {
     pricing: {
-      eyebrow: "Software video con IA",
+      eyebrow: "Annunci video professionali",
       title: "Pacchetti di annunci video",
-      sub: "Carica le foto del tuo prodotto e scegli un pacchetto. Il nostro sistema automatizzato di IA produce i tuoi materiali pubblicitari. Pagamento unico per pacchetto, senza abbonamento.",
+      sub: "Carica le foto del tuo prodotto e scegli un pacchetto. Il nostro sistema automatizzato produce i tuoi materiali pubblicitari. Pagamento unico per pacchetto, senza abbonamento.",
       notIncluded: "Non incluso",
     },
     packages: {
@@ -1112,7 +1112,7 @@ const CURRENT_OFFER = {
       },
       results: {
         q: "Garantite dei risultati?",
-        a: "No. I materiali sono generati dall'IA e possono contenere imperfezioni, quindi controllali prima di pubblicarli. I risultati dipendono anche dalla tua offerta, dal prezzo, dal targeting e dal budget.",
+        a: "No. I materiali sono generati automaticamente e possono contenere imperfezioni, quindi controllali prima di pubblicarli. I risultati dipendono anche dalla tua offerta, dal prezzo, dal targeting e dal budget.",
       },
       refunds: {
         q: "Posso ottenere un rimborso?",
