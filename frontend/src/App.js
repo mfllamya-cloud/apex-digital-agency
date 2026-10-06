@@ -879,24 +879,16 @@ function AppContent() {
   };
 
   // شاشة تحميل بسيطة أثناء التحقق من حالة تسجيل الدخول
+  // While Firebase is still resolving the session, show the public landing content
+  // instead of a blank "Loading..." screen. Payment-provider reviewers and crawlers
+  // arrive signed out; they must see the description, prices and legal links at once,
+  // even if the auth check is slow or blocked on their network.
   if (!authChecked) {
     return (
       <>
         <LanguageSwitcher />
-        <div
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "linear-gradient(135deg, #667eea, #764ba2)",
-            color: "white",
-            fontFamily: "system-ui",
-            fontSize: "1.1rem",
-          }}
-        >
-          {t("app.loading")}
-        </div>
+        <PublicLanding />
+        <PublicFooter />
       </>
     );
   }
