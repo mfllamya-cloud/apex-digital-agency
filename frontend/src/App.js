@@ -11,8 +11,6 @@ import Portfolio from "./Portfolio";
 import FAQ from "./FAQ";
 import Reveal from "./Reveal";
 import { T } from "./theme";
-import PaymentModal from "./PaymentModal";
-import { PADDLE_PRICE_IDS } from "./paddle";
 import PublicLanding, { PublicFooter } from "./PublicLanding";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
@@ -83,15 +81,6 @@ const PLAN_PRICES = { free: 0, pro: 29, premium: 59 };
 // (PayPal: custom_id، Stripe Payment Link: client_reference_id، Paddle: passthrough).
 // اتركيه "" لعدم إضافة أي شيء إلى الرابط.
 // ---------------------------------------------------------------------------
-const GENERATOR_PAYMENT_LINKS = {
-  // ⚠️ paddle يبقى فارغاً: الدفع بالبطاقة يمر عبر Paddle.js ومعرّفات الأسعار في
-  // paddle.js (PADDLE_PRICE_IDS.generator)، لا عبر رابط. املئي هذا الحقل فقط لو
-  // انتقلتِ لاحقاً إلى hosted checkout — عندها يسبق الرابط Paddle.js.
-  pro: { paddle: "", crypto: "" }, // $29/mo → pri_01m3sndmj6tyccjqf8k7xcjmrx
-  premium: { paddle: "", crypto: "" }, // $59/mo → pri_01m3sn87hy12w4adv58bwzfj34
-};
-
-const GENERATOR_CHECKOUT_UID_PARAM = "";
 
 // "Free" / "$29/mo" حسب لغة الواجهة. النصوص من agency.plans في i18nAgency.js.
 function planPriceLabel(tierId, t) {
@@ -113,7 +102,7 @@ function planPriceLabel(tierId, t) {
 // القيمة false تخفيها بالكامل عن الصفحة العامة دون أي تعديل آخر — المولّد والباكند
 // يظلان يعملان على نفس الباقات في الحالتين (المصدر الملزم هو PLAN_LIMITS في
 // backend/server.js).
-const SHOW_LEGACY_TIER_UI = true;
+const SHOW_LEGACY_TIER_UI = false;
 
 // ---------------------------------------------------------------------------
 // إظهار/إخفاء قسم "معرض الأعمال" (The formats we build) — قسم <Portfolio /> كاملاً.
@@ -680,8 +669,6 @@ function AppContent() {
 
   // حالة نافذة الدفع — showPaymentModal يتحكم في ظهورها، وcheckoutPlan يحفظ
   // الباقة التي ضغط المستخدم على زر ترقيتها ("pro" أو "premium") لتُسجَّل مع الطلب في Firestore.
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [checkoutPlan, setCheckoutPlan] = useState("pro");
 
   // ⚠️ سقالة "Authentication UI" (مموَّهة/mock بالكامل حالياً — راجع التعليق الطويل أعلى
   // LoginModal لكل التفاصيل والمخاطر). isAuthenticated منفصل عمداً عن `user` الحقيقي القادم
@@ -775,7 +762,7 @@ function AppContent() {
   // متغيرات .env (REACT_APP_LEMON_PRO_URL / REACT_APP_LEMON_PREMIUM_URL) تبقى محفوظة كما هي
   // في frontend/.env دون أي حذف أو تغيير. زر معاينة الباقات الثلاث في الأعلى (handleSelectTier
   // مباشرة) يبقى كما هو دون أي تغيير — لا يزال يُستخدَم فقط لمعاينة شكل الواجهة محلياً.
-  const handleUpgradeClick = (targetTier) => {
+  const handleUpgradeClick = () => {
     // احتياطي دفاعي بحت: عملياً هذه الأزرار لا تظهر أصلاً إلا بعد تسجيل الدخول (AppContent
     // تعرض شاشة Auth بدل كل هذا لو !user)، لكن نتحقق هنا أيضاً تحسباً لأي استدعاء غير متوقَّع
     // (مثلاً أثناء لحظة انتقالية قبل اكتمال onAuthStateChanged).
@@ -786,8 +773,14 @@ function AppContent() {
 
     // فتح نافذة اختيار وسيلة الدفع. ضغطة واحدة لا يمكن أن تذهب إلى بوابتين، لذلك
     // اختيار الباقة هنا واختيار الوسيلة داخل النافذة.
-    setCheckoutPlan(targetTier || "pro");
-    setShowPaymentModal(true);
+    // The monthly generator plans are retired: every upgrade button now leads to the
+    // one-time packages ($49 / $200 / $500) in the pricing section further down the page.
+    const pricingSection = document.getElementById("pricing");
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.location.assign("/pricing");
+    }
   };
 
   const isDescriptionValid = businessDescription.trim().length > 0;
@@ -949,11 +942,6 @@ function AppContent() {
               <span style={{ color: "white", fontSize: "0.85rem", fontWeight: "600" }}>{t("app.statusOnline")}</span>
               <span style={{ color: "rgba(255,255,255,0.5)" }}>•</span>
               <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.85rem" }}>{user.email}</span>
-              {profile && (
-                <span style={{ padding: "0.25rem 0.75rem", borderRadius: "999px", background: "rgba(255,255,255,0.15)", color: "white", fontSize: "0.8rem", fontWeight: "600" }}>
-                  {t("app.planBadge", { plan: t("plans." + profile.plan) || profile.plan })}
-                </span>
-              )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
               <Link
@@ -994,7 +982,7 @@ function AppContent() {
               مربوط بـ SHOW_LEGACY_TIER_UI عمداً: لو أُخفيت باقات المولّد مستقبلاً، يختفي
               عنوانها معها بدل أن يبقى عنوان معلّق فوق قسم غير موجود.
               --------------------------------------------------------------------- */}
-          {SHOW_LEGACY_TIER_UI && (
+          {(
             <Reveal>
               <div style={{ maxWidth: "720px", margin: "0 auto 2.5rem", textAlign: "center" }}>
                 <span className="apex-eyebrow">{t("agency.self.eyebrow")}</span>
@@ -1344,6 +1332,7 @@ function AppContent() {
                 على الحقل يفتح فوراً نافذة "VIP Lead Capture" بدل فتح القائمة المنسدلة فعلياً —
                 عنصر overlay شفاف فوق select المعطَّل (disabled) هو ما يعترض النقرة، لأن
                 المتصفحات تتجاهل أحداث onClick على عنصر select معطَّل مباشرة. */}
+            {(SHOW_LEGACY_TIER_UI || tier === "premium") && (
             <div style={{ marginBottom: "1rem" }}>
               <label className="agency-form-label">
                 {t("pro.visualStyleLabel")}
@@ -1401,6 +1390,7 @@ function AppContent() {
                 )}
               </div>
             </div>
+            )}
 
             {/* إعادة تدوير المحتوى — ميزة PREMIUM فقط: يلصق المستخدم مقالاً أو سكريبت فيديو
                 فيبني الخادم المنشورات من هذا النص بدل الاكتفاء بوصف المشروع القصير. */}
@@ -1688,6 +1678,8 @@ function AppContent() {
 
                 </div>
 
+                {SHOW_LEGACY_TIER_UI && (
+                <>
                 {/* تجربة تشويقية عالية التحويل: 3 بطاقات هيكلية وهمية (Skeleton) — بيانات مزيّفة
                     ثابتة، وليست من lockedDays القادمة من الخادم — بتأثير ضبابي خفيف (blur)، وفوقها
                     قفل مع عبارة توضّح أن باقي الخطة جاهزة بانتظار الترقية. */}
@@ -1807,6 +1799,8 @@ function AppContent() {
                     box-shadow: 0 10px 24px rgba(16, 185, 129, 0.45);
                   }
                 `}</style>
+                </>
+                )}
               </div>
             );
           })()}
@@ -2025,15 +2019,6 @@ function AppContent() {
         </div>
       </div>
 
-      <PaymentModal
-        open={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        planName={t("tiers." + checkoutPlan)}
-        priceLabel={planPriceLabel(checkoutPlan, t)}
-        links={GENERATOR_PAYMENT_LINKS[checkoutPlan]}
-        paddlePriceId={PADDLE_PRICE_IDS.generator[checkoutPlan]}
-        uidParam={GENERATOR_CHECKOUT_UID_PARAM}
-      />
 
       <LoginModal
         open={showLoginModal}

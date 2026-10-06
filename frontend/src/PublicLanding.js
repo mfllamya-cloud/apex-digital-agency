@@ -53,7 +53,7 @@ const STEPS = [
   },
   {
     title: "2. The software does the creative work",
-    body: "Our automated AI pipeline writes the hook and script, builds the scenes around your real product and records the voiceover.",
+    body: "Our automated pipeline writes the hook and script, builds the scenes around your real product and records the voiceover.",
   },
   {
     title: "3. Receive your assets",
@@ -112,7 +112,7 @@ export default function PublicLanding() {
             textTransform: "uppercase",
           }}
         >
-          AI Video Software
+          Professional Video Ads
         </p>
         <h1 style={{ margin: "14px 0 0", fontSize: "clamp(2rem, 5vw, 3rem)", lineHeight: 1.15, fontWeight: 700 }}>
           Product video ads, generated automatically from your photos

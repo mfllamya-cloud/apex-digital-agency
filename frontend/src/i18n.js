@@ -18,11 +18,11 @@ export const translations = {
   en: {
     app: {
       title: "Apex Studio Pro",
-      subtitle: "AI video ads and content planning for online sellers",
+      subtitle: "Professional video ads and content planning for online sellers",
       loading: "Loading...",
       logout: "Log out",
       myProjects: "My Projects",
-      statusOnline: "AI Engine: Online",
+      statusOnline: "Studio Status: Online",
       planBadge: "Plan: {plan}",
       daysLabel: "Days: {days}",
       planLimitNote:
@@ -33,7 +33,7 @@ export const translations = {
         "This field is required — describe your business in a sentence or two so our strategists can craft a tailored recommendation.",
       generateBtn: "Commission Campaign Strategy",
       generating: "Preparing your strategy...",
-      quotaUsed: "Deliverables commissioned this month: {used} of {max} ({plan} plan)",
+      quotaUsed: "Deliverables commissioned this month: {used} of {max}",
       outputHeading: "Campaign Deliverables & Content Strategy",
       loadingStep1: "Strategy Directors are analyzing your market positioning...",
       loadingStep2: "Senior Copywriters are drafting your campaign hooks...",
@@ -263,7 +263,7 @@ export const translations = {
         "Our strategy service isn't configured on the server yet. Please contact support.",
       USER_NOT_FOUND: "We couldn't find your account profile. Try signing out and back in.",
       QUOTA_EXCEEDED:
-        "You've used all your deliverables for this month on your {plan} plan ({max} deliverables/month). Your quota resets automatically next month, or you can upgrade for more.",
+        "You've used all your deliverables for this month ({max} deliverables/month). Your quota resets automatically next month.",
       GENERATION_FAILED:
         "Something went wrong while preparing your campaign materials. Please try again in a moment.",
       SAVE_FAILED:
@@ -316,11 +316,11 @@ export const translations = {
   ar: {
     app: {
       title: "Apex Studio Pro",
-      subtitle: "إعلانات فيديو بالذكاء الاصطناعي وتخطيط للمحتوى للبائعين عبر الإنترنت",
+      subtitle: "إعلانات فيديو احترافية وتخطيط للمحتوى للبائعين عبر الإنترنت",
       loading: "جارٍ التحميل...",
       logout: "تسجيل الخروج",
       myProjects: "مشاريعي",
-      statusOnline: "محرّك الذكاء الاصطناعي: متصل الآن",
+      statusOnline: "حالة الاستوديو: متصل الآن",
       planBadge: "الباقة: {plan}",
       daysLabel: "الأيام: {days}",
       planLimitNote: "الحد الأقصى لباقتك الحالية ({plan}): {maxDays} يوم، {maxGenerations} تسليم/شهر.",
@@ -329,7 +329,7 @@ export const translations = {
       describeRequired: "هذا الحقل مطلوب — صف نشاطك في جملة أو جملتين ليتمكن استراتيجيونا من إعداد توصية مخصّصة لك.",
       generateBtn: "طلب استراتيجية تسويقية",
       generating: "جارٍ إعداد استراتيجيتك...",
-      quotaUsed: "التسليمات المطلوبة هذا الشهر: {used} من {max} (باقة {plan})",
+      quotaUsed: "التسليمات المطلوبة هذا الشهر: {used} من {max}",
       outputHeading: "مخرجات الحملة واستراتيجية المحتوى",
       loadingStep1: "مديرو الاستراتيجية يحلّلون موقع علامتك التجارية في السوق...",
       loadingStep2: "كبار كتّاب المحتوى يصيغون رسائل حملتك التسويقية...",
@@ -444,7 +444,7 @@ export const translations = {
       },
       disclaimer: {
         badge: "مخطط أولي استرشادي (معاينة تمهيدية)",
-        body: "هذا المخطط يمثل نموذجاً مبسطاً لمنهجية وكالتنا. استراتيجيات التنفيذ الشاملة عبر جميع القنوات والموجّهة نحو التحويل تُبنى حصرياً ضمن باقتَي Pro و Retainer.",
+        body: "هذا المخطط يمثل نموذجاً مبسطاً لمنهجية منصتنا. استراتيجيات التنفيذ الشاملة عبر جميع القنوات والموجّهة نحو التحويل تُبنى حصرياً ضمن باقتَي Pro و Retainer.",
       },
       lockedCards: {
         sectionTitle: "حصريًا لعملاء الباقات المتقدمة (Pro & Retainer)",
@@ -533,7 +533,7 @@ export const translations = {
       API_KEY_MISSING: "لم يتم إعداد خدمة الاستراتيجية على الخادم بعد. يرجى التواصل مع الدعم.",
       USER_NOT_FOUND: "لم يتم العثور على ملف حسابك. حاول تسجيل الخروج والدخول من جديد.",
       QUOTA_EXCEEDED:
-        "لقد استنفدت عدد التسليمات المسموح بها هذا الشهر لباقتك ({plan}: {max} تسليم/شهر). سيُجدَّد رصيدك تلقائياً في بداية الشهر القادم، أو يمكنك الترقية للحصول على رصيد أكبر.",
+        "لقد استنفدت عدد التسليمات المسموح بها هذا الشهر ({max} تسليم/شهر). سيُجدَّد رصيدك تلقائياً في بداية الشهر القادم.",
       GENERATION_FAILED: "حدث خطأ أثناء إعداد مواد حملتك التسويقية. حاول مرة أخرى بعد قليل.",
       SAVE_FAILED: "تم إعداد استراتيجيتك لكن تعذّر حفظها. حاول مرة أخرى بعد قليل.",
       CORS_FORBIDDEN: "هذا الطلب قادم من مصدر غير مسموح به.",
@@ -584,11 +584,11 @@ export const translations = {
   fr: {
     app: {
       title: "Apex Studio Pro",
-      subtitle: "Publicités vidéo par IA et planification de contenu pour les vendeurs en ligne",
+      subtitle: "Publicités vidéo professionnelles et planification de contenu pour les vendeurs en ligne",
       loading: "Chargement...",
       logout: "Déconnexion",
       myProjects: "Mes projets",
-      statusOnline: "Moteur IA : en ligne",
+      statusOnline: "Statut du studio : en ligne",
       planBadge: "Forfait : {plan}",
       daysLabel: "Jours : {days}",
       planLimitNote:
@@ -599,7 +599,7 @@ export const translations = {
         "Ce champ est obligatoire — décrivez votre entreprise en une ou deux phrases pour que nos stratèges puissent élaborer une recommandation sur mesure.",
       generateBtn: "Lancer la stratégie",
       generating: "Préparation de votre stratégie...",
-      quotaUsed: "Livrables commandés ce mois-ci : {used} sur {max} (forfait {plan})",
+      quotaUsed: "Livrables commandés ce mois-ci : {used} sur {max}",
       outputHeading: "Livrables de campagne et stratégie de contenu",
       loadingStep1: "Nos directeurs de stratégie analysent le positionnement de votre marque...",
       loadingStep2: "Nos rédacteurs seniors élaborent les accroches de votre campagne...",
@@ -812,7 +812,7 @@ export const translations = {
       USER_NOT_FOUND:
         "Impossible de trouver le profil de votre compte. Essayez de vous déconnecter puis de vous reconnecter.",
       QUOTA_EXCEEDED:
-        "Vous avez utilisé tous vos livrables ce mois-ci pour votre forfait {plan} ({max} livrables/mois). Votre quota sera réinitialisé automatiquement le mois prochain, ou vous pouvez passer à un forfait supérieur.",
+        "Vous avez utilisé tous vos livrables ce mois-ci ({max} livrables/mois). Votre quota sera réinitialisé automatiquement le mois prochain.",
       GENERATION_FAILED:
         "Une erreur s'est produite lors de la préparation de vos supports de campagne. Veuillez réessayer dans un instant.",
       SAVE_FAILED:
