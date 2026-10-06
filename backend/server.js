@@ -1514,7 +1514,7 @@ app.post("/api/generate-content", async (req, res) => {
     res.status(500).json({
       success: false,
       errorCode: "GENERATION_FAILED",
-      error: "حدث خطأ أثناء توليد المحتوى عبر الذكاء الاصطناعي. حاول مرة أخرى بعد قليل.",
+      error: "حدث خطأ أثناء توليد المحتوى. حاول مرة أخرى بعد قليل.",
     });
   }
 });
