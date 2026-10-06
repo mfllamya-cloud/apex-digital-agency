@@ -50,7 +50,7 @@ export const agencyTranslations = {
       perMonth: "/mo",
     },
     pricing: {
-      eyebrow: "Full Agency Service",
+      eyebrow: "AI Video Software",
       title: "Done-For-You Video Ads",
       sub: "We produce the ads for you from scratch — scripting, editing, voiceover and copy included. One-time payment, no subscription.",
       popular: "Most Popular",
@@ -193,7 +193,7 @@ export const agencyTranslations = {
       perMonth: "/شهرياً",
     },
     pricing: {
-      eyebrow: "خدمة الوكالة الكاملة",
+      eyebrow: "برنامج فيديو بالذكاء الاصطناعي",
       title: "إعلانات فيديو تُنفَّذ لك بالكامل",
       sub: "ننتج لك الإعلانات من الصفر — السيناريو والمونتاج والتعليق الصوتي والنصوص الإعلانية. دفعة واحدة، بلا اشتراك.",
       popular: "الأكثر طلباً",
@@ -333,7 +333,7 @@ export const agencyTranslations = {
       perMonth: "/mois",
     },
     pricing: {
-      eyebrow: "Service agence complet",
+      eyebrow: "Logiciel vidéo IA",
       title: "Publicités vidéo clés en main",
       sub: "Nous produisons vos publicités de A à Z — scénario, montage, voix off et textes inclus. Paiement unique, sans abonnement.",
       popular: "Le plus demandé",
@@ -477,7 +477,7 @@ export const agencyTranslations = {
       perMonth: "/mes",
     },
     pricing: {
-      eyebrow: "Servicio de agencia completo",
+      eyebrow: "Software de vídeo con IA",
       title: "Anuncios en vídeo llave en mano",
       sub: "Producimos tus anuncios desde cero: guion, edición, locución y textos incluidos. Pago único, sin suscripción.",
       popular: "El más solicitado",
@@ -621,7 +621,7 @@ export const agencyTranslations = {
       perMonth: "/mese",
     },
     pricing: {
-      eyebrow: "Servizio agenzia completo",
+      eyebrow: "Software video con IA",
       title: "Video pubblicitari chiavi in mano",
       sub: "Produciamo noi i tuoi annunci da zero: sceneggiatura, montaggio, voce fuori campo e testi inclusi. Pagamento unico, senza abbonamento.",
       popular: "Il più richiesto",
@@ -735,6 +735,404 @@ export const agencyTranslations = {
     },
   },
 };
+
+// ---------------------------------------------------------------------------
+// CURRENT OFFER (three one-time packages: $49 / $200 / $500).
+//
+// The blocks below replace, for every language, the pricing texts, the package
+// descriptions and the FAQ answers defined above. They are applied at the bottom
+// of this section, so the older package texts above (Starter / Conversion Pro,
+// revisions, "sale is final") are no longer shown anywhere.
+//
+// Keep these in step with Pricing.js, PublicLanding.js and the static pages in
+// public/pricing, public/terms and public/refund (14-day refund, Paddle as
+// Merchant of Record, landing pages hosted for 90 days).
+// Package names are trade names and stay in English in every language.
+// ---------------------------------------------------------------------------
+const CURRENT_OFFER = {
+  en: {
+    pricing: {
+      eyebrow: "AI Video Software",
+      title: "Video Ad Packages",
+      sub: "Upload your product photos and choose a package. Our automated AI pipeline produces your ad assets. One-time payment per package, no subscription.",
+      notIncluded: "Not included",
+    },
+    packages: {
+      single: {
+        name: "Apex Single Hook",
+        tagline: "One video ad to test a product or an angle before you commit.",
+        features: ["1 raw video ad: 1 hook, 15–20 seconds", "Delivered by download link"],
+        excluded: ["No landing page", "No social media designs", "No ad copy"],
+      },
+      funnel: {
+        name: "Apex Conversion Funnel",
+        tagline: "The full ready-to-launch funnel for one product.",
+        features: [
+          "2 video ads with different hooks for A/B testing",
+          "2 social ad designs",
+          "Full ad copy",
+          "1 landing page with your video and an order form built in, hosted for 90 days",
+        ],
+      },
+      scaler: {
+        name: "Apex Multi-Product Scaler",
+        tagline: "Two products, each with its own ads and its own landing page.",
+        features: [
+          "4 video ads: 2 per product",
+          "4 social ad designs",
+          "2 independent landing pages, one per product, hosted for 90 days",
+          "Competitor strategy summary",
+        ],
+      },
+    },
+    faq: {
+      turnaround: {
+        q: "How long does it take?",
+        a: "Generation is automated. It starts once your payment is confirmed and your product photos and details are complete. We aim to deliver within 24 hours; this is an estimate, not a guarantee.",
+      },
+      revisions: {
+        q: "What if something is wrong with my files?",
+        a: "If a deliverable has a technical fault, such as a file that will not open, a damaged clip or a landing page that does not load, tell us and we regenerate it at no cost. If you are not satisfied, our 14-day refund policy applies.",
+      },
+      noScript: {
+        q: "Do I need to write a script or a brief?",
+        a: "No. You upload product photos and give the product name, the voiceover language, the voice and an optional offer. The software writes the hook and the script and plans every scene from your photos.",
+      },
+      noFootage: {
+        q: "What do I need to provide?",
+        a: "Clear product photos (JPG or PNG, at least 1000 px). No video footage is needed. Please do not upload photos that show identifiable people.",
+      },
+      formats: {
+        q: "What do I actually receive?",
+        a: "Vertical 9:16 video ads as MP4 files. The Conversion Funnel and Multi-Product Scaler packages add ad designs, ad copy and hosted landing pages that stay online for 90 days. Delivery is digital, by download link or hosted URL.",
+      },
+      rights: {
+        q: "Who owns the output?",
+        a: "Once your order is paid, you can use the delivered assets for your own business and advertising, worldwide and with no time limit. We keep the rights to the software itself.",
+      },
+      results: {
+        q: "Do you guarantee results?",
+        a: "No. The assets are generated by AI and can contain imperfections, so review them before you publish. Results also depend on your offer, price, targeting and budget.",
+      },
+      refunds: {
+        q: "Can I get a refund?",
+        a: "Yes. You can request a refund within 14 days of purchase. Refunds are handled by Paddle, our payment provider. Full details are in our",
+      },
+      payment: {
+        q: "How do I pay?",
+        a: "By card or the other methods offered at checkout. Payments are processed by Paddle, our Merchant of Record. Prices are in US dollars and taxes are calculated at checkout.",
+      },
+    },
+  },
+
+  ar: {
+    pricing: {
+      eyebrow: "برنامج فيديو بالذكاء الاصطناعي",
+      title: "باقات إعلانات الفيديو",
+      sub: "ارفع صور منتجك واختر الباقة، ونظامنا الآلي بالذكاء الاصطناعي ينتج موادك الإعلانية. دفعة واحدة لكل باقة، بلا اشتراك.",
+      notIncluded: "غير مشمول",
+    },
+    packages: {
+      single: {
+        name: "Apex Single Hook",
+        tagline: "إعلان فيديو واحد لاختبار منتج أو زاوية قبل أن تلتزم.",
+        features: ["إعلان فيديو خام واحد: افتتاحية واحدة، 15–20 ثانية", "التسليم عبر رابط تحميل"],
+        excluded: ["بدون صفحة هبوط", "بدون تصاميم لوسائل التواصل", "بدون نص إعلاني"],
+      },
+      funnel: {
+        name: "Apex Conversion Funnel",
+        tagline: "القمع الكامل الجاهز للإطلاق لمنتج واحد.",
+        features: [
+          "إعلانا فيديو بافتتاحيتين مختلفتين لاختبار A/B",
+          "تصميمان إعلانيان لوسائل التواصل",
+          "نص إعلاني كامل",
+          "صفحة هبوط واحدة تتضمن الفيديو ونموذج طلب، مستضافة لمدة 90 يوماً",
+        ],
+      },
+      scaler: {
+        name: "Apex Multi-Product Scaler",
+        tagline: "منتجان، لكل منهما إعلاناته وصفحة هبوطه.",
+        features: [
+          "4 إعلانات فيديو: 2 لكل منتج",
+          "4 تصاميم إعلانية لوسائل التواصل",
+          "صفحتا هبوط مستقلتان، واحدة لكل منتج، مستضافتان لمدة 90 يوماً",
+          "ملخص لاستراتيجية المنافسين",
+        ],
+      },
+    },
+    faq: {
+      turnaround: {
+        q: "كم يستغرق التنفيذ؟",
+        a: "التوليد آلي. يبدأ فور تأكيد الدفع واكتمال صور منتجك وبياناته. نهدف إلى التسليم خلال 24 ساعة، وهذه مدة تقديرية وليست ضماناً.",
+      },
+      revisions: {
+        q: "ماذا لو كان في ملفاتي خلل؟",
+        a: "إذا كان في أحد الملفات خلل تقني، كملف لا يفتح أو مقطع تالف أو صفحة هبوط لا تعمل، أخبرنا ونعيد توليده مجاناً. وإن لم تكن راضياً، تنطبق سياسة الاسترجاع خلال 14 يوماً.",
+      },
+      noScript: {
+        q: "هل أحتاج إلى كتابة سكريبت أو وصف؟",
+        a: "لا. ترفع صور المنتج وتذكر اسمه ولغة التعليق الصوتي ونوع الصوت وعرضاً اختيارياً. البرنامج يكتب الافتتاحية والسكريبت ويخطط كل مشهد انطلاقاً من صورك.",
+      },
+      noFootage: {
+        q: "ما الذي يجب أن أقدّمه؟",
+        a: "صوراً واضحة للمنتج (JPG أو PNG، 1000 بكسل على الأقل). لا حاجة إلى أي مقاطع فيديو. يُرجى عدم رفع صور يظهر فيها أشخاص يمكن التعرف عليهم.",
+      },
+      formats: {
+        q: "ماذا أستلم بالضبط؟",
+        a: "إعلانات فيديو عمودية 9:16 بصيغة MP4. تضيف باقتا Conversion Funnel و Multi-Product Scaler تصاميم إعلانية ونصاً إعلانياً وصفحات هبوط مستضافة تبقى متاحة 90 يوماً. التسليم رقمي عبر رابط تحميل أو رابط مستضاف.",
+      },
+      rights: {
+        q: "من يملك المواد؟",
+        a: "بعد سداد الطلب، يحق لك استخدام المواد المسلَّمة في نشاطك وإعلاناتك، في أي بلد وبلا حد زمني. ونحتفظ نحن بحقوق البرنامج نفسه.",
+      },
+      results: {
+        q: "هل تضمنون النتائج؟",
+        a: "لا. المواد تُولَّد بالذكاء الاصطناعي وقد تحتوي على عيوب، لذا راجعها قبل النشر. والنتائج تعتمد أيضاً على عرضك وسعرك واستهدافك وميزانيتك.",
+      },
+      refunds: {
+        q: "هل يمكنني استرجاع أموالي؟",
+        a: "نعم. يمكنك طلب الاسترجاع خلال 14 يوماً من تاريخ الشراء. تتولى Paddle، مزوّد الدفع لدينا، معالجة الاسترجاع. التفاصيل الكاملة في",
+      },
+      payment: {
+        q: "كيف أدفع؟",
+        a: "بالبطاقة أو بوسائل الدفع الأخرى المتاحة عند إتمام الطلب. تُعالَج المدفوعات عبر Paddle بصفتها التاجر المسجَّل (Merchant of Record). الأسعار بالدولار الأمريكي وتُحتسب الضرائب عند الدفع.",
+      },
+    },
+  },
+
+  fr: {
+    pricing: {
+      eyebrow: "Logiciel vidéo IA",
+      title: "Forfaits publicités vidéo",
+      sub: "Importez les photos de votre produit et choisissez un forfait. Notre pipeline IA automatisé produit vos supports publicitaires. Paiement unique par forfait, sans abonnement.",
+      notIncluded: "Non inclus",
+    },
+    packages: {
+      single: {
+        name: "Apex Single Hook",
+        tagline: "Une publicité vidéo pour tester un produit ou un angle avant de vous engager.",
+        features: ["1 publicité vidéo brute : 1 accroche, 15–20 secondes", "Livraison par lien de téléchargement"],
+        excluded: ["Pas de page de destination", "Pas de visuels pour les réseaux sociaux", "Pas de texte publicitaire"],
+      },
+      funnel: {
+        name: "Apex Conversion Funnel",
+        tagline: "Le tunnel complet, prêt à lancer, pour un produit.",
+        features: [
+          "2 publicités vidéo avec des accroches différentes pour l'A/B testing",
+          "2 visuels publicitaires pour les réseaux sociaux",
+          "Texte publicitaire complet",
+          "1 page de destination avec votre vidéo et un formulaire de commande intégré, hébergée 90 jours",
+        ],
+      },
+      scaler: {
+        name: "Apex Multi-Product Scaler",
+        tagline: "Deux produits, chacun avec ses publicités et sa page de destination.",
+        features: [
+          "4 publicités vidéo : 2 par produit",
+          "4 visuels publicitaires pour les réseaux sociaux",
+          "2 pages de destination indépendantes, une par produit, hébergées 90 jours",
+          "Synthèse de la stratégie des concurrents",
+        ],
+      },
+    },
+    faq: {
+      turnaround: {
+        q: "Combien de temps faut-il ?",
+        a: "La génération est automatisée. Elle démarre dès que votre paiement est confirmé et que vos photos et informations produit sont complètes. Nous visons une livraison sous 24 heures ; c'est une estimation, pas une garantie.",
+      },
+      revisions: {
+        q: "Et si un fichier pose problème ?",
+        a: "Si un livrable présente un défaut technique (fichier qui ne s'ouvre pas, clip endommagé, page de destination inaccessible), dites-le-nous et nous le régénérons gratuitement. Si vous n'êtes pas satisfait, notre politique de remboursement de 14 jours s'applique.",
+      },
+      noScript: {
+        q: "Dois-je écrire un script ou un brief ?",
+        a: "Non. Vous importez les photos du produit et indiquez son nom, la langue de la voix off, la voix et une offre facultative. Le logiciel écrit l'accroche et le script, et conçoit chaque scène à partir de vos photos.",
+      },
+      noFootage: {
+        q: "Que dois-je fournir ?",
+        a: "Des photos nettes du produit (JPG ou PNG, 1000 px minimum). Aucune séquence vidéo n'est nécessaire. Merci de ne pas importer de photos montrant des personnes identifiables.",
+      },
+      formats: {
+        q: "Que vais-je recevoir ?",
+        a: "Des publicités vidéo verticales 9:16 au format MP4. Les forfaits Conversion Funnel et Multi-Product Scaler ajoutent des visuels publicitaires, le texte publicitaire et des pages de destination hébergées pendant 90 jours. La livraison est numérique, par lien de téléchargement ou URL hébergée.",
+      },
+      rights: {
+        q: "À qui appartiennent les contenus ?",
+        a: "Une fois la commande payée, vous pouvez utiliser les contenus livrés pour votre activité et vos publicités, dans le monde entier et sans limite de durée. Nous conservons les droits sur le logiciel lui-même.",
+      },
+      results: {
+        q: "Garantissez-vous des résultats ?",
+        a: "Non. Les contenus sont générés par IA et peuvent comporter des imperfections : vérifiez-les avant de les publier. Les résultats dépendent aussi de votre offre, de votre prix, de votre ciblage et de votre budget.",
+      },
+      refunds: {
+        q: "Puis-je être remboursé ?",
+        a: "Oui. Vous pouvez demander un remboursement dans les 14 jours suivant l'achat. Les remboursements sont traités par Paddle, notre prestataire de paiement. Tous les détails figurent dans notre",
+      },
+      payment: {
+        q: "Comment payer ?",
+        a: "Par carte ou par les autres moyens proposés au moment du paiement. Les paiements sont traités par Paddle, notre revendeur officiel (Merchant of Record). Les prix sont en dollars américains et les taxes sont calculées au moment du paiement.",
+      },
+    },
+  },
+
+  es: {
+    pricing: {
+      eyebrow: "Software de vídeo con IA",
+      title: "Paquetes de anuncios en vídeo",
+      sub: "Sube las fotos de tu producto y elige un paquete. Nuestro sistema automatizado de IA produce tus materiales publicitarios. Pago único por paquete, sin suscripción.",
+      notIncluded: "No incluido",
+    },
+    packages: {
+      single: {
+        name: "Apex Single Hook",
+        tagline: "Un anuncio en vídeo para probar un producto o un enfoque antes de comprometerte.",
+        features: ["1 anuncio en vídeo en bruto: 1 gancho, 15–20 segundos", "Entrega mediante enlace de descarga"],
+        excluded: ["Sin página de destino", "Sin diseños para redes sociales", "Sin texto publicitario"],
+      },
+      funnel: {
+        name: "Apex Conversion Funnel",
+        tagline: "El embudo completo, listo para lanzar, para un producto.",
+        features: [
+          "2 anuncios en vídeo con ganchos distintos para test A/B",
+          "2 diseños publicitarios para redes sociales",
+          "Texto publicitario completo",
+          "1 página de destino con tu vídeo y un formulario de pedido integrado, alojada durante 90 días",
+        ],
+      },
+      scaler: {
+        name: "Apex Multi-Product Scaler",
+        tagline: "Dos productos, cada uno con sus anuncios y su propia página de destino.",
+        features: [
+          "4 anuncios en vídeo: 2 por producto",
+          "4 diseños publicitarios para redes sociales",
+          "2 páginas de destino independientes, una por producto, alojadas durante 90 días",
+          "Resumen de la estrategia de la competencia",
+        ],
+      },
+    },
+    faq: {
+      turnaround: {
+        q: "¿Cuánto tarda?",
+        a: "La generación es automática. Empieza cuando tu pago está confirmado y las fotos y los datos de tu producto están completos. Nuestro objetivo es entregar en 24 horas; es una estimación, no una garantía.",
+      },
+      revisions: {
+        q: "¿Y si hay un problema con mis archivos?",
+        a: "Si un entregable tiene un fallo técnico (un archivo que no se abre, un clip dañado, una página de destino que no carga), avísanos y lo regeneramos sin coste. Si no quedas satisfecho, se aplica nuestra política de reembolso de 14 días.",
+      },
+      noScript: {
+        q: "¿Tengo que escribir un guion o un briefing?",
+        a: "No. Subes las fotos del producto e indicas su nombre, el idioma de la locución, la voz y una oferta opcional. El software escribe el gancho y el guion, y planifica cada escena a partir de tus fotos.",
+      },
+      noFootage: {
+        q: "¿Qué tengo que aportar?",
+        a: "Fotos nítidas del producto (JPG o PNG, mínimo 1000 px). No hace falta ningún vídeo. Por favor, no subas fotos en las que aparezcan personas identificables.",
+      },
+      formats: {
+        q: "¿Qué recibo exactamente?",
+        a: "Anuncios en vídeo verticales 9:16 en formato MP4. Los paquetes Conversion Funnel y Multi-Product Scaler añaden diseños publicitarios, texto publicitario y páginas de destino alojadas durante 90 días. La entrega es digital, mediante enlace de descarga o URL alojada.",
+      },
+      rights: {
+        q: "¿De quién son los materiales?",
+        a: "Una vez pagado el pedido, puedes usar los materiales entregados en tu negocio y tu publicidad, en todo el mundo y sin límite de tiempo. Nosotros conservamos los derechos sobre el software.",
+      },
+      results: {
+        q: "¿Garantizáis resultados?",
+        a: "No. Los materiales se generan con IA y pueden tener imperfecciones, así que revísalos antes de publicarlos. Los resultados dependen también de tu oferta, tu precio, tu segmentación y tu presupuesto.",
+      },
+      refunds: {
+        q: "¿Puedo pedir un reembolso?",
+        a: "Sí. Puedes solicitar un reembolso dentro de los 14 días posteriores a la compra. Los reembolsos los gestiona Paddle, nuestro proveedor de pagos. Todos los detalles están en nuestra",
+      },
+      payment: {
+        q: "¿Cómo pago?",
+        a: "Con tarjeta o con los demás métodos disponibles en el pago. Los pagos los procesa Paddle, nuestro comerciante registrado (Merchant of Record). Los precios están en dólares estadounidenses y los impuestos se calculan en el pago.",
+      },
+    },
+  },
+
+  it: {
+    pricing: {
+      eyebrow: "Software video con IA",
+      title: "Pacchetti di annunci video",
+      sub: "Carica le foto del tuo prodotto e scegli un pacchetto. Il nostro sistema automatizzato di IA produce i tuoi materiali pubblicitari. Pagamento unico per pacchetto, senza abbonamento.",
+      notIncluded: "Non incluso",
+    },
+    packages: {
+      single: {
+        name: "Apex Single Hook",
+        tagline: "Un annuncio video per testare un prodotto o un angolo prima di impegnarti.",
+        features: ["1 annuncio video grezzo: 1 hook, 15–20 secondi", "Consegna tramite link di download"],
+        excluded: ["Nessuna landing page", "Nessuna grafica per i social", "Nessun testo pubblicitario"],
+      },
+      funnel: {
+        name: "Apex Conversion Funnel",
+        tagline: "Il funnel completo, pronto al lancio, per un prodotto.",
+        features: [
+          "2 annunci video con hook diversi per A/B test",
+          "2 grafiche pubblicitarie per i social",
+          "Testo pubblicitario completo",
+          "1 landing page con il tuo video e un modulo d'ordine integrato, ospitata per 90 giorni",
+        ],
+      },
+      scaler: {
+        name: "Apex Multi-Product Scaler",
+        tagline: "Due prodotti, ciascuno con i propri annunci e la propria landing page.",
+        features: [
+          "4 annunci video: 2 per prodotto",
+          "4 grafiche pubblicitarie per i social",
+          "2 landing page indipendenti, una per prodotto, ospitate per 90 giorni",
+          "Sintesi della strategia dei concorrenti",
+        ],
+      },
+    },
+    faq: {
+      turnaround: {
+        q: "Quanto tempo ci vuole?",
+        a: "La generazione è automatica. Parte quando il pagamento è confermato e le foto e i dati del prodotto sono completi. Puntiamo a consegnare entro 24 ore; è una stima, non una garanzia.",
+      },
+      revisions: {
+        q: "E se c'è un problema con i miei file?",
+        a: "Se un file ha un difetto tecnico (non si apre, una clip è danneggiata, una landing page non si carica), segnalacelo e lo rigeneriamo gratuitamente. Se non sei soddisfatto, si applica la nostra politica di rimborso di 14 giorni.",
+      },
+      noScript: {
+        q: "Devo scrivere uno script o un brief?",
+        a: "No. Carichi le foto del prodotto e indichi il nome, la lingua della voce fuori campo, la voce e un'offerta facoltativa. Il software scrive l'hook e lo script e pianifica ogni scena a partire dalle tue foto.",
+      },
+      noFootage: {
+        q: "Che cosa devo fornire?",
+        a: "Foto nitide del prodotto (JPG o PNG, almeno 1000 px). Non servono riprese video. Ti chiediamo di non caricare foto con persone riconoscibili.",
+      },
+      formats: {
+        q: "Che cosa ricevo esattamente?",
+        a: "Annunci video verticali 9:16 in formato MP4. I pacchetti Conversion Funnel e Multi-Product Scaler aggiungono grafiche pubblicitarie, testo pubblicitario e landing page ospitate per 90 giorni. La consegna è digitale, tramite link di download o URL ospitato.",
+      },
+      rights: {
+        q: "Di chi sono i materiali?",
+        a: "Una volta pagato l'ordine, puoi usare i materiali consegnati per la tua attività e la tua pubblicità, in tutto il mondo e senza limiti di tempo. Noi manteniamo i diritti sul software.",
+      },
+      results: {
+        q: "Garantite dei risultati?",
+        a: "No. I materiali sono generati dall'IA e possono contenere imperfezioni, quindi controllali prima di pubblicarli. I risultati dipendono anche dalla tua offerta, dal prezzo, dal targeting e dal budget.",
+      },
+      refunds: {
+        q: "Posso ottenere un rimborso?",
+        a: "Sì. Puoi richiedere un rimborso entro 14 giorni dall'acquisto. I rimborsi sono gestiti da Paddle, il nostro fornitore di pagamenti. Tutti i dettagli sono nella nostra",
+      },
+      payment: {
+        q: "Come pago?",
+        a: "Con carta o con gli altri metodi disponibili al checkout. I pagamenti sono elaborati da Paddle, il nostro rivenditore ufficiale (Merchant of Record). I prezzi sono in dollari statunitensi e le imposte sono calcolate al checkout.",
+      },
+    },
+  },
+};
+
+Object.keys(CURRENT_OFFER).forEach((code) => {
+  const target = agencyTranslations[code];
+  const offer = CURRENT_OFFER[code];
+  if (!target || !offer) return;
+  target.pricing = { ...target.pricing, ...offer.pricing, packages: offer.packages };
+  target.faq = { ...target.faq, items: offer.faq };
+});
 
 // أسماء اللغات كما تظهر في مبدّل اللغة — تبقى بلغتها الأصلية دائماً (لا تُترجم)، حتى
 // يتعرّف الزائر على لغته حتى لو كانت الواجهة الحالية بلغة لا يفهمها.

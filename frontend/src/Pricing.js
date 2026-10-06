@@ -21,15 +21,14 @@ import "./App.css";
 // PayPal: custom_id) وإلا وصلك الدفع بلا أي إشارة إلى حساب المشتري.
 // ---------------------------------------------------------------------------
 export const PAYMENT_LINKS = {
-  starter: {
-    standard: { paddle: "", crypto: "" }, // $150
-    express: { paddle: "", crypto: "" }, // $179  ($150 + $29)
-    priority: { paddle: "", crypto: "" }, // $199  ($150 + $49)
+  single: {
+    standard: { paddle: "", crypto: "" }, // $49
   },
-  pro: {
+  funnel: {
+    standard: { paddle: "", crypto: "" }, // $200
+  },
+  scaler: {
     standard: { paddle: "", crypto: "" }, // $500
-    express: { paddle: "", crypto: "" }, // $579  ($500 + $79)
-    priority: { paddle: "", crypto: "" }, // $649  ($500 + $149)
   },
 };
 
@@ -41,26 +40,26 @@ export const AGENCY_CHECKOUT_UID_PARAM = "";
 // الترجمة i18nAgency.js تحت المفتاح agency.pricing — فلا يوجد نص معروض مكتوب
 // مباشرة في هذا الملف، وبالتالي لا يظهر أي نص إنجليزي داخل واجهة عربية أو إسبانية.
 // ---------------------------------------------------------------------------
+// Three one-time packages. No delivery-speed add-ons: every package has a single
+// "standard" speed, so the speed selector below is not rendered.
 const PACKAGES = [
   {
-    id: "starter",
-    basePrice: 150,
+    id: "single",
+    basePrice: 49,
     featured: false,
-    speeds: [
-      { id: "standard", extra: 0 },
-      { id: "express", extra: 29 },
-      { id: "priority", extra: 49 },
-    ],
+    speeds: [{ id: "standard", extra: 0 }],
   },
   {
-    id: "pro",
-    basePrice: 500,
+    id: "funnel",
+    basePrice: 200,
     featured: true,
-    speeds: [
-      { id: "standard", extra: 0 },
-      { id: "express", extra: 79 },
-      { id: "priority", extra: 149 },
-    ],
+    speeds: [{ id: "standard", extra: 0 }],
+  },
+  {
+    id: "scaler",
+    basePrice: 500,
+    featured: false,
+    speeds: [{ id: "standard", extra: 0 }],
   },
 ];
 
@@ -76,10 +75,13 @@ function PackageCard({ pkg, index }) {
   const base = "agency.pricing.packages." + pkg.id;
   const features = t(base + ".features");
   const featureList = Array.isArray(features) ? features : [];
+  const excluded = t(base + ".excluded");
+  const excludedList = Array.isArray(excluded) ? excluded : [];
+  const hasSpeedChoice = pkg.speeds.length > 1;
   const speedLabel = t("agency.pricing.speeds." + speed.id);
 
   return (
-    <Reveal delay={index * 120} style={{ flex: "1 1 340px", maxWidth: "440px", display: "flex" }}>
+    <Reveal delay={index * 120} style={{ flex: "1 1 300px", maxWidth: "440px", display: "flex" }}>
       <div
         className="apex-glass-sheen"
         style={{
@@ -134,17 +136,21 @@ function PackageCard({ pkg, index }) {
             {t("agency.pricing.oneTime")}
           </span>
         </div>
+        {hasSpeedChoice ? (
         <p style={{ margin: "0 0 24px", fontSize: "0.8rem", color: T.textFaint, minHeight: "1.2em" }}>
-          {speed.extra > 0
-            ? t("agency.pricing.basePlus", {
-                // المبالغ تُنسَّق هنا بالرمز، لا داخل ملف الترجمة: رمز الدولار متبوعاً بقوس معقوف في سلسلة
-                // عادية هناك يُسقط بناء CRA (no-template-curly-in-string).
-                base: "$" + pkg.basePrice,
-                extra: "$" + speed.extra,
-                label: String(speedLabel).toLowerCase(),
-              })
-            : t("agency.pricing.noRush")}
-        </p>
+            {speed.extra > 0
+              ? t("agency.pricing.basePlus", {
+                  // المبالغ تُنسَّق هنا بالرمز، لا داخل ملف الترجمة: رمز الدولار متبوعاً بقوس معقوف في سلسلة
+                  // عادية هناك يُسقط بناء CRA (no-template-curly-in-string).
+                  base: "$" + pkg.basePrice,
+                  extra: "$" + speed.extra,
+                  label: String(speedLabel).toLowerCase(),
+                })
+              : t("agency.pricing.noRush")}
+          </p>
+        ) : (
+          <div style={{ height: "20px" }} />
+        )}
 
         <ul style={{ listStyle: "none", padding: 0, margin: "0 0 26px" }}>
           {featureList.map((feature) => (
@@ -169,63 +175,103 @@ function PackageCard({ pkg, index }) {
           ))}
         </ul>
 
-        {/* خيارات التسليم السريع — مربوطة فعلياً بالسعر المعروض أعلاه وبرابط الدفع
-            المستعمل، حتى لا يدفع العميل ثمن الباقة العادية ثم يطالب بالتسليم السريع. */}
-        <fieldset
-          style={{
-            border: "1px solid " + T.glassBorder,
-            borderRadius: T.radiusSm,
-            padding: "12px 16px 14px",
-            margin: "0 0 24px",
-            background: "rgba(0,0,0,0.25)",
-          }}
-        >
-          <legend
-            style={{
-              padding: "0 8px",
-              fontSize: "0.65rem",
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: T.gold,
-            }}
-          >
-            {t("agency.pricing.speedLegend")}
-          </legend>
-
-          {pkg.speeds.map((s) => (
-            <label
-              key={s.id}
+        {excludedList.length > 0 && (
+          <div style={{ margin: "-8px 0 26px" }}>
+            <p
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "7px 0",
-                fontSize: "0.87rem",
-                color: speedId === s.id ? T.text : T.textMuted,
-                cursor: "pointer",
+                margin: "0 0 6px",
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: T.textFaint,
               }}
             >
-              <input
-                type="radio"
-                name={"speed-" + pkg.id}
-                value={s.id}
-                checked={speedId === s.id}
-                onChange={() => setSpeedId(s.id)}
-                style={{ accentColor: T.gold, width: "15px", height: "15px" }}
-              />
-              <span style={{ flex: 1 }}>
-                {t("agency.pricing.speeds." + s.id)}{" "}
-                <span style={{ color: T.textFaint }}>
-                  ({t("agency.pricing.details." + pkg.id + "." + s.id)})
+              {t("agency.pricing.notIncluded")}
+            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {excludedList.map((item) => (
+                <li
+                  key={item}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "11px",
+                    padding: "7px 0",
+                    fontSize: "0.92rem",
+                    color: T.textFaint,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <span aria-hidden="true" style={{ fontWeight: 700, lineHeight: 1.55 }}>
+                    ✕
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* خيارات التسليم السريع — مربوطة فعلياً بالسعر المعروض أعلاه وبرابط الدفع
+            المستعمل، حتى لا يدفع العميل ثمن الباقة العادية ثم يطالب بالتسليم السريع. */}
+        {hasSpeedChoice && (
+          <fieldset
+            style={{
+              border: "1px solid " + T.glassBorder,
+              borderRadius: T.radiusSm,
+              padding: "12px 16px 14px",
+              margin: "0 0 24px",
+              background: "rgba(0,0,0,0.25)",
+            }}
+          >
+            <legend
+              style={{
+                padding: "0 8px",
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: T.gold,
+              }}
+            >
+              {t("agency.pricing.speedLegend")}
+            </legend>
+
+            {pkg.speeds.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "7px 0",
+                  fontSize: "0.87rem",
+                  color: speedId === s.id ? T.text : T.textMuted,
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="radio"
+                  name={"speed-" + pkg.id}
+                  value={s.id}
+                  checked={speedId === s.id}
+                  onChange={() => setSpeedId(s.id)}
+                  style={{ accentColor: T.gold, width: "15px", height: "15px" }}
+                />
+                <span style={{ flex: 1 }}>
+                  {t("agency.pricing.speeds." + s.id)}{" "}
+                  <span style={{ color: T.textFaint }}>
+                    ({t("agency.pricing.details." + pkg.id + "." + s.id)})
+                  </span>
                 </span>
-              </span>
-              <span style={{ fontWeight: 700, color: T.gold, whiteSpace: "nowrap" }}>
-                {s.extra > 0 ? "+$" + s.extra : t("agency.pricing.included")}
-              </span>
-            </label>
-          ))}
-        </fieldset>
+                <span style={{ fontWeight: 700, color: T.gold, whiteSpace: "nowrap" }}>
+                  {s.extra > 0 ? "+$" + s.extra : t("agency.pricing.included")}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        )}
 
         {/* زر واحد يفتح نافذة اختيار وسيلة الدفع. سطر الموافقة انتقل إلى داخل
             النافذة: هناك يراه العميل مع الاسم والسعر في اللحظة التي يقرر فيها
