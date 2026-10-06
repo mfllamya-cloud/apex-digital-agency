@@ -17,12 +17,12 @@ import { agencyTranslations, LANGUAGE_LABELS } from "./i18nAgency";
 export const translations = {
   en: {
     app: {
-      title: "Apex Digital Agency",
-      subtitle: "Bespoke marketing campaigns, crafted by senior strategists",
+      title: "Apex Studio Pro",
+      subtitle: "AI video ads and content planning for online sellers",
       loading: "Loading...",
       logout: "Log out",
       myProjects: "My Projects",
-      statusOnline: "Agency Strategy Team: Online",
+      statusOnline: "AI Engine: Online",
       planBadge: "Plan: {plan}",
       daysLabel: "Days: {days}",
       planLimitNote:
@@ -41,12 +41,12 @@ export const translations = {
       loadingStep4: "Finalizing your bespoke marketing deliverables...",
       alertDescribeFirst: "Please describe your business before commissioning your campaign strategy.",
       alertGenericError: "An error occurred while preparing your campaign materials.",
-      alertBackendDown: "Could not reach the agency server. Make sure it's running.",
+      alertBackendDown: "Could not reach the server. Make sure it's running.",
       alertLoginRequiredForUpgrade: "Please log in before upgrading your plan.",
       alertCheckoutUrlMissing: "The checkout link isn't configured yet. Please contact support.",
     },
-    plans: { free: "Strategic Consultation", pro: "Boutique Campaign", premium: "Full Agency Retainer" },
-    tiers: { free: "Strategic Consultation", pro: "Boutique Campaign", premium: "Full Agency Retainer" },
+    plans: { free: "Strategic Consultation", pro: "Boutique Campaign", premium: "Full Studio Plan" },
+    tiers: { free: "Strategic Consultation", pro: "Boutique Campaign", premium: "Full Studio Plan" },
     common: { upgrade: "Upgrade", dayLabel: "Day {n}" },
     content: {
       bestTime: "Best time to post: {time}",
@@ -118,7 +118,7 @@ export const translations = {
         ],
       },
       premium: {
-        label: "Full Agency Retainer:",
+        label: "Full Studio Plan:",
         features: [
           "✦ 8 Sprints per month (Up to 7 days each)",
           "✦ Omnichannel Strategy",
@@ -137,7 +137,7 @@ export const translations = {
         title: "🔒 Full-service creative locked",
         description:
           "Want our creative team to provide **Creative Direction** for each deliverable to guide professional visuals? Plus the **content repurposing** feature?",
-        button: "🚀 Upgrade to Full Agency Retainer",
+        button: "🚀 Upgrade to Full Studio Plan",
       },
     },
     free: {
@@ -164,12 +164,12 @@ export const translations = {
       // تُعرض الشارة كـ pill مستقلة بصرياً في App.js بدل الاعتماد على قص النص بفاصل " — ".
       disclaimer: {
         badge: "Preliminary Strategy Brief (Sample Preview)",
-        body: "This outline is a simplified demonstration of our agency's methodology. Conversion-focused, omnichannel execution strategies are deployed exclusively within our Pro and Retainer tiers.",
+        body: "This outline is a simplified demonstration of our platform's methodology. Conversion-focused, omnichannel execution strategies are deployed exclusively within our Pro and Retainer tiers.",
       },
       // 3 بطاقات مقفلة تُعرض أسفل تقويم المحتوى المجاني — كل بطاقة تفتح نافذة VIP عند الضغط
       // عليها (setShowVipModal) بدل أي توجيه مباشر لصفحة دفع. كل الثلاث الآن لها شارة باقة.
       lockedCards: {
-        sectionTitle: "Reserved for Pro & Agency Retainer Clients",
+        sectionTitle: "Reserved for Pro & Studio Plan Users",
         conversionArchitecture: {
           title: "Conversion Architecture & High-Impact Ad Hooks",
           tier: "Pro",
@@ -189,8 +189,8 @@ export const translations = {
     // مباشرة، لأسباب تسويقية (نُدرة/طلب مرتفع). روابط Lemon Squeezy تبقى محفوظة في .env
     // لاستخدامها لاحقاً، دون حذفها.
     vip: {
-      headline: "Exclusive Agency Access",
-      body: "Thank you for your interest! Due to high demand, our premium agency retainers are currently at full capacity. Join our VIP waitlist to get priority access when a spot opens up.",
+      headline: "Exclusive Studio Access",
+      body: "Thank you for your interest! Due to high demand, our premium Studio plans are currently at full capacity. Join our VIP waitlist to get priority access when a spot opens up.",
       button: "Join VIP Waitlist",
       sending: "Joining...",
       success: "You are on the list! Our strategy team will notify you soon.",
@@ -202,7 +202,7 @@ export const translations = {
       affiliateLink: "Elite Partner Program",
     },
     ambassador: {
-      headline: "Agency Ambassadors",
+      headline: "Studio Ambassadors",
       body: "Earn a recurring 10% monthly commission for as long as your referred client stays subscribed. Join our VIP partner waitlist.",
       closeBtn: "Close",
     },
@@ -315,12 +315,12 @@ export const translations = {
   },
   ar: {
     app: {
-      title: "Apex Digital Agency",
-      subtitle: "حملات تسويقية مصمَّمة خصيصاً بأيدي استراتيجيين محترفين",
+      title: "Apex Studio Pro",
+      subtitle: "إعلانات فيديو بالذكاء الاصطناعي وتخطيط للمحتوى للبائعين عبر الإنترنت",
       loading: "جارٍ التحميل...",
       logout: "تسجيل الخروج",
       myProjects: "مشاريعي",
-      statusOnline: "فريق الاستراتيجية بالوكالة: متصل الآن",
+      statusOnline: "محرّك الذكاء الاصطناعي: متصل الآن",
       planBadge: "الباقة: {plan}",
       daysLabel: "الأيام: {days}",
       planLimitNote: "الحد الأقصى لباقتك الحالية ({plan}): {maxDays} يوم، {maxGenerations} تسليم/شهر.",
@@ -337,7 +337,7 @@ export const translations = {
       loadingStep4: "جارٍ إنهاء تفاصيل حملتك التسويقية المخصّصة...",
       alertDescribeFirst: "الرجاء وصف مشروعك أولاً قبل طلب استراتيجيتك التسويقية.",
       alertGenericError: "حدث خطأ أثناء إعداد مواد حملتك التسويقية.",
-      alertBackendDown: "تعذّر الوصول إلى خادم الوكالة. تأكد أنه يعمل.",
+      alertBackendDown: "تعذّر الوصول إلى الخادم. تأكد أنه يعمل.",
       alertLoginRequiredForUpgrade: "الرجاء تسجيل الدخول قبل ترقية باقتك.",
       alertCheckoutUrlMissing: "رابط الدفع غير مُعدّ بعد. يرجى التواصل مع الدعم.",
     },
@@ -464,7 +464,7 @@ export const translations = {
     },
     // نافذة "VIP Lead Capture" — تظهر بدل التوجيه المباشر لصفحة الدفع عند النقر على أي زر ترقية.
     vip: {
-      headline: "وصول حصري للوكالة",
+      headline: "وصول حصري للاستوديو",
       body: "شكراً لاهتمامك! نظراً للضغط الكبير، باقاتنا المدفوعة ممتلئة حالياً. انضم إلى قائمة كبار الشخصيات (VIP) لنمنحك الأولوية فور توفر مقعد.",
       button: "الانضمام لقائمة كبار الشخصيات",
       sending: "جارٍ الإضافة...",
@@ -477,7 +477,7 @@ export const translations = {
       affiliateLink: "برنامج الشركاء النخبة",
     },
     ambassador: {
-      headline: "سفراء الوكالة",
+      headline: "سفراء الاستوديو",
       body: "اربح عمولة متكررة بنسبة 10% كل شهر طيلة فترة اشتراك العميل الذي جلبته. انضم لقائمة الانتظار الخاصة بشركاء النخبة.",
       closeBtn: "إغلاق",
     },
@@ -583,12 +583,12 @@ export const translations = {
   },
   fr: {
     app: {
-      title: "Apex Digital Agency",
-      subtitle: "Des campagnes marketing sur mesure, conçues par des stratèges expérimentés",
+      title: "Apex Studio Pro",
+      subtitle: "Publicités vidéo par IA et planification de contenu pour les vendeurs en ligne",
       loading: "Chargement...",
       logout: "Déconnexion",
       myProjects: "Mes projets",
-      statusOnline: "Équipe stratégie de l'agence : en ligne",
+      statusOnline: "Moteur IA : en ligne",
       planBadge: "Forfait : {plan}",
       daysLabel: "Jours : {days}",
       planLimitNote:
@@ -607,12 +607,12 @@ export const translations = {
       loadingStep4: "Finalisation de vos livrables marketing sur mesure...",
       alertDescribeFirst: "Veuillez décrire votre entreprise avant de lancer votre stratégie de campagne.",
       alertGenericError: "Une erreur est survenue lors de la préparation de vos supports de campagne.",
-      alertBackendDown: "Impossible de contacter le serveur de l'agence. Vérifiez qu'il est bien démarré.",
+      alertBackendDown: "Impossible de contacter le serveur. Vérifiez qu'il est bien démarré.",
       alertLoginRequiredForUpgrade: "Veuillez vous connecter avant de mettre à niveau votre forfait.",
       alertCheckoutUrlMissing: "Le lien de paiement n'est pas encore configuré. Veuillez contacter le support.",
     },
-    plans: { free: "Consultation Stratégique", pro: "Campagne Sur Mesure", premium: "Forfait Agence Complet" },
-    tiers: { free: "Consultation Stratégique", pro: "Campagne Sur Mesure", premium: "Forfait Agence Complet" },
+    plans: { free: "Consultation Stratégique", pro: "Campagne Sur Mesure", premium: "Forfait Studio Complet" },
+    tiers: { free: "Consultation Stratégique", pro: "Campagne Sur Mesure", premium: "Forfait Studio Complet" },
     common: { upgrade: "Passer à l'offre supérieure", dayLabel: "Jour {n}" },
     content: {
       bestTime: "Meilleure heure de publication : {time}",
@@ -675,7 +675,7 @@ export const translations = {
         ],
       },
       premium: {
-        label: "Forfait Agence Complet :",
+        label: "Forfait Studio Complet :",
         features: [
           "✦ 8 Sprints par mois (Jusqu'à 7 jours chacun)",
           "✦ Stratégie Omnicanal",
@@ -694,7 +694,7 @@ export const translations = {
         title: "🔒 Le service créatif complet est verrouillé",
         description:
           "Souhaitez-vous que notre équipe créative fournisse une **direction créative** pour chaque publication afin de créer des visuels professionnels ? Ainsi que la fonctionnalité de **recyclage de contenu** ?",
-        button: "🚀 Passez au Forfait Agence Complet",
+        button: "🚀 Passez au Forfait Studio Complet",
       },
     },
     free: {
@@ -716,7 +716,7 @@ export const translations = {
       },
       disclaimer: {
         badge: "Aperçu Stratégique Préliminaire (Spécimen)",
-        body: "Ce plan représente une démonstration simplifiée de la méthodologie de notre agence. Les stratégies d'exécution omnicanales axées sur la conversion sont déployées exclusivement dans nos forfaits Pro et Retainer.",
+        body: "Ce plan représente une démonstration simplifiée de la méthodologie de notre plateforme. Les stratégies d'exécution omnicanales axées sur la conversion sont déployées exclusivement dans nos forfaits Pro et Retainer.",
       },
       lockedCards: {
         sectionTitle: "Réservé aux clients Pro & Retainer",
@@ -737,7 +737,7 @@ export const translations = {
     // Fenêtre "VIP Lead Capture" — s'affiche à la place de la redirection directe vers la page
     // de paiement lors d'un clic sur un bouton de mise à niveau.
     vip: {
-      headline: "Accès Exclusif à l'Agence",
+      headline: "Accès Exclusif au Studio",
       body: "Merci pour votre intérêt ! En raison d'une forte demande, nos forfaits premium sont actuellement complets. Rejoignez notre liste VIP pour être prioritaire dès qu'une place se libère.",
       button: "Rejoindre la liste VIP",
       sending: "Ajout en cours...",
@@ -750,7 +750,7 @@ export const translations = {
       affiliateLink: "Programme Partenaires Élite",
     },
     ambassador: {
-      headline: "Ambassadeurs de l'Agence",
+      headline: "Ambassadeurs du Studio",
       body: "Gagnez une commission récurrente de 10% chaque mois tant que votre client reste abonné. Rejoignez notre liste d'attente.",
       closeBtn: "Fermer",
     },

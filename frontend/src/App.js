@@ -13,7 +13,7 @@ import Reveal from "./Reveal";
 import { T } from "./theme";
 import PaymentModal from "./PaymentModal";
 import { PADDLE_PRICE_IDS } from "./paddle";
-import { TermsOfService, PrivacyPolicy, RefundPolicy } from "./Legal";
+import PublicLanding, { PublicFooter } from "./PublicLanding";
 import { LanguageProvider, LanguageSwitcher, useLanguage, renderWithBold } from "./i18n";
 import "./App.css";
 
@@ -616,6 +616,16 @@ function AmbassadorModal({ open, t, onClose }) {
 //
 // ⚠️ يتطلب هذا حزمة react-router-dom (أُضيفت إلى package.json) — نفّذ npm install
 // داخل مجلد frontend قبل تشغيل التطبيق وإلا فشل الاستيراد أعلاه.
+// The legal pages are static HTML files in public/ (terms, privacy, refund).
+// A direct visit to /terms is served by the static file; this component only handles
+// in-app navigation (React Router links) by doing a full page load of that static file.
+function StaticPage({ to }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -628,9 +638,9 @@ export default function App() {
           <Route path="/history" element={<History />} />
           {/* الصفحات القانونية — مكوّنات مستقلة في Legal.js، مرتبطة من تذييل الموقع
               ومن أزرار الدفع في Pricing.js. */}
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/refund" element={<RefundPolicy />} />
+          <Route path="/terms" element={<StaticPage to="/terms/index.html" />} />
+          <Route path="/privacy" element={<StaticPage to="/privacy/index.html" />} />
+          <Route path="/refund" element={<StaticPage to="/refund/index.html" />} />
           <Route path="*" element={<AppContent />} />
         </Routes>
       </LanguageProvider>
@@ -903,7 +913,12 @@ function AppContent() {
     return (
       <>
         <LanguageSwitcher />
-        <Auth />
+        {/* Public description, packages and legal links: visible without an account. */}
+        <PublicLanding />
+        <div id="sign-in">
+          <Auth />
+        </div>
+        <PublicFooter />
       </>
     );
   }
