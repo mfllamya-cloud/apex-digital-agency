@@ -746,7 +746,7 @@ export const agencyTranslations = {
 //
 // Keep these in step with Pricing.js, PublicLanding.js and the static pages in
 // public/pricing, public/terms and public/refund (14-day refund, Paddle as
-// Merchant of Record, landing pages hosted for 90 days).
+// Merchant of Record, hosted landing pages).
 // Package names are trade names and stay in English in every language.
 // ---------------------------------------------------------------------------
 const CURRENT_OFFER = {
@@ -771,7 +771,7 @@ const CURRENT_OFFER = {
           "2 video ads with different hooks for A/B testing",
           "2 social ad designs",
           "Full ad copy",
-          "1 landing page with your video and an order form built in, hosted for 90 days",
+          "1 hosted landing page with your video and an order form built in",
         ],
       },
       scaler: {
@@ -780,7 +780,7 @@ const CURRENT_OFFER = {
         features: [
           "4 video ads: 2 per product",
           "4 social ad designs",
-          "2 independent landing pages, one per product, hosted for 90 days",
+          "2 independent hosted landing pages, one per product",
           "Competitor strategy summary",
         ],
       },
@@ -804,7 +804,7 @@ const CURRENT_OFFER = {
       },
       formats: {
         q: "What do I actually receive?",
-        a: "Vertical 9:16 video ads as MP4 files. The Conversion Funnel and Multi-Product Scaler packages add ad designs, ad copy and hosted landing pages that stay online for 90 days. Delivery is digital, by download link or hosted URL.",
+        a: "Vertical 9:16 video ads as MP4 files. The Conversion Funnel and Multi-Product Scaler packages add ad designs, ad copy and hosted landing pages. Delivery is digital, by download link or hosted URL.",
       },
       rights: {
         q: "Who owns the output?",
@@ -846,7 +846,7 @@ const CURRENT_OFFER = {
           "إعلانا فيديو بافتتاحيتين مختلفتين لاختبار A/B",
           "تصميمان إعلانيان لوسائل التواصل",
           "نص إعلاني كامل",
-          "صفحة هبوط واحدة تتضمن الفيديو ونموذج طلب، مستضافة لمدة 90 يوماً",
+          "صفحة هبوط مستضافة تتضمن الفيديو ونموذج طلب",
         ],
       },
       scaler: {
@@ -855,7 +855,7 @@ const CURRENT_OFFER = {
         features: [
           "4 إعلانات فيديو: 2 لكل منتج",
           "4 تصاميم إعلانية لوسائل التواصل",
-          "صفحتا هبوط مستقلتان، واحدة لكل منتج، مستضافتان لمدة 90 يوماً",
+          "صفحتا هبوط مستضافتان ومستقلتان، واحدة لكل منتج",
           "ملخص لاستراتيجية المنافسين",
         ],
       },
@@ -879,7 +879,7 @@ const CURRENT_OFFER = {
       },
       formats: {
         q: "ماذا أستلم بالضبط؟",
-        a: "إعلانات فيديو عمودية 9:16 بصيغة MP4. تضيف باقتا Conversion Funnel و Multi-Product Scaler تصاميم إعلانية ونصاً إعلانياً وصفحات هبوط مستضافة تبقى متاحة 90 يوماً. التسليم رقمي عبر رابط تحميل أو رابط مستضاف.",
+        a: "إعلانات فيديو عمودية 9:16 بصيغة MP4. تضيف باقتا Conversion Funnel و Multi-Product Scaler تصاميم إعلانية ونصاً إعلانياً وصفحات هبوط مستضافة. التسليم رقمي عبر رابط تحميل أو رابط مستضاف.",
       },
       rights: {
         q: "من يملك المواد؟",
@@ -921,7 +921,7 @@ const CURRENT_OFFER = {
           "2 publicités vidéo avec des accroches différentes pour l'A/B testing",
           "2 visuels publicitaires pour les réseaux sociaux",
           "Texte publicitaire complet",
-          "1 page de destination avec votre vidéo et un formulaire de commande intégré, hébergée 90 jours",
+          "1 page de destination hébergée avec votre vidéo et un formulaire de commande intégré",
         ],
       },
       scaler: {
@@ -930,7 +930,7 @@ const CURRENT_OFFER = {
         features: [
           "4 publicités vidéo : 2 par produit",
           "4 visuels publicitaires pour les réseaux sociaux",
-          "2 pages de destination indépendantes, une par produit, hébergées 90 jours",
+          "2 pages de destination hébergées et indépendantes, une par produit",
           "Synthèse de la stratégie des concurrents",
         ],
       },
@@ -954,7 +954,7 @@ const CURRENT_OFFER = {
       },
       formats: {
         q: "Que vais-je recevoir ?",
-        a: "Des publicités vidéo verticales 9:16 au format MP4. Les forfaits Conversion Funnel et Multi-Product Scaler ajoutent des visuels publicitaires, le texte publicitaire et des pages de destination hébergées pendant 90 jours. La livraison est numérique, par lien de téléchargement ou URL hébergée.",
+        a: "Des publicités vidéo verticales 9:16 au format MP4. Les forfaits Conversion Funnel et Multi-Product Scaler ajoutent des visuels publicitaires, le texte publicitaire et des pages de destination hébergées. La livraison est numérique, par lien de téléchargement ou URL hébergée.",
       },
       rights: {
         q: "À qui appartiennent les contenus ?",
@@ -996,7 +996,7 @@ const CURRENT_OFFER = {
           "2 anuncios en vídeo con ganchos distintos para test A/B",
           "2 diseños publicitarios para redes sociales",
           "Texto publicitario completo",
-          "1 página de destino con tu vídeo y un formulario de pedido integrado, alojada durante 90 días",
+          "1 página de destino alojada con tu vídeo y un formulario de pedido integrado",
         ],
       },
       scaler: {
@@ -1005,7 +1005,7 @@ const CURRENT_OFFER = {
         features: [
           "4 anuncios en vídeo: 2 por producto",
           "4 diseños publicitarios para redes sociales",
-          "2 páginas de destino independientes, una por producto, alojadas durante 90 días",
+          "2 páginas de destino alojadas e independientes, una por producto",
           "Resumen de la estrategia de la competencia",
         ],
       },
@@ -1029,7 +1029,7 @@ const CURRENT_OFFER = {
       },
       formats: {
         q: "¿Qué recibo exactamente?",
-        a: "Anuncios en vídeo verticales 9:16 en formato MP4. Los paquetes Conversion Funnel y Multi-Product Scaler añaden diseños publicitarios, texto publicitario y páginas de destino alojadas durante 90 días. La entrega es digital, mediante enlace de descarga o URL alojada.",
+        a: "Anuncios en vídeo verticales 9:16 en formato MP4. Los paquetes Conversion Funnel y Multi-Product Scaler añaden diseños publicitarios, texto publicitario y páginas de destino alojadas. La entrega es digital, mediante enlace de descarga o URL alojada.",
       },
       rights: {
         q: "¿De quién son los materiales?",
@@ -1071,7 +1071,7 @@ const CURRENT_OFFER = {
           "2 annunci video con hook diversi per A/B test",
           "2 grafiche pubblicitarie per i social",
           "Testo pubblicitario completo",
-          "1 landing page con il tuo video e un modulo d'ordine integrato, ospitata per 90 giorni",
+          "1 landing page ospitata con il tuo video e un modulo d'ordine integrato",
         ],
       },
       scaler: {
@@ -1080,7 +1080,7 @@ const CURRENT_OFFER = {
         features: [
           "4 annunci video: 2 per prodotto",
           "4 grafiche pubblicitarie per i social",
-          "2 landing page indipendenti, una per prodotto, ospitate per 90 giorni",
+          "2 landing page ospitate e indipendenti, una per prodotto",
           "Sintesi della strategia dei concorrenti",
         ],
       },
@@ -1104,7 +1104,7 @@ const CURRENT_OFFER = {
       },
       formats: {
         q: "Che cosa ricevo esattamente?",
-        a: "Annunci video verticali 9:16 in formato MP4. I pacchetti Conversion Funnel e Multi-Product Scaler aggiungono grafiche pubblicitarie, testo pubblicitario e landing page ospitate per 90 giorni. La consegna è digitale, tramite link di download o URL ospitato.",
+        a: "Annunci video verticali 9:16 in formato MP4. I pacchetti Conversion Funnel e Multi-Product Scaler aggiungono grafiche pubblicitarie, testo pubblicitario e landing page ospitate. La consegna è digitale, tramite link di download o URL ospitato.",
       },
       rights: {
         q: "Di chi sono i materiali?",
