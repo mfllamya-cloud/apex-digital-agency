@@ -75,6 +75,25 @@
   footer{border-top:1px solid var(--line);padding:28px 0 90px;color:var(--muted);font-size:13px}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   footer a{color:var(--muted)}
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:44px}
+  .mi{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:20px 22px;transition:border-color .2s}
+  .mi:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+  .mi h3{font-size:20px;margin:0 0 6px}
+  .mi p{color:var(--muted);margin:0;font-size:15px}
+  .mi button{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:20px;cursor:pointer;transition:background .2s,color .2s}
+  .mi button:hover,.mi button.on{background:var(--accent);color:#0a0a0c}
+  .order{margin-top:56px;background:var(--bg2);border:1px solid var(--line);border-radius:24px;padding:32px;display:grid;grid-template-columns:1fr 1.4fr;gap:36px;align-items:start}
+  .order h3{font-size:28px}
+  .order .lead{color:var(--muted);margin:10px 0 0}
+  .order form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .order label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+  .order .full{grid-column:1/-1}
+  .order input,.order select,.order textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:15px}
+  .order input:focus,.order select:focus,.order textarea:focus{outline:none;border-color:var(--accent)}
+  .order textarea{min-height:84px;resize:vertical}
+  .order .btn{width:100%}
+  .order .hint{font-size:12px;color:var(--muted);text-align:center;margin:0}
+  @media (max-width:860px){ .order{grid-template-columns:1fr;padding:24px} .order form{grid-template-columns:1fr} }
   .hide{display:none!important}
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease, transform .8s ease}
   .reveal.in{opacity:1;transform:none}
@@ -86,7 +105,7 @@
 <header>
   <div class="wrap">
     <div class="brand">Maison Aurelle</div>
-    <a class="btn" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a>
+    <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a>
   </div>
 </header>
 
@@ -97,7 +116,7 @@
     <h1>An evening worth remembering begins at this table</h1>
     <p>Candlelight, golden light and a table set just for your guests. Reserve your private table tonight and let Maison Aurelle shape the evening around you.</p>
     <div class="cta-row">
-      <a class="btn" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a>
+      <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a>
       <a class="btn ghost" href="#film">Watch the videos</a>
     </div>
   </div>
@@ -129,12 +148,32 @@
   </div>
 </section>
 
+<section id="menu">
+  <div class="wrap">
+    <div class="reveal center"><p class="eyebrow">Sample menu</p><h2>Tonight at the table</h2></div>
+    <div class="menu" id="menuList" data-items="Truffle velouté :: Silky wild mushroom soup finished with black truffle and a drop of aged cream | Seared scallops :: Golden scallops on cauliflower purée with brown butter and toasted hazelnuts | Slow-braised short rib :: Twelve-hour beef in red wine jus, served with smoked potato mousseline | Catch of the day :: Line-caught fish with saffron beurre blanc and seasonal greens | Chef’s tasting menu :: Five courses chosen by the chef for the whole table, perfect for celebrations | Dark chocolate soufflé :: Baked to order and served warm with vanilla bean ice cream"></div>
+    <div class="order reveal" id="order">
+      <div><h3 data-t="o_title"></h3><p class="lead" data-t="o_lead"></p></div>
+      <form id="orderForm">
+        <label><span data-t="o_name"></span><input name="n" required autocomplete="name"></label>
+        <label><span data-t="o_phone"></span><input name="ph" type="tel" autocomplete="tel"></label>
+        <label class="full"><span data-t="o_items"></span><select name="it" id="orderItem"></select></label>
+        <label><span data-t="o_qty"></span><input name="q" type="number" min="1" value="1"></label>
+        <label><span data-t="o_when"></span><input name="w"></label>
+        <label class="full"><span data-t="o_note"></span><textarea name="nt"></textarea></label>
+        <div class="full"><button class="btn" type="submit" data-t="o_send"></button></div>
+        <p class="hint full" data-t="o_hint"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <div class="reveal center"><p class="eyebrow">Your reservation</p><h2>Reserve your private table</h2></div>
     <div class="products">
-      <div class="product reveal"><img src="photo1.jpg" alt="Private Dining Room"><div class="body"><h3>Private Dining Room</h3><p>An exclusive room with a beautifully set wooden table, candlelight and warm ambient lighting, offered as a $200 package. Reserve your private table tonight and make the evening one worth remembering.</p><a class="btn" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a></div></div>
-      <div class="product reveal opt-p2"><img class="opt" src="p2-photo1.jpg" alt=""><div class="body"><h3></h3><p></p><a class="btn" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a></div></div>
+      <div class="product reveal"><img src="photo1.jpg" alt="Private Dining Room"><div class="body"><h3>Private Dining Room</h3><p>An exclusive room with a beautifully set wooden table, candlelight and warm ambient lighting. Reserve your private table tonight and make the evening one worth remembering.</p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
+      <div class="product reveal opt-p2"><img class="opt" src="p2-photo1.jpg" alt=""><div class="body"><h3></h3><p></p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
     </div>
     <div class="gallery">
       <img class="reveal opt" src="photo2.jpg" alt=""><img class="reveal opt" src="photo3.jpg" alt=""><img class="reveal opt" src="p2-photo2.jpg" alt="">
@@ -145,9 +184,9 @@
 <section>
   <div class="wrap">
     <div class="reveal"><p class="eyebrow">FAQ</p><h2>Questions before you reserve</h2></div>
-    <details class="reveal"><summary>How do I reserve the private room?</summary><p>Press the reservation button and send us your request. Tell us your preferred date and the size of your group, and we will take care of the rest.</p></details>
-    <details class="reveal"><summary>Is my date available?</summary><p>Availability depends on the evening you choose. Use the reservation button to ask about your preferred date and we will confirm with you directly.</p></details>
-    <details class="reveal"><summary>What is included in the $200 package?</summary><p>The private dining room is offered as a $200 package. For details on what it includes and any special requests, ask us through the reservation button.</p></details>
+    <details class="reveal"><summary>How do I reserve the private room?</summary><p>Choose your dishes, fill in the quick order form and send it. Tell us your preferred date and the size of your group, and we will take care of the rest.</p></details>
+    <details class="reveal"><summary>Is my date available?</summary><p>Availability depends on the evening you choose. Send your preferred date through the form and we will confirm with you directly.</p></details>
+    <details class="reveal"><summary>Can the menu be adapted for my guests?</summary><p>Yes. Add a note about allergies, preferences or a special occasion in the order form and the kitchen will prepare the evening around it.</p></details>
   </div>
 </section>
 
@@ -155,11 +194,11 @@
   <div class="wrap reveal">
     <h2>Reserve your private table tonight</h2>
     <p>An evening worth remembering is waiting. Send your request now and let Maison Aurelle prepare a table made for your guests.</p>
-    <a class="btn" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a>
+    <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a>
   </div>
 </section>
 
-<a class="btn float" href="https://apex-digital-agency-dqir.vercel.app/#packages" target="_blank" rel="noopener">Reserve your table</a>
+<a class="btn float" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a>
 
 <footer>
   <div class="wrap"><span>© Maison Aurelle</span><span>Page &amp; ads by <a href="/">Apex Digital Agency</a></span></div>
@@ -182,6 +221,40 @@
     });
     var sec=document.getElementById('film');
     setTimeout(function(){ if(!box.querySelector('.vid:not(.hide)')) sec.classList.add('hide'); }, 6000);
+  })();
+  // menu / offer list + quick order (opens WhatsApp, email or the order link with the order written out)
+  (function(){
+    var L={en:{o_title:'Quick order',o_lead:'Pick what you want, send it in one tap. We answer you directly.',o_name:'Your name',o_phone:'Phone (optional)',o_items:'Your choice',o_qty:'Quantity',o_when:'Date or city',o_note:'Note (optional)',o_send:'Send my order',o_hint:'Your order opens in WhatsApp, ready to send.',hello:'Hello, I would like to order:',name:'Name',phone:'Phone',qty:'Quantity',when:'Date / city',note:'Note',pick:'Choose'},
+      fr:{o_title:'Commande rapide',o_lead:'Choisissez, envoyez en un geste. Nous vous répondons directement.',o_name:'Votre nom',o_phone:'Téléphone (facultatif)',o_items:'Votre choix',o_qty:'Quantité',o_when:'Date ou ville',o_note:'Note (facultatif)',o_send:'Envoyer ma commande',o_hint:'Votre commande s’ouvre dans WhatsApp, prête à envoyer.',hello:'Bonjour, je souhaite commander :',name:'Nom',phone:'Téléphone',qty:'Quantité',when:'Date / ville',note:'Note',pick:'Choisir'},
+      es:{o_title:'Pedido rápido',o_lead:'Elige lo que quieres y envíalo con un toque. Te respondemos directamente.',o_name:'Tu nombre',o_phone:'Teléfono (opcional)',o_items:'Tu elección',o_qty:'Cantidad',o_when:'Fecha o ciudad',o_note:'Nota (opcional)',o_send:'Enviar mi pedido',o_hint:'Tu pedido se abre en WhatsApp, listo para enviar.',hello:'Hola, quiero pedir:',name:'Nombre',phone:'Teléfono',qty:'Cantidad',when:'Fecha / ciudad',note:'Nota',pick:'Elegir'},
+      it:{o_title:'Ordine rapido',o_lead:'Scegli e invia con un tocco. Ti rispondiamo direttamente.',o_name:'Il tuo nome',o_phone:'Telefono (facoltativo)',o_items:'La tua scelta',o_qty:'Quantità',o_when:'Data o città',o_note:'Nota (facoltativa)',o_send:'Invia il mio ordine',o_hint:'Il tuo ordine si apre in WhatsApp, pronto da inviare.',hello:'Buongiorno, vorrei ordinare:',name:'Nome',phone:'Telefono',qty:'Quantità',when:'Data / città',note:'Nota',pick:'Scegli'},
+      ar:{o_title:'اطلب بسرعة',o_lead:'اختر ما يعجبك وأرسل طلبك بضغطة واحدة، ونرد عليك مباشرة.',o_name:'الاسم',o_phone:'الهاتف (اختياري)',o_items:'اختيارك',o_qty:'الكمية',o_when:'التاريخ أو المدينة',o_note:'ملاحظة (اختياري)',o_send:'أرسل طلبي',o_hint:'سيفتح طلبك في واتساب جاهزاً للإرسال.',hello:'مرحباً، أريد أن أطلب:',name:'الاسم',phone:'الهاتف',qty:'الكمية',when:'التاريخ / المدينة',note:'ملاحظة',pick:'اختيار'} };
+    var t=L[(document.documentElement.lang||'en').slice(0,2)]||L.en;
+    document.querySelectorAll('[data-t]').forEach(function(e){ e.textContent=t[e.getAttribute('data-t')]||''; });
+    var box=document.getElementById('menuList'), sel=document.getElementById('orderItem');
+    var items=(box.getAttribute('data-items')||'').split('|').map(function(r){ var a=r.split('::'); return {n:(a[0]||'').trim(), d:(a.slice(1).join(' ')||'').trim()}; }).filter(function(i){ return i.n; });
+    var p1=document.querySelector('.product h3'); if(!items.length && p1 && p1.textContent.trim()) items=[{n:p1.textContent.trim(),d:''}];
+    if(!items.length){ document.getElementById('menu').classList.add('hide'); }
+    items.forEach(function(i){
+      var c=document.createElement('div'); c.className='mi reveal';
+      var w=document.createElement('div'); var h=document.createElement('h3'); h.textContent=i.n; var p=document.createElement('p'); p.textContent=i.d; w.appendChild(h); if(i.d) w.appendChild(p);
+      var b=document.createElement('button'); b.type='button'; b.textContent='+'; b.setAttribute('aria-label',t.pick+' '+i.n);
+      b.onclick=function(){ sel.value=i.n; document.querySelectorAll('.mi button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); document.getElementById('order').scrollIntoView({behavior:'smooth',block:'center'}); };
+      c.appendChild(w); c.appendChild(b); box.appendChild(c);
+      var o=document.createElement('option'); o.textContent=i.n; sel.appendChild(o);
+    });
+    var url=document.querySelector('header .btn').getAttribute('href')||'';
+    document.getElementById('orderForm').addEventListener('submit',function(ev){
+      ev.preventDefault(); var f=ev.target;
+      var lines=[t.hello,'• '+f.it.value+' × '+(f.q.value||1),t.name+': '+f.n.value];
+      if(f.ph.value) lines.push(t.phone+': '+f.ph.value); if(f.w.value) lines.push(t.when+': '+f.w.value); if(f.nt.value) lines.push(t.note+': '+f.nt.value);
+      var msg=lines.join('\n'), go;
+      if(/wa\.me|whatsapp/i.test(url)){ go=url.split('?')[0]+'?text='+encodeURIComponent(msg); }
+      else if(/^mailto:/i.test(url)){ go=url.split('?')[0]+'?subject='+encodeURIComponent(document.title)+'&body='+encodeURIComponent(msg); }
+      else if(/^https?:/i.test(url) && url.indexOf(location.host)<0){ go=url; }
+      else { go='https://wa.me/?text='+encodeURIComponent(msg); }
+      window.open(go,'_blank','noopener');
+    });
   })();
   if('IntersectionObserver' in window){ var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });},{threshold:.12}); document.querySelectorAll('.reveal').forEach(function(el){ro.observe(el);}); } else { document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');}); }
 </script>
