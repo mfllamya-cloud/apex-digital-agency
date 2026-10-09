@@ -390,7 +390,7 @@ document.querySelectorAll('#stepper li').forEach(function(li){ li.addEventListen
 
 /* ---------- media: drag & drop, thumbnails, progress ---------- */
 /* ---- direct-to-cloud upload (Cloudinary, unsigned preset, chunked). Files never pass through Make. ---- */
-var CLOUD={name:'', preset:'', folder:'apex-orders'};   // <- fill in cloud name + unsigned upload preset
+var CLOUD={name:'z4wubaot', preset:'apex_digital_uploads', folder:''};   // Cloudinary cloud name + unsigned upload preset (public values)
 var CHUNK=6*1024*1024, queue=[], running=0, MAXPAR=2;
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
 function cloudUpload(it){
@@ -512,6 +512,8 @@ f.addEventListener('submit',function(ev){
     logo_url:files.logo.length?files.logo[0].remote:'',site_lang:L,
     p1_photo_urls:urls('p1',false).join('\n'),p1_video_urls:urls('p1',true).join('\n'),
     p2_photo_urls:p===500?urls('p2',false).join('\n'):'',p2_video_urls:p===500?urls('p2',true).join('\n'):''};
+  urls('p1',false).slice(0,3).forEach(function(u,i){ data['p1photo'+(i+1)]=u; }); if(p===500) urls('p2',false).slice(0,2).forEach(function(u,i){ data['p2photo'+(i+1)]=u; });
+  urls('p1',true).slice(0,2).forEach(function(u,i){ data['p1video'+(i+1)]=u; });
   data.files_json=JSON.stringify({p1:{photos:urls('p1',false),videos:urls('p1',true)},p2:p===500?{photos:urls('p2',false),videos:urls('p2',true)}:null,logo:data.logo_url||null});
   var body=new URLSearchParams(); Object.keys(data).forEach(function(k){ body.append(k,data[k]); });
   fetch(ORDER_HOOK,{method:'POST',body:body}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
