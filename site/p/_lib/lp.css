@@ -1,6 +1,6 @@
 /* ==========================================================
    Apex LP Engine - component library for client offer pages
-   Themes: html[data-theme="dark|light|pastel|vibrant"]
+   Themes: html[data-theme="dark|light|pastel|vibrant|fashion"]
    The page sets --accent (taken from the product); everything else adapts.
    ========================================================== */
 html[data-theme=dark]{--bg:#0a0a0c;--bg2:#121216;--line:#26262e;--text:#f6f3ee;--muted:#aaa59b;--hbg:rgba(10,10,12,.82);--on-accent:#0a0a0c;--accent-text:var(--accent);--shade:rgba(0,0,0,.5)}
@@ -138,3 +138,14 @@ html[data-lp] body{padding-bottom:92px}
 
 .brand{display:flex;align-items:center;gap:10px}
 .brand img.logo{height:34px;width:auto;max-width:120px;object-fit:contain;border-radius:6px}
+
+/* ---------- High-Fashion theme: monochrome + one bold accent ---------- */
+html[data-theme=fashion]{--bg:#0b0b0b;--bg2:#151515;--line:#2c2c2c;--text:#f4f4f2;--muted:#9b9b97;--hbg:rgba(11,11,11,.88);--on-accent:#fff;--accent-text:var(--accent);--shade:rgba(0,0,0,.6);color-scheme:dark}
+html[data-theme=fashion] body{background:var(--bg)}
+html[data-theme=fashion] .btn{border-radius:0;text-transform:uppercase;letter-spacing:.16em;font-size:13px;font-weight:600}
+html[data-theme=fashion] .btn.ghost{box-shadow:inset 0 0 0 1px var(--text)}
+html[data-theme=fashion] .card,html[data-theme=fashion] .product,html[data-theme=fashion] .pgc,html[data-theme=fashion] .order,html[data-theme=fashion] .mi,html[data-theme=fashion] .vid{border-radius:0}
+html[data-theme=fashion] .eyebrow{letter-spacing:.34em;font-size:11px}
+html[data-theme=fashion] h1,html[data-theme=fashion] h2,html[data-theme=fashion] h3{font-weight:400}
+html[data-theme=fashion] .lp-strip{letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+html[data-theme=fashion] .lp-ps .col,html[data-theme=fashion] .lp-vs,html[data-theme=fashion] .lp-testi,html[data-theme=fashion] .lp-stock{border-radius:0}
