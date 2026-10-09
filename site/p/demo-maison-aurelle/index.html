@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html data-lp data-theme="dark" data-palette="ember" data-demo lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --accent:#E8B96A; --bg:#0a0a0c; --bg2:#121216; --line:#26262e; --text:#f6f3ee; --muted:#aaa59b; --serif:"Playfair Display",Georgia,serif; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  :root{ --accent:#F2A65A; --bg:#0a0a0c; --bg2:#121216; --line:#26262e; --text:#f6f3ee; --muted:#aaa59b; --serif:"Playfair Display",Georgia,serif; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -130,57 +130,25 @@
   .reveal.in{opacity:1;transform:none}
   @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hero img{animation:none} }
   @media (max-width:860px){ .benefits{grid-template-columns:1fr} .story{grid-template-columns:1fr} .gallery{grid-template-columns:repeat(2,1fr)} section{padding:72px 0} .hero{min-height:82vh} }
-  :root{--bg:#0a0705;--bg2:#15100b;--line:#2e2418;--text:#f8f1e4;--muted:#b6a994}
-  body{background:radial-gradient(1000px 520px at 82% -8%,rgba(232,185,106,.10),transparent 60%),radial-gradient(800px 500px at 0% 40%,rgba(120,60,20,.10),transparent 60%),var(--bg)}
-
-  /* ===== premium showcase layer ===== */
-  html{scroll-behavior:smooth}
-  .sample{display:flex;justify-content:center;align-items:center;gap:6px 16px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(90deg,#0d0b08,#1b150b,#0d0b08);font-size:12.5px}
-  .dbadge{display:inline-flex;align-items:center;gap:9px;border:1px solid color-mix(in srgb,var(--accent) 65%,transparent);color:var(--accent);padding:5px 15px;border-radius:999px;font-weight:600;letter-spacing:.02em;background:rgba(0,0,0,.4);font-size:13px}
-  .dbadge i{width:7px;height:7px;border-radius:50%;background:#ff5a4d;animation:dpulse 1.8s infinite}
-  @keyframes dpulse{0%{box-shadow:0 0 0 0 rgba(255,90,77,.7)}70%{box-shadow:0 0 0 9px rgba(255,90,77,0)}100%{box-shadow:0 0 0 0 rgba(255,90,77,0)}}
-  .sample .dtxt{opacity:.85}
-  .sprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:80;background:linear-gradient(90deg,var(--accent),#fff6dd);box-shadow:0 0 12px var(--accent)}
-  .card,.product,.pgc,.ev figure,.mi,.order{transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s,border-color .3s,opacity .8s ease}
-  .card:hover,.product:hover,.pgc:hover,.ev figure:hover{transform:translateY(-8px)!important;box-shadow:0 34px 60px -34px color-mix(in srgb,var(--accent) 55%,transparent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
-  .product img,.pgc img,.ev img,.build .imgs img{transition:transform 1s cubic-bezier(.2,.8,.2,1)}
-  .product:hover img,.pgc:hover img,.ev figure:hover img{transform:scale(1.06)}
-  .product,.pgc,.ev figure{overflow:hidden}
-  .btn{position:relative;overflow:hidden}
-  .btn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s}
-  .btn:hover::after{transform:translateX(120%)}
-  .btn:active{transform:translateY(0) scale(.98)}
-  details{transition:border-color .3s,background .3s}
-  details[open] p{animation:dfade .45s ease}
-  @keyframes dfade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-  summary::after{transition:transform .35s}
-  details[open] summary::after{transform:rotate(45deg)}
-  .float{display:none!important}
-  .sbuy{position:fixed;left:50%;bottom:16px;transform:translate(-50%,160%);width:min(760px,100% - 24px);display:flex;align-items:center;gap:14px;padding:9px 10px 9px 10px;border-radius:999px;background:rgba(12,10,8,.84);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 24px 60px -22px #000;transition:transform .55s cubic-bezier(.2,.8,.2,1);z-index:60}
-  .sbuy.on{transform:translate(-50%,0)}
-  .sbuy img{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line)}
-  .sbuy div{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
-  .sbuy b{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sbuy span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sbuy .btn{padding:13px 24px;font-size:14.5px;flex:none}
-  .dtoast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,16px);max-width:min(520px,100% - 28px);padding:14px 22px;border-radius:16px;background:rgba(14,12,9,.94);color:#f7f1e4;border:1px solid var(--accent);box-shadow:0 20px 50px -18px #000;font-size:14px;text-align:center;line-height:1.5;opacity:0;pointer-events:none;transition:.35s;z-index:90}
-  .dtoast.on{opacity:1;transform:translate(-50%,0)}
-  body{padding-bottom:90px}
-  @media (max-width:600px){ .sbuy span{display:none} .sbuy .btn{padding:12px 18px} }
-  @media (prefers-reduced-motion:reduce){ .dbadge i{animation:none} }
+  html[data-theme][data-palette=ember]{--bg:#130a06;--bg2:#1e120b;--line:#3b2518;--text:#fbf1e4;--muted:#c8ad95;--hbg:rgba(19,10,6,.84)}
+  html[data-theme][data-palette=ember] body{background:radial-gradient(1000px 560px at 85% -10%,rgba(242,166,90,.17),transparent 60%),radial-gradient(800px 520px at 0% 45%,rgba(170,60,25,.15),transparent 60%),var(--bg)}
+  html[data-theme][data-palette=ember] h1,html[data-theme][data-palette=ember] h2{letter-spacing:.005em}
 </style>
+<link rel="stylesheet" href="/p/_lib/lp.css">
 </head>
 <body>
-<div class="sample"><span class="dbadge"><i></i>عمل تجريبي / Demo Project - Live Preview</span><span class="dtxt">Sample store built by Apex Digital Agency · AI-generated images</span><a href="/#packages">Get yours</a></div>
+<div class="lp-demo"><span class="lp-badge"><i></i>عمل تجريبي / Demo Project - Live Preview</span><span>Sample store by Apex Digital Agency · AI-generated images · <a href="/#packages">Get yours</a></span><span class="lp-themes" aria-label="Try a theme"><em style="font-style:normal;opacity:.7">Try a theme:</em><button type="button" data-theme="original" data-accent="" style="--sw:#F2A65A" class="on"><i></i>Original</button><button type="button" data-theme="light" data-accent="#B8913F" style="--sw:#B8913F"><i></i>Light</button><button type="button" data-theme="dark" data-accent="#D8B878" style="--sw:#D8B878"><i></i>Dark</button><button type="button" data-theme="pastel" data-accent="#D9779B" style="--sw:#D9779B"><i></i>Pastel</button><button type="button" data-theme="vibrant" data-accent="#FF4FA3" style="--sw:#FF4FA3"><i></i>Vibrant</button></span></div>
 <header>
   <div class="wrap">
     <div class="brand">Maison Aurelle</div>
     <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a>
   </div>
 </header>
+<div class="lp-strip" data-lp-hide><span>Weekend evenings are filling up. Private-room booking closes in</span><span class="lp-cd" data-evergreen="36"><span><b>00</b><i>days</i></span><span><b>00</b><i>hrs</i></span><span><b>00</b><i>min</i></span><span><b>00</b><i>sec</i></span></span></div>
 
-<div class="hero">
-  <img src="photo1.jpg" alt="Maison Aurelle">
+<div class="hero lp-hero">
+  <img src="photo1.jpg" alt="Maison Aurelle" fetchpriority="high" decoding="async">
+  <video class="lp-bgvid" data-src="/videos/restaurant.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
   <div class="wrap reveal">
     <p class="eyebrow">Maison Aurelle Private Dining</p>
     <h1>An evening worth remembering begins at this table</h1>
@@ -202,21 +170,38 @@
 
 <section>
   <div class="wrap">
+    <div class="reveal" data-anim="up"><p class="eyebrow">The difference</p><h2>From a rushed night out to an evening that is yours</h2></div>
+    <div class="lp-ps">
+      <div class="col bad reveal" data-anim="left"><h3>The usual night out</h3><ul><li>Tables squeezed side by side, noise on every side</li><li>Courses rushed so the table can turn</li><li>A set menu that ignores what your guests really eat</li><li>Phone calls, waiting, and no clear confirmation</li></ul></div>
+      <div class="arrow reveal" data-anim="zoom">→</div>
+      <div class="col good reveal" data-anim="right"><h3>At Maison Aurelle</h3><ul><li>A private room that is yours for the whole evening</li><li>A menu built around your guests and their needs</li><li>Live music or a private singer, if you want one</li><li>Reserve in one tap and we confirm directly</li></ul></div>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="wrap">
     <div class="reveal"><p class="eyebrow">Why this room</p><h2>Made for evenings that matter</h2></div>
     <div class="benefits">
-      <div class="card reveal"><div class="n">01</div><h3>A table that is yours</h3><p>Your private dining room keeps the evening unhurried and intimate, so conversation, laughter and every course belong entirely to the people you chose to share it with.</p></div>
-      <div class="card reveal"><div class="n">02</div><h3>Candlelit, golden atmosphere</h3><p>Floating candles in glass cylinders and a sculptural ceiling of golden light create a warm glow that makes every guest, every plate and every toast feel special.</p></div>
-      <div class="card reveal"><div class="n">03</div><h3>Set with refined detail</h3><p>Fine porcelain with dark rims, polished cutlery and crystal glassware rest on a rich wooden table, laid out with care so the elegance is there before the first course.</p></div>
+      <div class="card reveal" data-anim="left"><div class="n">01</div><h3>A table that is yours</h3><p>Your private dining room keeps the evening unhurried and intimate, so conversation, laughter and every course belong entirely to the people you chose to share it with.</p></div>
+      <div class="card reveal" data-anim="up"><div class="n">02</div><h3>Candlelit, golden atmosphere</h3><p>Floating candles in glass cylinders and a sculptural ceiling of golden light create a warm glow that makes every guest, every plate and every toast feel special.</p></div>
+      <div class="card reveal" data-anim="right"><div class="n">03</div><h3>Set with refined detail</h3><p>Fine porcelain with dark rims, polished cutlery and crystal glassware rest on a rich wooden table, laid out with care so the elegance is there before the first course.</p></div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap story">
-    <img class="reveal opt" src="photo2.jpg" alt="Maison Aurelle">
+    <img class="reveal opt" data-anim="left" src="photo2.jpg" alt="Maison Aurelle" loading="lazy" decoding="async">
     <div class="reveal"><p class="eyebrow">The experience</p><h2>Where the evening becomes a memory</h2><p>Maison Aurelle created its private dining room for moments you want to keep. Warm wood, soft candlelight and a ceiling of glowing brass tubes set a calm, luxurious mood. Whether you are marking a milestone or simply gathering people you love, the room gives the night its own space and its own story.</p></div>
   </div>
 </section>
+<section>
+  <div class="wrap">
+    <div class="reveal center" data-anim="up"><p class="eyebrow">Compare</p><h2>Maison Aurelle vs. a typical restaurant</h2></div>
+    <div class="lp-vs reveal" data-anim="zoom"><table><thead><tr><th></th><th class="us">Maison Aurelle</th><th>Typical restaurant</th></tr></thead><tbody><tr><td>Private dining room, just for your group</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Menu built around your guests</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Live music and celebration setups</td><td class="us">✓</td><td class="mid">Limited</td></tr><tr><td>Unhurried service, no table turnover</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Reserve in one tap</td><td class="us">✓</td><td class="mid">Limited</td></tr></tbody></table></div>
+  </div>
+</section>
+
 
 <section id="evenings">
   <div class="wrap">
@@ -272,16 +257,25 @@
 <section>
   <div class="wrap">
     <div class="reveal center"><p class="eyebrow">Your reservation</p><h2>Reserve your private table</h2></div>
+    <div class="lp-stock reveal" data-anim="up" data-left="4" data-total="12"><p><span>Private-room evenings left this month</span><em>Only 4 left</em></p><div class="bar"><i></i></div></div>
     <div class="products">
-      <div class="product reveal"><img src="photo1.jpg" alt="Private Dining Room"><div class="body"><h3>Private Dining Room</h3><p>An exclusive room with a beautifully set wooden table, candlelight and warm ambient lighting. Reserve your private table tonight and make the evening one worth remembering.</p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
-      <div class="product reveal opt-p2"><img class="opt" src="p2-photo1.jpg" alt=""><div class="body"><h3></h3><p></p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
+      <div class="product reveal"><img src="photo1.jpg" alt="Private Dining Room" loading="lazy" decoding="async"><div class="body"><h3>Private Dining Room</h3><p>An exclusive room with a beautifully set wooden table, candlelight and warm ambient lighting. Reserve your private table tonight and make the evening one worth remembering.</p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
+      <div class="product reveal opt-p2"><img class="opt" src="p2-photo1.jpg" alt="" loading="lazy" decoding="async"><div class="body"><h3></h3><p></p><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Reserve your table</a></div></div>
     </div>
     <div class="gallery">
-      <img class="reveal opt" src="photo2.jpg" alt=""><img class="reveal opt" src="photo3.jpg" alt=""><img class="reveal opt" src="p2-photo2.jpg" alt="">
+      <img class="reveal opt" src="photo2.jpg" alt="" loading="lazy" decoding="async"><img class="reveal opt" src="photo3.jpg" alt="" loading="lazy" decoding="async"><img class="reveal opt" src="p2-photo2.jpg" alt="" loading="lazy" decoding="async">
     </div>
   </div>
 </section>
 
+<section>
+  <div class="wrap">
+    <div class="reveal center" data-anim="up"><p class="eyebrow">Sample reviews</p><h2>What guests say</h2></div>
+    <div class="lp-testi reveal"><div class="lp-track"><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“We booked the private room for our anniversary. Candlelight, our favourite dishes and nobody rushing us. It felt made for us.”</blockquote><cite><b>Sample review</b>Anniversary dinner</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“The custom menu builder saved us so much back and forth. We chose everything in two minutes and it was exactly right.”</blockquote><cite><b>Sample review</b>Family celebration</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“A live jazz trio during dessert turned a dinner into a night we still talk about.”</blockquote><cite><b>Sample review</b>Birthday evening</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“Warm, calm and beautifully set. The best way to host our clients.”</blockquote><cite><b>Sample review</b>Business dinner</cite></div></div>
+      <div class="lp-ctrl"><button type="button" data-dir="-1" aria-label="Previous">‹</button><div class="lp-dots"></div><button type="button" data-dir="1" aria-label="Next">›</button></div></div>
+    <p class="lp-note">Sample reviews written for this demo. Real stores show their own customers’ words.</p>
+  </div>
+</section>
 <section>
   <div class="wrap">
     <div class="reveal"><p class="eyebrow">FAQ</p><h2>Questions before you reserve</h2></div>
@@ -387,28 +381,9 @@
     document.getElementById('bsend').addEventListener('click',function(){ window.apexSend('Hello, I would like to reserve a private evening with this custom menu:\n'+text()); });
   })();
 </script>
-<div class="sprog" id="sprog"></div>
-<div class="sbuy" id="sbuy"><img class="opt" src="photo1.jpg" alt="" onerror="this.style.display='none'"><div><b>Maison Aurelle</b><span>Private Dining Room · Reserve tonight</span></div><a class="btn" href="https://wa.me/">Reserve now</a></div>
-<div class="dtoast" id="dtoast" role="status" aria-live="polite">هذا زر تجريبي لأغراض العرض فقط / This is a demo button for preview purposes</div>
-<script>
-(function(){
-  var tt=document.getElementById('dtoast'), tm;
-  function toast(){ tt.classList.add('on'); clearTimeout(tm); tm=setTimeout(function(){ tt.classList.remove('on'); },3300); }
-  window.apexSend=function(){ toast(); };
-  var EXT=/^(https?:|mailto:|tel:|sms:|whatsapp:)/i;
-  document.querySelectorAll('a[href]').forEach(function(a){ var h=a.getAttribute('href'); if(EXT.test(h)){ a.setAttribute('data-demo',h); a.setAttribute('href','#'); a.removeAttribute('target'); } });
-  document.addEventListener('click',function(e){
-    var a=e.target.closest('a[data-demo]'); if(a){ e.preventDefault(); e.stopPropagation(); toast(); return; }
-    if(e.target.closest('[data-pick]')) toast();
-  },true);
-  document.querySelectorAll('form').forEach(function(fm){ fm.addEventListener('submit',function(e){ e.preventDefault(); e.stopImmediatePropagation(); toast(); },true); });
-  var sb=document.getElementById('sbuy'), pr=document.getElementById('sprog'), tk=false;
-  function onS(){ var y=window.scrollY, h=document.documentElement.scrollHeight-innerHeight;
-    sb.classList.toggle('on',y>520); pr.style.width=(h>0?y/h*100:0)+'%'; tk=false; }
-  window.addEventListener('scroll',function(){ if(!tk){ tk=true; requestAnimationFrame(onS); } },{passive:true}); onS();
-  document.querySelectorAll('.reveal').forEach(function(el){
-    var i=[].indexOf.call(el.parentNode.children,el)%4; if(i){ el.style.transitionDelay=(i*90)+'ms'; el.addEventListener('transitionend',function(){ el.style.transitionDelay='0s'; },{once:true}); } });
-})();
-</script>
+<div class="lp-sprog"></div>
+<div class="lp-sticky"><img src="photo1.jpg" alt="" onerror="this.style.display='none'"><div><b>Maison Aurelle</b><span>Private Dining Room · Reserve tonight</span></div><a class="btn" href="https://wa.me/">Reserve now</a></div>
+<div class="lp-toast" role="status" aria-live="polite">عمل تجريبي لأغراض العرض فقط / Demo only, for preview purposes</div>
+<script src="/p/_lib/lp.js" defer></script>
 </body>
 </html>
