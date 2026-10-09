@@ -150,12 +150,13 @@
     header .btn{padding:8px 12px;font-size:12px}
     .brand{font-size:11px;letter-spacing:.1em;white-space:normal;line-height:1.3;max-width:120px}
     .hdr-r{gap:6px}
-    .lang{padding:6px 6px;font-size:12px}
+    .lang{padding:6px 8px;font-size:12px;max-width:96px}
   }
 
   /* language switcher + RTL */
   .hdr-r{display:flex;align-items:center;gap:10px}
-  .lang{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 10px;font:500 13px var(--sans);cursor:pointer}
+  .lang{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font:500 13px var(--sans);cursor:pointer}
+  .lang option{background:#111;color:#f6f3ee}
   .lang option{background:#0b0d15;color:#f5f2eb}
   html[lang=ar] body{font-family:"Tajawal",var(--sans)}
   html[lang=ar] h1,html[lang=ar] h2,html[lang=ar] h3,html[lang=ar] .price,html[lang=ar] .name{font-family:"Amiri","Playfair Display",serif}
@@ -191,7 +192,7 @@
     </nav>
     <div class="hdr-r">
     <select id="lang" class="lang" aria-label="Language">
-      <option value="en">EN</option><option value="fr">FR</option><option value="es">ES</option><option value="it">IT</option><option value="ar">ع</option>
+      <option value="ar" lang="ar">العربية</option><option value="en" lang="en">English</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option><option value="it" lang="it">Italiano</option>
     </select>
     <a class="btn" href="#packages" data-i18n="order_now">Order now</a>
     </div>
@@ -332,7 +333,7 @@
             <li data-i18n="li_music">Music and on-screen titles</li>
             <li data-i18n="li_voice">Female or male voice</li>
           </ul>
-          <a class="btn ghost" href="https://tally.so/r/PdV7bB" data-i18n="btn1">Choose Single Hook</a>
+          <a class="btn ghost" href="/order/?package=49" data-i18n="btn1">Choose Single Hook</a>
         </div>
 
         <div class="plan featured reveal">
@@ -348,7 +349,7 @@
             <li class="store" data-i18n="li_store"><b>Professional custom offer page (your own product store)</b><ul class="subl"><li>Professional design that showcases your videos and product photos to lift your sales</li><li>Persuasive, ready-to-sell copy</li><li>A direct WhatsApp button or quick order link, so customers order in one tap</li></ul></li>
             <li data-i18n="li_every">Script, voiceover, music and titles in every video</li>
           </ul>
-          <a class="btn" href="https://tally.so/r/PdV7bB" data-i18n="btn2">Choose Conversion Funnel</a>
+          <a class="btn" href="/order/?package=200" data-i18n="btn2">Choose Conversion Funnel</a>
         </div>
 
         <div class="plan reveal">
@@ -363,7 +364,7 @@
             <li class="store" data-i18n="li_store"><b>Professional custom offer page (your own product store)</b><ul class="subl"><li>Professional design that showcases your videos and product photos to lift your sales</li><li>Persuasive, ready-to-sell copy</li><li>A direct WhatsApp button or quick order link, so customers order in one tap</li></ul></li>
             <li data-i18n="li_every">Script, voiceover, music and titles in every video</li>
           </ul>
-          <a class="btn ghost" href="https://tally.so/r/PdV7bB" data-i18n="btn3">Choose Multi-Product Scaler</a>
+          <a class="btn ghost" href="/order/?package=500" data-i18n="btn3">Choose Multi-Product Scaler</a>
         </div>
       </div>
 
