@@ -80,6 +80,49 @@
   footer.lf a{color:var(--muted)}
   .hide{display:none!important}
   @media (max-width:720px){ .pk{grid-template-columns:1fr} .grid{grid-template-columns:1fr} fieldset{padding:20px 16px} .btn{width:100%} .intro{padding-top:32px} }
+  .stepper{display:flex;gap:10px;list-style:none;padding:0;margin:22px 0 0;flex-wrap:wrap}
+  .stepper li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 16px 7px 8px;transition:.25s}
+  [dir=rtl] .stepper li{padding:7px 8px 7px 16px}
+  .stepper li b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line);font-weight:600;font-size:12px}
+  .stepper li.on{color:var(--text);border-color:var(--gold);background:rgba(212,175,95,.08)}
+  .stepper li.on b{background:var(--gold);color:#0a0a0c;border-color:var(--gold)}
+  .stepper li.done{color:var(--gold2);cursor:pointer}
+  .stepper li.done b{background:rgba(212,175,95,.18);border-color:var(--gold);color:var(--gold2)}
+  .step{animation:sIn .45s ease}
+  @keyframes sIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+  .nav .btn{min-width:180px}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--gold)}
+  .arr{display:inline-block}[dir=rtl] .arr{transform:scaleX(-1)}
+  .thumbs figure{width:92px;height:92px}
+  .thumbs figure.vid video{width:100%;height:100%;object-fit:cover}
+  .thumbs .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:11px;display:grid;place-items:center;pointer-events:none}
+  .pb{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(0,0,0,.55)}
+  .pb i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .15s}
+  .pb.done{opacity:0;transition:opacity .6s .5s}
+  .cnt{display:inline-block;min-width:22px;text-align:center;margin-inline-start:8px;color:var(--gold2);font-weight:600}
+  .upbar{display:none;height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:14px}
+  .upbar.on{display:block}.upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .2s}
+  .sty{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .sty label{position:relative;display:block;border:1px solid var(--line);border-radius:14px;padding:10px;cursor:pointer;background:var(--bg2);transition:.2s}
+  .sty input{position:absolute;opacity:0;pointer-events:none}
+  .sty label:has(input:checked){border-color:var(--gold);background:rgba(212,175,95,.08);box-shadow:0 0 0 1px var(--gold) inset}
+  .sty label:hover{transform:translateY(-2px)}
+  .sty .nm{display:block;text-align:center;font-size:13px;margin-top:8px;font-weight:500}
+  .mock{height:98px;border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:7px;background:var(--mb)}
+  .mock i,.mock u{display:block;border-radius:4px}
+  .mock .b1{height:7px;width:38%;background:var(--ma)}
+  .mock .b2{height:28px;background:var(--mc)}
+  .mock .b3{height:5px;width:70%;background:var(--mt);opacity:.55}
+  .mock u{height:11px;width:36%;border-radius:99px;background:var(--ma);text-decoration:none}
+  .m-light{--mb:#f6f3ee;--ma:#25221c;--mc:#e0d7c6;--mt:#6d675b}
+  .m-dark{--mb:#0b0c12;--ma:#d4af5f;--mc:#1d2030;--mt:#b9b4a6}
+  .m-bold{--mb:linear-gradient(135deg,#ff3d81,#7c3aed);--ma:#fff;--mc:rgba(255,255,255,.3);--mt:#fff}
+  .summary{display:grid;gap:0}
+  .summary div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .summary div:last-child{border:0}.summary span{color:var(--muted)}.summary b{font-weight:500;text-align:end}
+  @media (max-width:720px){ .sty{grid-template-columns:1fr 1fr 1fr;gap:8px}.sty label{padding:6px}.nav .btn{min-width:0;flex:1}.mock{height:76px}.stepper li span{display:none}.stepper li.on span{display:inline} }
 </style>
 </head>
 <body>
@@ -97,10 +140,11 @@
     <p class="eyebrow" data-t="eyebrow"></p>
     <h1 data-t="h1"></h1>
     <p data-t="lead"></p>
-    <ol class="steps"><li><b>1</b><span data-t="s1"></span></li><li><b>2</b><span data-t="s2"></span></li><li><b>3</b><span data-t="s3"></span></li></ol>
+    <ol class="stepper" id="stepper"><li data-go="1"><b>1</b><span data-t="st1"></span></li><li data-go="2"><b>2</b><span data-t="st2"></span></li><li data-go="3"><b>3</b><span data-t="st3"></span></li></ol>
   </section>
 
   <form id="f" novalidate>
+    <div class="step" data-step="1">
     <fieldset>
       <legend data-t="lg_pkg"></legend>
       <div class="pk">
@@ -111,22 +155,37 @@
       <div class="p2-only hide" style="margin-top:12px"><label class="toggle"><input type="checkbox" name="vip" value="yes"><span><span data-t="vip"></span></span></label></div>
       <div style="margin-top:16px"><label class="toggle"><input type="checkbox" name="express" value="yes"><span><span data-t="express"></span> <b id="exPrice" style="color:var(--gold2)"></b><br><small style="color:var(--muted)" data-t="express_x"></small></span></label></div>
     </fieldset>
+    <div class="nav"><span></span><button type="button" class="btn" data-next><span data-t="next"></span> <span class="arr">→</span></button></div>
+    <div class="msg" role="status"></div>
+    </div>
 
+    <div class="step hide" data-step="2">
     <fieldset>
       <legend data-t="lg_you"></legend>
       <div class="grid">
         <label class="f"><span><span data-t="brand"></span> <i class="req">*</i></span><input type="text" name="brand" required maxlength="80" autocomplete="organization"></label>
         <label class="f"><span><span data-t="email"></span> <i class="req">*</i></span><input type="email" name="email" required autocomplete="email"><small data-t="email_x"></small></label>
         <label class="f full store-only"><span data-t="wa"></span><input type="text" name="contact" maxlength="200" placeholder="+33 6 12 34 56 78 · https://yourshop.com/order"><small data-t="wa_x"></small></label>
+        <div class="f full"><span data-t="logo"></span>
+          <label class="drop" data-for="logo"><input type="file" accept="image/*"  data-slot="logo"><span data-t="logo_drop"></span></label>
+          <small data-t="logo_x"></small><div class="thumbs" id="th-logo"></div></div>
       </div>
+    </fieldset>
+
+    <fieldset class="store-only">
+      <legend data-t="sty_h"></legend>
+      <div class="grid"><label class="f full"><span data-t="store_lang"></span>
+        <select name="store_lang"><option value="Arabic">العربية</option><option value="English">English</option><option value="French">Français</option><option value="Spanish">Español</option><option value="Italian">Italiano</option></select><small data-t="store_lang_x"></small></label></div>
+      <p style="color:var(--muted);font-size:13.5px;margin:18px 0 10px" data-t="sty_x"></p>
+      <div class="sty"><label><input type="radio" name="style" value="1"><div class="mock m-light"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty1"></span></label><label><input type="radio" name="style" value="2" checked><div class="mock m-dark"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty2"></span></label><label><input type="radio" name="style" value="3"><div class="mock m-bold"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty3"></span></label></div>
     </fieldset>
 
     <fieldset>
       <legend data-t="lg_p1"></legend>
       <div class="grid">
         <label class="f full"><span><span data-t="pname"></span> <i class="req">*</i></span><input type="text" name="product1" required maxlength="120"></label>
-        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i></span>
-          <label class="drop" data-for="p1"><input type="file" accept="image/*" multiple data-max="3" data-slot="p1"><span data-t="drop"></span></label>
+        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i><span class="cnt" id="cnt-p1"></span></span>
+          <label class="drop" data-for="p1"><input type="file" accept="image/*,video/*" multiple data-slot="p1"><span data-t="drop"></span></label>
           <small data-t="photos_x"></small><div class="thumbs" id="th-p1"></div></div>
       </div>
     </fieldset>
@@ -135,8 +194,8 @@
       <legend data-t="lg_p2"></legend>
       <div class="grid">
         <label class="f full"><span><span data-t="pname"></span> <i class="req">*</i></span><input type="text" name="product2" maxlength="120"></label>
-        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i></span>
-          <label class="drop" data-for="p2"><input type="file" accept="image/*" multiple data-max="2" data-slot="p2"><span data-t="drop"></span></label>
+        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i><span class="cnt" id="cnt-p2"></span></span>
+          <label class="drop" data-for="p2"><input type="file" accept="image/*,video/*" multiple data-slot="p2"><span data-t="drop"></span></label>
           <div class="thumbs" id="th-p2"></div></div>
       </div>
     </fieldset>
@@ -144,23 +203,35 @@
     <fieldset>
       <legend data-t="lg_ad"></legend>
       <div class="grid">
+        <label class="f"><span data-t="platform"></span>
+          <select name="platform"><option value="tiktok">TikTok · 9:16</option><option value="instagram">Instagram · 1:1</option><option value="youtube">YouTube · 16:9</option></select><small data-t="platform_x"></small></label>
         <label class="f"><span data-t="vlang"></span>
           <select name="language"><option value="Arabic">العربية</option><option value="English">English</option><option value="French">Français</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Moroccan Darija">الدارجة المغربية</option></select></label>
         <div class="f"><span data-t="voice"></span>
           <div class="seg"><label><input type="radio" name="voice" value="female" checked><span data-t="female"></span></label><label><input type="radio" name="voice" value="male"><span data-t="male"></span></label></div></div>
+        <label class="f"><span data-t="tone"></span><input type="text" name="tone" maxlength="120" data-ph="tone_ph"></label>
         <label class="f full"><span data-t="offer"></span><textarea name="offer" maxlength="400"></textarea><small data-t="offer_x"></small></label>
+        <label class="f full"><span data-t="refs"></span><textarea name="refs" maxlength="800" placeholder="https://"></textarea><small data-t="refs_x"></small></label>
       </div>
     </fieldset>
+    <div class="nav"><button type="button" class="btn ghost" data-back><span class="arr">←</span> <span data-t="back"></span></button><button type="button" class="btn" data-next><span data-t="next"></span> <span class="arr">→</span></button></div>
+    <div class="msg" role="status"></div>
+    </div>
 
+    <div class="step hide" data-step="3">
+    <fieldset><legend data-t="lg_sum"></legend><div class="summary" id="summary"></div></fieldset>
     <label class="toggle" style="margin:0 4px 16px"><input type="checkbox" name="terms" required><span data-t="terms"></span></label>
     <div class="sum">
       <div><small data-t="total"></small><div class="tot" id="tot">$0</div></div>
       <div style="text-align:end">
-        <button class="btn" type="submit" id="go"><span data-t="pay"></span> →</button>
+        <button class="btn" type="submit" id="go"><span data-t="pay"></span> <span class="arr">→</span></button>
         <div class="secure">🔒 <span data-t="secure"></span></div>
       </div>
     </div>
-    <div class="msg" id="msg" role="status"></div>
+    <div class="upbar" id="upbar"><i></i></div>
+    <div class="msg" role="status"></div>
+    <div class="nav" style="margin-top:14px"><button type="button" class="btn ghost" data-back><span class="arr">←</span> <span data-t="back"></span></button><span></span></div>
+    </div>
   </form>
 </main>
 
@@ -212,14 +283,67 @@ var T = {
   e_pkg:'اختر باقة.',e_req:'يرجى ملء الخانات الإلزامية.',e_email:'يرجى إدخال بريد إلكتروني صحيح.',e_ph1:'أضف صورة واحدة على الأقل للمنتج 1.',e_ph2:'أضف صورة واحدة على الأقل للمنتج 2.',e_terms:'يرجى الموافقة على الشروط.',e_big:'حجم الصور كبير جداً. احذف صورة وأعد المحاولة.',e_net:'تعذّر الإرسال. تحقّق من الاتصال وأعد المحاولة.',e_off:'الطلب عبر الإنترنت سيُفتح قريباً جداً. راسلنا وسنأخذ طلبك الآن.',
   sending:'جارٍ تجهيز طلبك…',redirect:'تم حفظ الطلب. جارٍ فتح صفحة الدفع الآمن…'}
 };
-var L='en', f=document.getElementById('f'), msg=document.getElementById('msg');
-var files={p1:[],p2:[]};
+var T2={
+en:{lead:'Three quick steps: choose your package, share your project, then pay securely. Production starts right after payment.',st1:'Package',st2:'Project details',st3:'Payment',next:'Continue',back:'Back',
+store_lang:'Store language',store_lang_x:'The language your offer page will be written in.',
+logo:'Your logo (optional)',logo_drop:'Tap to add your logo or drop it here',logo_x:'No logo? Write your brand name above and we will design one for you, free of charge.',
+platform:'Ad platform',platform_x:'We set the video format for the platform you choose.',
+tone:'Voiceover tone (optional)',tone_ph:'Warm, luxurious, energetic, calm…',refs:'Reference links (optional)',refs_x:'Ads, pages or accounts you like. One link per line.',
+sty_h:'Store design style',sty_x:'Pick the look of your offer page.',sty1:'Modern Light',sty2:'Premium Dark',sty3:'Bold & Vibrant',
+photos:'Photos and videos',drop:'Tap to add photos or videos, or drop them here',photos_x:'Add as many as you like. Clear, well-lit photos and short clips work best.',
+e_ph1:'Add at least one photo or video of product 1.',e_ph2:'Add at least one photo or video of product 2.',
+lg_sum:'Review your order',r_pkg:'Package',r_brand:'Brand',r_email:'Email',r_prod:'Products',r_files:'Files',r_ad:'Ad format',r_store:'Store',r_express:'Express delivery',up:'Uploading',proc:'Preparing files…'},
+fr:{lead:'Trois étapes rapides : choisissez votre formule, présentez votre projet, puis payez en toute sécurité. La production démarre juste après le paiement.',st1:'Formule',st2:'Détails du projet',st3:'Paiement',next:'Continuer',back:'Retour',
+store_lang:'Langue de la boutique',store_lang_x:'La langue dans laquelle sera rédigée votre page d’offre.',
+logo:'Votre logo (facultatif)',logo_drop:'Touchez pour ajouter votre logo ou déposez-le ici',logo_x:'Pas de logo ? Écrivez le nom de votre marque ci-dessus et nous en créerons un pour vous, gratuitement.',
+platform:'Plateforme publicitaire',platform_x:'Nous adaptons le format de la vidéo à la plateforme choisie.',
+tone:'Ton de la voix off (facultatif)',tone_ph:'Chaleureux, luxueux, énergique, calme…',refs:'Liens de référence (facultatif)',refs_x:'Publicités, pages ou comptes que vous aimez. Un lien par ligne.',
+sty_h:'Style de design de la boutique',sty_x:'Choisissez l’allure de votre page d’offre.',sty1:'Clair moderne',sty2:'Sombre premium',sty3:'Audacieux et vibrant',
+photos:'Photos et vidéos',drop:'Touchez pour ajouter des photos ou vidéos, ou déposez-les ici',photos_x:'Ajoutez-en autant que vous voulez. Des photos nettes et bien éclairées et de courts clips fonctionnent le mieux.',
+e_ph1:'Ajoutez au moins une photo ou vidéo du produit 1.',e_ph2:'Ajoutez au moins une photo ou vidéo du produit 2.',
+lg_sum:'Vérifiez votre commande',r_pkg:'Formule',r_brand:'Marque',r_email:'E-mail',r_prod:'Produits',r_files:'Fichiers',r_ad:'Format publicitaire',r_store:'Boutique',r_express:'Livraison express',up:'Envoi en cours',proc:'Préparation des fichiers…'},
+es:{lead:'Tres pasos rápidos: elige tu paquete, cuéntanos tu proyecto y paga de forma segura. La producción empieza justo después del pago.',st1:'Paquete',st2:'Detalles del proyecto',st3:'Pago',next:'Continuar',back:'Atrás',
+store_lang:'Idioma de la tienda',store_lang_x:'El idioma en que se redactará tu página de ofertas.',
+logo:'Tu logotipo (opcional)',logo_drop:'Toca para añadir tu logotipo o suéltalo aquí',logo_x:'¿Sin logotipo? Escribe el nombre de tu marca arriba y te diseñamos uno gratis.',
+platform:'Plataforma del anuncio',platform_x:'Adaptamos el formato del vídeo a la plataforma que elijas.',
+tone:'Tono de la voz en off (opcional)',tone_ph:'Cálido, lujoso, enérgico, sereno…',refs:'Enlaces de referencia (opcional)',refs_x:'Anuncios, páginas o cuentas que te gusten. Un enlace por línea.',
+sty_h:'Estilo de diseño de la tienda',sty_x:'Elige el aspecto de tu página de ofertas.',sty1:'Claro moderno',sty2:'Oscuro premium',sty3:'Atrevido y vibrante',
+photos:'Fotos y vídeos',drop:'Toca para añadir fotos o vídeos, o suéltalos aquí',photos_x:'Añade todos los que quieras. Funcionan mejor las fotos nítidas y bien iluminadas y los clips cortos.',
+e_ph1:'Añade al menos una foto o vídeo del producto 1.',e_ph2:'Añade al menos una foto o vídeo del producto 2.',
+lg_sum:'Revisa tu pedido',r_pkg:'Paquete',r_brand:'Marca',r_email:'Correo',r_prod:'Productos',r_files:'Archivos',r_ad:'Formato del anuncio',r_store:'Tienda',r_express:'Entrega exprés',up:'Subiendo',proc:'Preparando archivos…'},
+it:{lead:'Tre passaggi rapidi: scegli il pacchetto, descrivi il progetto e paga in modo sicuro. La produzione parte subito dopo il pagamento.',st1:'Pacchetto',st2:'Dettagli del progetto',st3:'Pagamento',next:'Continua',back:'Indietro',
+store_lang:'Lingua del negozio',store_lang_x:'La lingua in cui sarà scritta la tua pagina offerte.',
+logo:'Il tuo logo (facoltativo)',logo_drop:'Tocca per aggiungere il logo o trascinalo qui',logo_x:'Nessun logo? Scrivi sopra il nome del brand e ne creeremo uno per te, gratis.',
+platform:'Piattaforma pubblicitaria',platform_x:'Adattiamo il formato del video alla piattaforma scelta.',
+tone:'Tono della voce (facoltativo)',tone_ph:'Caldo, lussuoso, energico, calmo…',refs:'Link di riferimento (facoltativo)',refs_x:'Annunci, pagine o profili che ti piacciono. Un link per riga.',
+sty_h:'Stile di design del negozio',sty_x:'Scegli l’aspetto della tua pagina offerte.',sty1:'Chiaro moderno',sty2:'Scuro premium',sty3:'Audace e vivace',
+photos:'Foto e video',drop:'Tocca per aggiungere foto o video, oppure trascinali qui',photos_x:'Aggiungine quanti vuoi. Funzionano meglio foto nitide e ben illuminate e clip brevi.',
+e_ph1:'Aggiungi almeno una foto o un video del prodotto 1.',e_ph2:'Aggiungi almeno una foto o un video del prodotto 2.',
+lg_sum:'Controlla il tuo ordine',r_pkg:'Pacchetto',r_brand:'Brand',r_email:'Email',r_prod:'Prodotti',r_files:'File',r_ad:'Formato annuncio',r_store:'Negozio',r_express:'Consegna express',up:'Caricamento',proc:'Preparazione dei file…'},
+ar:{lead:'ثلاث خطوات سريعة: اختر باقتك، أخبرنا عن مشروعك، ثم ادفع بأمان. يبدأ الإنتاج مباشرة بعد الدفع.',st1:'الباقة',st2:'تفاصيل المشروع',st3:'الدفع',next:'متابعة',back:'رجوع',
+store_lang:'لغة المتجر',store_lang_x:'اللغة التي ستُكتب بها صفحة عروضك.',
+logo:'شعارك (اختياري)',logo_drop:'اضغط لإضافة شعارك أو اسحبه إلى هنا',logo_x:'إذا لم تكن تملك شعاراً، اكتب اسم علامتك وسنصممه لك مجاناً.',
+platform:'منصة الإعلان',platform_x:'نضبط قياس الفيديو حسب المنصة التي تختارها.',
+tone:'نبرة التعليق الصوتي (اختياري)',tone_ph:'دافئة، فاخرة، حماسية، هادئة…',refs:'الروابط المرجعية (اختياري)',refs_x:'إعلانات أو صفحات أو حسابات تعجبك. رابط واحد في كل سطر.',
+sty_h:'طابع تصميم المتجر',sty_x:'اختر مظهر صفحة عروضك.',sty1:'عصري فاتح',sty2:'داكن فاخر',sty3:'جريء ونابض',
+photos:'الصور والفيديوهات',drop:'اضغط لإضافة صور أو فيديوهات أو اسحبها إلى هنا',photos_x:'أضف ما تشاء من الملفات. الصور الواضحة جيدة الإضاءة والمقاطع القصيرة تعطي أفضل نتيجة.',
+e_ph1:'أضف صورة أو فيديو واحداً على الأقل للمنتج 1.',e_ph2:'أضف صورة أو فيديو واحداً على الأقل للمنتج 2.',
+lg_sum:'راجع طلبك',r_pkg:'الباقة',r_brand:'العلامة',r_email:'البريد',r_prod:'المنتجات',r_files:'الملفات',r_ad:'قياس الإعلان',r_store:'المتجر',r_express:'التسليم السريع',up:'جارٍ الرفع',proc:'جارٍ تجهيز الملفات…'}
+};
+Object.keys(T2).forEach(function(l){ Object.assign(T[l],T2[l]); });
+var L='en', f=document.getElementById('f'), step=1;
+var files={p1:[],p2:[],logo:[]};
+var PKG={49:'Single Hook',200:'Conversion Funnel',500:'Multi-Product Scaler'};
+var PLAT={tiktok:'TikTok · 9:16',instagram:'Instagram · 1:1',youtube:'YouTube · 16:9'};
+function $(s){ return document.querySelector(s); }
 function setLang(l){
   if(!T[l]) l='en'; L=l; var t=T[l];
   document.documentElement.lang=l; document.documentElement.dir=l==='ar'?'rtl':'ltr'; document.title=t.title;
   document.querySelectorAll('[data-t]').forEach(function(e){ var v=t[e.getAttribute('data-t')]; if(v!=null) e.innerHTML=v; });
+  document.querySelectorAll('[data-ph]').forEach(function(e){ var v=t[e.getAttribute('data-ph')]; if(v!=null) e.placeholder=v; });
   document.getElementById('lang').value=l;
   try{ localStorage.setItem('apex_lang',l); }catch(e){}
+  if(step===3) buildSummary();
 }
 function pkg(){ var r=f.querySelector('input[name=package]:checked'); return r?+r.value:0; }
 function update(){
@@ -227,76 +351,131 @@ function update(){
   document.querySelectorAll('.store-only').forEach(function(e){ e.classList.toggle('hide',!(p===200||p===500)); });
   document.querySelectorAll('.p2-only').forEach(function(e){ e.classList.toggle('hide',p!==500); });
   document.getElementById('exPrice').textContent=p?'(+$'+EXPRESS[p]+')':'';
-  var tot=p+(p&&f.express.checked?EXPRESS[p]:0);
-  document.getElementById('tot').textContent='$'+tot;
+  document.getElementById('tot').textContent='$'+(p+(p&&f.express.checked?EXPRESS[p]:0));
 }
 f.addEventListener('change',update);
 document.getElementById('lang').addEventListener('change',function(e){ setLang(e.target.value); });
 
-// photos: preview, limit, compress before sending
-function render(slot){
-  var box=document.getElementById('th-'+slot); box.innerHTML='';
-  files[slot].forEach(function(file,i){
-    var fig=document.createElement('figure'), img=document.createElement('img'), b=document.createElement('button');
-    img.src=URL.createObjectURL(file); b.type='button'; b.textContent='×'; b.setAttribute('aria-label','remove');
-    b.onclick=function(){ files[slot].splice(i,1); render(slot); };
-    fig.appendChild(img); fig.appendChild(b); box.appendChild(fig);
-  });
+/* ---------- steps ---------- */
+function show(n){
+  step=n;
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.toggle('hide',+s.dataset.step!==n); });
+  document.querySelectorAll('#stepper li').forEach(function(li){ var k=+li.dataset.go; li.classList.toggle('on',k===n); li.classList.toggle('done',k<n); });
+  if(n===3) buildSummary();
+  var y=document.getElementById('stepper').getBoundingClientRect().top+window.scrollY-80; window.scrollTo({top:y,behavior:'smooth'});
 }
-document.querySelectorAll('.drop input').forEach(function(inp){
-  var slot=inp.dataset.slot, max=+inp.dataset.max, lab=inp.parentNode;
-  function add(list){ [].slice.call(list).forEach(function(x){ if(/^image\//.test(x.type) && files[slot].length<max) files[slot].push(x); }); render(slot); }
-  inp.addEventListener('change',function(){ add(inp.files); inp.value=''; });
-  lab.addEventListener('dragover',function(e){ e.preventDefault(); lab.classList.add('over'); });
-  lab.addEventListener('dragleave',function(){ lab.classList.remove('over'); });
-  lab.addEventListener('drop',function(e){ e.preventDefault(); lab.classList.remove('over'); add(e.dataTransfer.files); });
-});
-function compress(file){
-  return new Promise(function(res){
-    var img=new Image(); img.onload=function(){
-      var s=Math.min(1,1600/Math.max(img.width,img.height)), c=document.createElement('canvas');
-      c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
-      var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
-      c.toBlob(function(b){ res(b||file); },'image/jpeg',0.86);
-    }; img.onerror=function(){ res(file); }; img.src=URL.createObjectURL(file);
-  });
-}
-function err(k){ msg.className='msg err'; msg.innerHTML=T[L][k]; }
-f.addEventListener('submit',function(ev){
-  ev.preventDefault(); var t=T[L], p=pkg();
-  if(!p) return err('e_pkg');
+function err(k){ var m=$('.step[data-step="'+step+'"] .msg'); m.className='msg err'; m.innerHTML=T[L][k]||k; return false; }
+function clr(){ document.querySelectorAll('.msg').forEach(function(m){ m.className='msg'; m.textContent=''; }); }
+function ok1(){ if(!pkg()) return err('e_pkg'); return true; }
+function ok2(){
+  var p=pkg();
   if(!f.brand.value.trim()||!f.product1.value.trim()||(p===500&&!f.product2.value.trim())) return err('e_req');
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.value.trim())) return err('e_email');
   if(!files.p1.length) return err('e_ph1');
   if(p===500&&!files.p2.length) return err('e_ph2');
+  if(files.p1.concat(files.p2,files.logo).some(function(x){ return x.pct<100; })) return err('proc');
+  return true;
+}
+document.querySelectorAll('[data-next]').forEach(function(b){ b.addEventListener('click',function(){ clr(); if(step===1&&ok1()) show(2); else if(step===2&&ok2()) show(3); }); });
+document.querySelectorAll('[data-back]').forEach(function(b){ b.addEventListener('click',function(){ clr(); show(step-1); }); });
+document.querySelectorAll('#stepper li').forEach(function(li){ li.addEventListener('click',function(){ var k=+li.dataset.go; if(k<step){ clr(); show(k); } }); });
+
+/* ---------- media: drag & drop, thumbnails, progress ---------- */
+function render(slot){
+  var box=document.getElementById('th-'+slot); box.innerHTML='';
+  files[slot].forEach(function(it,i){
+    var fig=document.createElement('figure'), b=document.createElement('button'), pb=document.createElement('div');
+    var m=document.createElement(it.vid?'video':'img');
+    if(it.vid){ m.muted=true; m.preload='metadata'; m.playsInline=true; m.src=it.url+'#t=0.2'; fig.className='vid'; } else m.src=it.url;
+    b.type='button'; b.textContent='×'; b.setAttribute('aria-label','remove');
+    b.onclick=function(){ files[slot].splice(i,1); render(slot); };
+    pb.className='pb'+(it.pct>=100?' done':''); pb.innerHTML='<i style="width:'+it.pct+'%"></i>';
+    fig.appendChild(m); fig.appendChild(b); fig.appendChild(pb);
+    if(it.vid){ var pl=document.createElement('span'); pl.className='play'; pl.textContent='▶'; fig.appendChild(pl); }
+    box.appendChild(fig);
+  });
+  var c=document.getElementById('cnt-'+slot); if(c) c.textContent=files[slot].length?files[slot].length:'';
+}
+function compress(file){
+  return new Promise(function(res){
+    var u=URL.createObjectURL(file), img=new Image(); img.onload=function(){
+      var s=Math.min(1,1800/Math.max(img.width,img.height)), c=document.createElement('canvas');
+      c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+      var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+      c.toBlob(function(b){ URL.revokeObjectURL(u); res(b||file); },'image/jpeg',0.88);
+    }; img.onerror=function(){ res(file); }; img.src=u;
+  });
+}
+function addFiles(slot,list){
+  [].slice.call(list).forEach(function(x){
+    var img=/^image\//.test(x.type), vid=/^video\//.test(x.type);
+    if(!img&&!vid) return;
+    if(slot==='logo'){ if(!img) return; files.logo=[]; }
+    var it={file:x,blob:x,vid:vid,url:URL.createObjectURL(x),pct:vid||slot==='logo'||/svg|gif/.test(x.type)?100:12};
+    files[slot].push(it);
+    if(it.pct<100){
+      var tick=setInterval(function(){ if(it.pct<85){ it.pct+=9; render(slot); } },120);
+      compress(x).then(function(b){ clearInterval(tick); it.blob=b; it.pct=100; render(slot); });
+    }
+  });
+  render(slot);
+}
+document.querySelectorAll('.drop input').forEach(function(inp){
+  var slot=inp.dataset.slot, lab=inp.parentNode;
+  inp.addEventListener('change',function(){ addFiles(slot,inp.files); inp.value=''; });
+  lab.addEventListener('dragover',function(e){ e.preventDefault(); lab.classList.add('over'); });
+  lab.addEventListener('dragleave',function(){ lab.classList.remove('over'); });
+  lab.addEventListener('drop',function(e){ e.preventDefault(); lab.classList.remove('over'); addFiles(slot,e.dataTransfer.files); });
+});
+
+/* ---------- summary ---------- */
+function buildSummary(){
+  var t=T[L], p=pkg(), box=document.getElementById('summary'); box.innerHTML='';
+  function row(k,v){ if(!v) return; var d=document.createElement('div'), a=document.createElement('span'), b=document.createElement('b'); a.textContent=t[k]; b.textContent=v; d.appendChild(a); d.appendChild(b); box.appendChild(d); }
+  row('r_pkg',PKG[p]+' · $'+p);
+  if(f.express.checked) row('r_express','+$'+EXPRESS[p]);
+  row('r_brand',f.brand.value.trim()); row('r_email',f.email.value.trim());
+  row('r_prod',[f.product1.value.trim(),p===500?f.product2.value.trim():''].filter(Boolean).join(' · '));
+  row('r_files',String(files.p1.length+(p===500?files.p2.length:0)));
+  row('r_ad',PLAT[f.platform.value]);
+  if(p===200||p===500){ var st=f.querySelector('input[name=style]:checked'); row('r_store',f.store_lang.options[f.store_lang.selectedIndex].text+' · '+t['sty'+(st?st.value:2)]); }
+}
+
+/* ---------- submit with upload progress ---------- */
+f.addEventListener('submit',function(ev){
+  ev.preventDefault(); clr(); var t=T[L], p=pkg();
+  if(!ok1()) return show(1); if(!ok2()) return show(2);
   if(!f.terms.checked) return err('e_terms');
   if(!ORDER_HOOK) return err('e_off');
-  var go=document.getElementById('go'); go.disabled=true; msg.className='msg'; msg.textContent=t.sending;
-  var list=files.p1.map(function(x,i){return ['p1photo'+(i+1),x];}).concat(p===500?files.p2.map(function(x,i){return ['p2photo'+(i+1),x];}):[]);
-  Promise.all(list.map(function(e){ return compress(e[1]); })).then(function(blobs){
-    var fd=new FormData(), size=0;
-    fd.append('package',String(p)); fd.append('vip_comarketing',(p===500&&f.vip.checked)?'yes':'no'); fd.append('express',f.express.checked?'yes':'no');
-    fd.append('brand',f.brand.value.trim()); fd.append('email',f.email.value.trim());
-    fd.append('contact',(p===200||p===500)?f.contact.value.trim():'');
-    fd.append('product1',f.product1.value.trim()); fd.append('product2',p===500?f.product2.value.trim():'');
-    fd.append('language',f.language.value); fd.append('voice',f.voice.value); fd.append('offer',f.offer.value.trim());
-    fd.append('site_lang',L); fd.append('photo_count',String(blobs.length));
-    blobs.forEach(function(b,i){ size+=b.size; fd.append(list[i][0],b,list[i][0]+'.jpg'); });
-    if(size>4.6*1024*1024){ go.disabled=false; return err('e_big'); }
-    return fetch(ORDER_HOOK,{method:'POST',body:fd}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
-      if(!j||!j.checkout_url) throw 0;
-      msg.className='msg ok'; msg.textContent=t.redirect; location.href=j.checkout_url;
-    });
-  }).catch(function(){ go.disabled=false; err('e_net'); });
+  var go=document.getElementById('go'), bar=document.getElementById('upbar'), m=$('.step[data-step="3"] .msg');
+  go.disabled=true; m.className='msg'; m.textContent=t.sending;
+  var fd=new FormData(), store=(p===200||p===500), st=f.querySelector('input[name=style]:checked');
+  var data={package:String(p),vip_comarketing:(p===500&&f.vip.checked)?'yes':'no',express:f.express.checked?'yes':'no',brand:f.brand.value.trim(),email:f.email.value.trim(),
+    contact:store?f.contact.value.trim():'',product1:f.product1.value.trim(),product2:p===500?f.product2.value.trim():'',
+    language:f.language.value,voice:f.voice.value,voice_tone:f.tone.value.trim(),offer:f.offer.value.trim(),references:f.refs.value.trim(),
+    ad_platform:PLAT[f.platform.value],store_language:store?f.store_lang.value:'',store_style:store?(['','Modern Light','Premium Dark','Bold & Vibrant'][st?st.value:2]):'',
+    logo_provided:files.logo.length?'yes':'no',site_lang:L};
+  Object.keys(data).forEach(function(k){ fd.append(k,data[k]); });
+  function put(slot,tag){ var im=0,vi=0; files[slot].forEach(function(it){
+    if(it.vid){ vi++; fd.append(tag+'video'+vi,it.blob,it.file.name); } else { im++; fd.append(tag+'photo'+im,it.blob,tag+'photo'+im+'.jpg'); } }); fd.append(tag+'_images',String(im)); fd.append(tag+'_videos',String(vi)); }
+  put('p1','p1'); if(p===500) put('p2','p2');
+  if(files.logo.length) fd.append('logo',files.logo[0].blob,files.logo[0].file.name);
+  var x=new XMLHttpRequest(); x.open('POST',ORDER_HOOK);
+  bar.classList.add('on');
+  x.upload.onprogress=function(e){ if(e.lengthComputable){ var v=Math.round(e.loaded/e.total*100); bar.firstChild.style.width=v+'%'; m.textContent=t.up+' '+v+'%'; } };
+  x.onload=function(){ try{ var j=JSON.parse(x.responseText); if(x.status<300&&j&&j.checkout_url){ m.className='msg ok'; m.textContent=t.redirect; location.href=j.checkout_url; return; } }catch(e){} fail(); };
+  x.onerror=fail;
+  function fail(){ go.disabled=false; bar.classList.remove('on'); err('e_net'); }
+  x.send(fd);
 });
 (function(){
   var q=new URLSearchParams(location.search), l=q.get('lang'), p=q.get('package');
   try{ l=l||localStorage.getItem('apex_lang'); }catch(e){}
   if(!l){ var n=(navigator.language||'en').slice(0,2); l=T[n]?n:'en'; }
-  setLang(l);
-  var map={ar:'Arabic',en:'English',fr:'French',es:'Spanish',it:'Italian'}; f.language.value=map[L]||'English';
+  var map={ar:'Arabic',en:'English',fr:'French',es:'Spanish',it:'Italian'};
+  setLang(l); f.language.value=map[L]||'English'; f.store_lang.value=map[L]||'English';
   if(p){ var r=f.querySelector('input[name=package][value="'+p+'"]'); if(r) r.checked=true; }
-  update();
+  update(); show(1); window.scrollTo(0,0);
 })();
 </script>
 </body>
