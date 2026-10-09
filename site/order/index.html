@@ -123,6 +123,12 @@
   .summary div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
   .summary div:last-child{border:0}.summary span{color:var(--muted)}.summary b{font-weight:500;text-align:end}
   @media (max-width:720px){ .sty{grid-template-columns:1fr 1fr 1fr;gap:8px}.sty label{padding:6px}.nav .btn{min-width:0;flex:1}.mock{height:76px}.stepper li span{display:none}.stepper li.on span{display:inline} }
+  .fileprog{display:none;margin:14px 0 4px;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+  .fileprog.on{display:flex}.fileprog .bar{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .fileprog .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .25s}
+  .thumbs .ok{position:absolute;left:5px;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ok);color:#06210f;font-size:12px;font-weight:700;display:grid;place-items:center}
+  .thumbs figure.bad{outline:2px solid var(--err);cursor:pointer}
+  .thumbs .retry{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:24px}
 </style>
 </head>
 <body>
@@ -214,6 +220,7 @@
         <label class="f full"><span data-t="refs"></span><textarea name="refs" maxlength="800" placeholder="https://"></textarea><small data-t="refs_x"></small></label>
       </div>
     </fieldset>
+    <div class="fileprog" id="fileprog"><div class="bar"><i></i></div><span></span></div>
     <div class="nav"><button type="button" class="btn ghost" data-back><span class="arr">←</span> <span data-t="back"></span></button><button type="button" class="btn" data-next><span data-t="next"></span> <span class="arr">→</span></button></div>
     <div class="msg" role="status"></div>
     </div>
@@ -284,7 +291,7 @@ var T = {
   sending:'جارٍ تجهيز طلبك…',redirect:'تم حفظ الطلب. جارٍ فتح صفحة الدفع الآمن…'}
 };
 var T2={
-en:{lead:'Three quick steps: choose your package, share your project, then pay securely. Production starts right after payment.',st1:'Package',st2:'Project details',st3:'Payment',next:'Continue',back:'Back',
+en:{e_up:'A file failed to upload. Tap it to retry, or remove it.',lead:'Three quick steps: choose your package, share your project, then pay securely. Production starts right after payment.',st1:'Package',st2:'Project details',st3:'Payment',next:'Continue',back:'Back',
 store_lang:'Store language',store_lang_x:'The language your offer page will be written in.',
 logo:'Your logo (optional)',logo_drop:'Tap to add your logo or drop it here',logo_x:'No logo? Write your brand name above and we will design one for you, free of charge.',
 platform:'Ad platform',platform_x:'We set the video format for the platform you choose.',
@@ -293,7 +300,7 @@ sty_h:'Store design style',sty_x:'Pick the look of your offer page.',sty1:'Moder
 photos:'Photos and videos',drop:'Tap to add photos or videos, or drop them here',photos_x:'Add as many as you like. Clear, well-lit photos and short clips work best.',
 e_ph1:'Add at least one photo or video of product 1.',e_ph2:'Add at least one photo or video of product 2.',
 lg_sum:'Review your order',r_pkg:'Package',r_brand:'Brand',r_email:'Email',r_prod:'Products',r_files:'Files',r_ad:'Ad format',r_store:'Store',r_express:'Express delivery',up:'Uploading',proc:'Preparing files…'},
-fr:{lead:'Trois étapes rapides : choisissez votre formule, présentez votre projet, puis payez en toute sécurité. La production démarre juste après le paiement.',st1:'Formule',st2:'Détails du projet',st3:'Paiement',next:'Continuer',back:'Retour',
+fr:{e_up:'Un fichier n’a pas pu être envoyé. Touchez-le pour réessayer ou retirez-le.',lead:'Trois étapes rapides : choisissez votre formule, présentez votre projet, puis payez en toute sécurité. La production démarre juste après le paiement.',st1:'Formule',st2:'Détails du projet',st3:'Paiement',next:'Continuer',back:'Retour',
 store_lang:'Langue de la boutique',store_lang_x:'La langue dans laquelle sera rédigée votre page d’offre.',
 logo:'Votre logo (facultatif)',logo_drop:'Touchez pour ajouter votre logo ou déposez-le ici',logo_x:'Pas de logo ? Écrivez le nom de votre marque ci-dessus et nous en créerons un pour vous, gratuitement.',
 platform:'Plateforme publicitaire',platform_x:'Nous adaptons le format de la vidéo à la plateforme choisie.',
@@ -302,7 +309,7 @@ sty_h:'Style de design de la boutique',sty_x:'Choisissez l’allure de votre pag
 photos:'Photos et vidéos',drop:'Touchez pour ajouter des photos ou vidéos, ou déposez-les ici',photos_x:'Ajoutez-en autant que vous voulez. Des photos nettes et bien éclairées et de courts clips fonctionnent le mieux.',
 e_ph1:'Ajoutez au moins une photo ou vidéo du produit 1.',e_ph2:'Ajoutez au moins une photo ou vidéo du produit 2.',
 lg_sum:'Vérifiez votre commande',r_pkg:'Formule',r_brand:'Marque',r_email:'E-mail',r_prod:'Produits',r_files:'Fichiers',r_ad:'Format publicitaire',r_store:'Boutique',r_express:'Livraison express',up:'Envoi en cours',proc:'Préparation des fichiers…'},
-es:{lead:'Tres pasos rápidos: elige tu paquete, cuéntanos tu proyecto y paga de forma segura. La producción empieza justo después del pago.',st1:'Paquete',st2:'Detalles del proyecto',st3:'Pago',next:'Continuar',back:'Atrás',
+es:{e_up:'Un archivo no se pudo subir. Tócalo para reintentar o elimínalo.',lead:'Tres pasos rápidos: elige tu paquete, cuéntanos tu proyecto y paga de forma segura. La producción empieza justo después del pago.',st1:'Paquete',st2:'Detalles del proyecto',st3:'Pago',next:'Continuar',back:'Atrás',
 store_lang:'Idioma de la tienda',store_lang_x:'El idioma en que se redactará tu página de ofertas.',
 logo:'Tu logotipo (opcional)',logo_drop:'Toca para añadir tu logotipo o suéltalo aquí',logo_x:'¿Sin logotipo? Escribe el nombre de tu marca arriba y te diseñamos uno gratis.',
 platform:'Plataforma del anuncio',platform_x:'Adaptamos el formato del vídeo a la plataforma que elijas.',
@@ -311,7 +318,7 @@ sty_h:'Estilo de diseño de la tienda',sty_x:'Elige el aspecto de tu página de 
 photos:'Fotos y vídeos',drop:'Toca para añadir fotos o vídeos, o suéltalos aquí',photos_x:'Añade todos los que quieras. Funcionan mejor las fotos nítidas y bien iluminadas y los clips cortos.',
 e_ph1:'Añade al menos una foto o vídeo del producto 1.',e_ph2:'Añade al menos una foto o vídeo del producto 2.',
 lg_sum:'Revisa tu pedido',r_pkg:'Paquete',r_brand:'Marca',r_email:'Correo',r_prod:'Productos',r_files:'Archivos',r_ad:'Formato del anuncio',r_store:'Tienda',r_express:'Entrega exprés',up:'Subiendo',proc:'Preparando archivos…'},
-it:{lead:'Tre passaggi rapidi: scegli il pacchetto, descrivi il progetto e paga in modo sicuro. La produzione parte subito dopo il pagamento.',st1:'Pacchetto',st2:'Dettagli del progetto',st3:'Pagamento',next:'Continua',back:'Indietro',
+it:{e_up:'Un file non è stato caricato. Toccalo per riprovare o rimuovilo.',lead:'Tre passaggi rapidi: scegli il pacchetto, descrivi il progetto e paga in modo sicuro. La produzione parte subito dopo il pagamento.',st1:'Pacchetto',st2:'Dettagli del progetto',st3:'Pagamento',next:'Continua',back:'Indietro',
 store_lang:'Lingua del negozio',store_lang_x:'La lingua in cui sarà scritta la tua pagina offerte.',
 logo:'Il tuo logo (facoltativo)',logo_drop:'Tocca per aggiungere il logo o trascinalo qui',logo_x:'Nessun logo? Scrivi sopra il nome del brand e ne creeremo uno per te, gratis.',
 platform:'Piattaforma pubblicitaria',platform_x:'Adattiamo il formato del video alla piattaforma scelta.',
@@ -320,7 +327,7 @@ sty_h:'Stile di design del negozio',sty_x:'Scegli l’aspetto della tua pagina o
 photos:'Foto e video',drop:'Tocca per aggiungere foto o video, oppure trascinali qui',photos_x:'Aggiungine quanti vuoi. Funzionano meglio foto nitide e ben illuminate e clip brevi.',
 e_ph1:'Aggiungi almeno una foto o un video del prodotto 1.',e_ph2:'Aggiungi almeno una foto o un video del prodotto 2.',
 lg_sum:'Controlla il tuo ordine',r_pkg:'Pacchetto',r_brand:'Brand',r_email:'Email',r_prod:'Prodotti',r_files:'File',r_ad:'Formato annuncio',r_store:'Negozio',r_express:'Consegna express',up:'Caricamento',proc:'Preparazione dei file…'},
-ar:{lead:'ثلاث خطوات سريعة: اختر باقتك، أخبرنا عن مشروعك، ثم ادفع بأمان. يبدأ الإنتاج مباشرة بعد الدفع.',st1:'الباقة',st2:'تفاصيل المشروع',st3:'الدفع',next:'متابعة',back:'رجوع',
+ar:{e_up:'تعذّر رفع أحد الملفات. اضغط عليه لإعادة المحاولة أو احذفه.',lead:'ثلاث خطوات سريعة: اختر باقتك، أخبرنا عن مشروعك، ثم ادفع بأمان. يبدأ الإنتاج مباشرة بعد الدفع.',st1:'الباقة',st2:'تفاصيل المشروع',st3:'الدفع',next:'متابعة',back:'رجوع',
 store_lang:'لغة المتجر',store_lang_x:'اللغة التي ستُكتب بها صفحة عروضك.',
 logo:'شعارك (اختياري)',logo_drop:'اضغط لإضافة شعارك أو اسحبه إلى هنا',logo_x:'إذا لم تكن تملك شعاراً، اكتب اسم علامتك وسنصممه لك مجاناً.',
 platform:'منصة الإعلان',platform_x:'نضبط قياس الفيديو حسب المنصة التي تختارها.',
@@ -373,7 +380,8 @@ function ok2(){
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.value.trim())) return err('e_email');
   if(!files.p1.length) return err('e_ph1');
   if(p===500&&!files.p2.length) return err('e_ph2');
-  if(files.p1.concat(files.p2,files.logo).some(function(x){ return x.pct<100; })) return err('proc');
+  var A=all(); if(A.some(function(x){ return x.pct<100||x.state==='wait'||x.state==='up'; })) return err('proc');
+  if(A.some(function(x){ return x.state==='err'; })) return err('e_up');
   return true;
 }
 document.querySelectorAll('[data-next]').forEach(function(b){ b.addEventListener('click',function(){ clr(); if(step===1&&ok1()) show(2); else if(step===2&&ok2()) show(3); }); });
@@ -381,17 +389,63 @@ document.querySelectorAll('[data-back]').forEach(function(b){ b.addEventListener
 document.querySelectorAll('#stepper li').forEach(function(li){ li.addEventListener('click',function(){ var k=+li.dataset.go; if(k<step){ clr(); show(k); } }); });
 
 /* ---------- media: drag & drop, thumbnails, progress ---------- */
+/* ---- direct-to-cloud upload (Cloudinary, unsigned preset, chunked). Files never pass through Make. ---- */
+var CLOUD={name:'', preset:'', folder:'apex-orders'};   // <- fill in cloud name + unsigned upload preset
+var CHUNK=6*1024*1024, queue=[], running=0, MAXPAR=2;
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+function cloudUpload(it){
+  var file=it.blob, total=file.size, id=uid(), pos=0, tries=0;
+  var url='https://api.cloudinary.com/v1_1/'+encodeURIComponent(CLOUD.name)+'/auto/upload';
+  return new Promise(function(res,rej){
+    function retry(){ if(it.cancel) return rej('cancel'); if(++tries>6) return rej('fail'); setTimeout(next,Math.min(9000,600*Math.pow(2,tries))); }
+    function next(){
+      if(it.cancel) return rej('cancel');
+      var end=Math.min(pos+CHUNK,total), fd=new FormData(), x=new XMLHttpRequest();
+      fd.append('file',file.slice(pos,end),it.file.name||'file'); fd.append('upload_preset',CLOUD.preset); if(CLOUD.folder) fd.append('folder',CLOUD.folder);
+      it.xhr=x; x.open('POST',url); x.timeout=180000;
+      x.setRequestHeader('X-Unique-Upload-Id',id); x.setRequestHeader('Content-Range','bytes '+pos+'-'+(end-1)+'/'+total);
+      x.upload.onprogress=function(e){ it.sent=pos+e.loaded; tick(); };
+      x.onload=function(){
+        if(x.status>=200&&x.status<300){ tries=0; pos=end; it.sent=pos; tick();
+          if(pos>=total){ try{ var j=JSON.parse(x.responseText); if(!j.secure_url) throw 0; res(j.secure_url); }catch(e){ rej('fail'); } } else next();
+        } else if(x.status>=400&&x.status<500&&x.status!==408&&x.status!==429){ rej('fail'); } else retry();
+      };
+      x.onerror=retry; x.ontimeout=retry; x.send(fd);
+    }
+    next();
+  });
+}
+function pump(){
+  while(running<MAXPAR&&queue.length){
+    var job=queue.shift(); if(job.it.cancel) continue; running++;
+    job.it.state='up';
+    cloudUpload(job.it).then(function(u){ this.it.remote=u; this.it.state='ok'; }.bind(job),function(e){ if(e!=='cancel') this.it.state='err'; }.bind(job))
+      .then(function(){ running--; render(this.slot); tick(); pump(); }.bind(job));
+  }
+}
+function enqueue(slot,it){ if(!CLOUD.name) return; it.state='wait'; it.sent=0; queue.push({slot:slot,it:it}); pump(); }
+function all(){ return files.p1.concat(files.p2,files.logo); }
+function tick(){
+  var box=document.getElementById('fileprog'); if(!CLOUD.name){ return; }
+  var L2=all(), tot=0, sent=0, ok=0; L2.forEach(function(i){ tot+=i.blob.size; sent+=i.state==='ok'?i.blob.size:(i.sent||0); if(i.state==='ok') ok++; });
+  if(!L2.length||ok===L2.length&&!L2.some(function(i){return i.state==='err';})&&!running&&!queue.length){ box.classList.remove('on'); }
+  else { box.classList.add('on'); var v=tot?Math.round(sent/tot*100):0; box.firstChild.firstChild.style.width=v+'%'; box.lastChild.textContent=T[L].up+' '+ok+'/'+L2.length+' · '+v+'%'; }
+  L2.forEach(function(i){ if(i.fig){ var b=i.fig.querySelector('.pb i'); if(b&&(i.state==='up'||i.state==='wait')) b.style.width=Math.max(4,Math.round((i.sent||0)/i.blob.size*100))+'%'; } });
+}
 function render(slot){
   var box=document.getElementById('th-'+slot); box.innerHTML='';
   files[slot].forEach(function(it,i){
     var fig=document.createElement('figure'), b=document.createElement('button'), pb=document.createElement('div');
-    var m=document.createElement(it.vid?'video':'img');
+    var m=document.createElement(it.vid?'video':'img'); it.fig=fig;
     if(it.vid){ m.muted=true; m.preload='metadata'; m.playsInline=true; m.src=it.url+'#t=0.2'; fig.className='vid'; } else m.src=it.url;
     b.type='button'; b.textContent='×'; b.setAttribute('aria-label','remove');
-    b.onclick=function(){ files[slot].splice(i,1); render(slot); };
-    pb.className='pb'+(it.pct>=100?' done':''); pb.innerHTML='<i style="width:'+it.pct+'%"></i>';
+    b.onclick=function(e){ e.stopPropagation(); it.cancel=true; if(it.xhr) try{ it.xhr.abort(); }catch(x){} files[slot].splice(i,1); render(slot); tick(); };
+    var busy=it.pct<100||it.state==='up'||it.state==='wait';
+    pb.className='pb'+(busy?'':' done'); pb.innerHTML='<i style="width:'+(it.pct<100?it.pct:Math.max(4,Math.round((it.sent||0)/it.blob.size*100)))+'%"></i>';
     fig.appendChild(m); fig.appendChild(b); fig.appendChild(pb);
     if(it.vid){ var pl=document.createElement('span'); pl.className='play'; pl.textContent='▶'; fig.appendChild(pl); }
+    if(it.state==='ok'){ var ck=document.createElement('span'); ck.className='ok'; ck.textContent='✓'; fig.appendChild(ck); }
+    if(it.state==='err'){ fig.classList.add('bad'); var rt=document.createElement('span'); rt.className='retry'; rt.textContent='↻'; fig.appendChild(rt); fig.onclick=function(){ it.cancel=false; it.state='wait'; it.sent=0; queue.push({slot:slot,it:it}); render(slot); pump(); }; }
     box.appendChild(fig);
   });
   var c=document.getElementById('cnt-'+slot); if(c) c.textContent=files[slot].length?files[slot].length:'';
@@ -399,10 +453,10 @@ function render(slot){
 function compress(file){
   return new Promise(function(res){
     var u=URL.createObjectURL(file), img=new Image(); img.onload=function(){
-      var s=Math.min(1,1800/Math.max(img.width,img.height)), c=document.createElement('canvas');
+      var s=Math.min(1,2200/Math.max(img.width,img.height)), c=document.createElement('canvas');
       c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
       var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
-      c.toBlob(function(b){ URL.revokeObjectURL(u); res(b||file); },'image/jpeg',0.88);
+      c.toBlob(function(b){ URL.revokeObjectURL(u); res(b||file); },'image/jpeg',0.9);
     }; img.onerror=function(){ res(file); }; img.src=u;
   });
 }
@@ -410,13 +464,13 @@ function addFiles(slot,list){
   [].slice.call(list).forEach(function(x){
     var img=/^image\//.test(x.type), vid=/^video\//.test(x.type);
     if(!img&&!vid) return;
-    if(slot==='logo'){ if(!img) return; files.logo=[]; }
+    if(slot==='logo'){ if(!img) return; files.logo.forEach(function(o){ o.cancel=true; if(o.xhr) try{o.xhr.abort();}catch(e){} }); files.logo=[]; }
     var it={file:x,blob:x,vid:vid,url:URL.createObjectURL(x),pct:vid||slot==='logo'||/svg|gif/.test(x.type)?100:12};
     files[slot].push(it);
     if(it.pct<100){
-      var tick=setInterval(function(){ if(it.pct<85){ it.pct+=9; render(slot); } },120);
-      compress(x).then(function(b){ clearInterval(tick); it.blob=b; it.pct=100; render(slot); });
-    }
+      var tk=setInterval(function(){ if(it.pct<85){ it.pct+=9; render(slot); } },120);
+      compress(x).then(function(b){ clearInterval(tk); it.blob=b; it.pct=100; render(slot); enqueue(slot,it); });
+    } else enqueue(slot,it);
   });
   render(slot);
 }
@@ -441,32 +495,28 @@ function buildSummary(){
   if(p===200||p===500){ var st=f.querySelector('input[name=style]:checked'); row('r_store',f.store_lang.options[f.store_lang.selectedIndex].text+' · '+t['sty'+(st?st.value:2)]); }
 }
 
-/* ---------- submit with upload progress ---------- */
+/* ---------- submit: text + file URLs only (no files in the payload) ---------- */
 f.addEventListener('submit',function(ev){
   ev.preventDefault(); clr(); var t=T[L], p=pkg();
   if(!ok1()) return show(1); if(!ok2()) return show(2);
   if(!f.terms.checked) return err('e_terms');
-  if(!ORDER_HOOK) return err('e_off');
-  var go=document.getElementById('go'), bar=document.getElementById('upbar'), m=$('.step[data-step="3"] .msg');
+  if(!ORDER_HOOK||!CLOUD.name) return err('e_off');
+  var go=document.getElementById('go'), m=$('.step[data-step="3"] .msg');
   go.disabled=true; m.className='msg'; m.textContent=t.sending;
-  var fd=new FormData(), store=(p===200||p===500), st=f.querySelector('input[name=style]:checked');
+  var store=(p===200||p===500), st=f.querySelector('input[name=style]:checked');
+  function urls(slot,vid){ return files[slot].filter(function(i){ return !!i.vid===vid; }).map(function(i){ return i.remote; }); }
   var data={package:String(p),vip_comarketing:(p===500&&f.vip.checked)?'yes':'no',express:f.express.checked?'yes':'no',brand:f.brand.value.trim(),email:f.email.value.trim(),
     contact:store?f.contact.value.trim():'',product1:f.product1.value.trim(),product2:p===500?f.product2.value.trim():'',
     language:f.language.value,voice:f.voice.value,voice_tone:f.tone.value.trim(),offer:f.offer.value.trim(),references:f.refs.value.trim(),
     ad_platform:PLAT[f.platform.value],store_language:store?f.store_lang.value:'',store_style:store?(['','Modern Light','Premium Dark','Bold & Vibrant'][st?st.value:2]):'',
-    logo_provided:files.logo.length?'yes':'no',site_lang:L};
-  Object.keys(data).forEach(function(k){ fd.append(k,data[k]); });
-  function put(slot,tag){ var im=0,vi=0; files[slot].forEach(function(it){
-    if(it.vid){ vi++; fd.append(tag+'video'+vi,it.blob,it.file.name); } else { im++; fd.append(tag+'photo'+im,it.blob,tag+'photo'+im+'.jpg'); } }); fd.append(tag+'_images',String(im)); fd.append(tag+'_videos',String(vi)); }
-  put('p1','p1'); if(p===500) put('p2','p2');
-  if(files.logo.length) fd.append('logo',files.logo[0].blob,files.logo[0].file.name);
-  var x=new XMLHttpRequest(); x.open('POST',ORDER_HOOK);
-  bar.classList.add('on');
-  x.upload.onprogress=function(e){ if(e.lengthComputable){ var v=Math.round(e.loaded/e.total*100); bar.firstChild.style.width=v+'%'; m.textContent=t.up+' '+v+'%'; } };
-  x.onload=function(){ try{ var j=JSON.parse(x.responseText); if(x.status<300&&j&&j.checkout_url){ m.className='msg ok'; m.textContent=t.redirect; location.href=j.checkout_url; return; } }catch(e){} fail(); };
-  x.onerror=fail;
-  function fail(){ go.disabled=false; bar.classList.remove('on'); err('e_net'); }
-  x.send(fd);
+    logo_url:files.logo.length?files.logo[0].remote:'',site_lang:L,
+    p1_photo_urls:urls('p1',false).join('\n'),p1_video_urls:urls('p1',true).join('\n'),
+    p2_photo_urls:p===500?urls('p2',false).join('\n'):'',p2_video_urls:p===500?urls('p2',true).join('\n'):''};
+  data.files_json=JSON.stringify({p1:{photos:urls('p1',false),videos:urls('p1',true)},p2:p===500?{photos:urls('p2',false),videos:urls('p2',true)}:null,logo:data.logo_url||null});
+  var body=new URLSearchParams(); Object.keys(data).forEach(function(k){ body.append(k,data[k]); });
+  fetch(ORDER_HOOK,{method:'POST',body:body}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
+    if(!j||!j.checkout_url) throw 0; m.className='msg ok'; m.textContent=t.redirect; location.href=j.checkout_url;
+  }).catch(function(){ go.disabled=false; err('e_net'); });
 });
 (function(){
   var q=new URLSearchParams(location.search), l=q.get('lang'), p=q.get('package');
