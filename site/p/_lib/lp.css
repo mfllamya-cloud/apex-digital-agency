@@ -135,3 +135,6 @@ html[data-lp] body{padding-bottom:92px}
 @media (max-width:860px){ .lp-ps{grid-template-columns:1fr} .lp-ps .arrow{justify-self:center;transform:rotate(90deg)} .lp-vs th,.lp-vs td{padding:13px 10px;font-size:13.5px} }
 @media (max-width:600px){ .lp-sticky span{display:none} .lp-sticky .btn{padding:12px 18px} .lp-themes button{padding:4px 9px} }
 @media (prefers-reduced-motion:reduce){ .lp-badge i,.lp-stock .bar i::after{animation:none} .reveal[data-anim]{transform:none!important} }
+
+.brand{display:flex;align-items:center;gap:10px}
+.brand img.logo{height:34px;width:auto;max-width:120px;object-fit:contain;border-radius:6px}
