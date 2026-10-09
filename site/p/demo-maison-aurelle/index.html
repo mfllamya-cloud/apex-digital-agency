@@ -94,6 +94,37 @@
   .order .btn{width:100%}
   .order .hint{font-size:12px;color:var(--muted);text-align:center;margin:0}
   @media (max-width:860px){ .order{grid-template-columns:1fr;padding:24px} .order form{grid-template-columns:1fr} }
+  .sample{background:#16130b;color:#e8d6a3;font-size:13px;text-align:center;padding:9px 16px;border-bottom:1px solid var(--line)}
+  .sample a{color:var(--accent);font-weight:600;margin-inline-start:6px}
+  .ev{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+  .ev figure{margin:0;border-radius:22px;overflow:hidden;background:var(--bg2);border:1px solid var(--line)}
+  .ev img{width:100%;aspect-ratio:4/5;object-fit:cover}
+  .ev figcaption{padding:20px 22px 24px}
+  .ev h3{font-size:22px;margin:0 0 6px}
+  .ev p{color:var(--muted);margin:0;font-size:15px}
+  .note{color:var(--muted);font-size:13px;text-align:center;margin:26px 0 0}
+  .build{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;align-items:start;margin-top:44px}
+  .build .imgs{display:grid;gap:16px}
+  .build .imgs img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:20px;border:1px solid var(--line)}
+  .bgrp{margin:0 0 22px}
+  .bgrp h3{font-family:var(--sans);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{position:relative;cursor:pointer}
+  .chips input{position:absolute;opacity:0;pointer-events:none}
+  .chips span{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14px;background:var(--bg2);transition:border-color .2s,background .2s,color .2s}
+  .chips input:checked + span{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .chips input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+  .bsum{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px 20px;font-size:14px;color:var(--muted);margin:6px 0 16px;white-space:pre-line}
+  .brow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .brow input{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:15px}
+  .pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:44px}
+  .pgc{background:var(--bg2);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
+  .pgc img{width:100%;aspect-ratio:1;object-fit:cover;background:#e9e9ec}
+  .pgc .b{padding:18px 20px 22px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .pgc h3{font-size:21px}
+  .pgc p{color:var(--muted);margin:0;font-size:14px;flex:1}
+  .pgc .btn{padding:11px 18px;font-size:14px;margin-top:10px}
+  @media (max-width:860px){ .ev{grid-template-columns:1fr} .build{grid-template-columns:1fr} .brow{grid-template-columns:1fr} }
   .hide{display:none!important}
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease, transform .8s ease}
   .reveal.in{opacity:1;transform:none}
@@ -102,6 +133,7 @@
 </style>
 </head>
 <body>
+<div class="sample">Sample store built by Apex Digital Agency. Images are AI-generated. <a href="/#packages">Get yours</a></div>
 <header>
   <div class="wrap">
     <div class="brand">Maison Aurelle</div>
@@ -148,6 +180,37 @@
   </div>
 </section>
 
+<section id="evenings">
+  <div class="wrap">
+    <div class="reveal center"><p class="eyebrow">Beyond the dinner</p><h2>Evenings with something extra</h2></div>
+    <div class="ev">
+      <figure class="reveal"><img class="opt" src="live-music.jpg" alt="Live jazz trio in the dining room" loading="lazy"><figcaption><h3>Live music evenings</h3><p>A jazz trio sets the rhythm of your dinner, from the first toast to the last dessert.</p></figcaption></figure>
+      <figure class="reveal"><img class="opt" src="singer.jpg" alt="Private singer performing at the table" loading="lazy"><figcaption><h3>A private singer</h3><p>Book a vocalist for a surprise song, an anniversary or a quiet set between courses.</p></figcaption></figure>
+      <figure class="reveal"><img class="opt" src="celebration.jpg" alt="Private celebration with champagne and cake" loading="lazy"><figcaption><h3>Celebrations, wrapped</h3><p>Flowers, a cake, a toast and a table styled around your occasion, ready when you arrive.</p></figcaption></figure>
+    </div>
+    <p class="note">Sample content. Availability and details are confirmed with you directly.</p>
+  </div>
+</section>
+
+<section id="builder">
+  <div class="wrap">
+    <div class="reveal center"><p class="eyebrow">Made for your guests</p><h2>Your menu, your way</h2></div>
+    <div class="build">
+      <div class="imgs reveal"><img class="opt" src="custom-menu.jpg" alt="Menu card, candle and small plates" loading="lazy"><img class="opt" src="chef-table.jpg" alt="Chef presenting a dish at the table" loading="lazy"></div>
+      <div class="reveal" id="bform">
+        <div class="bgrp"><h3>Starter</h3><div class="chips" data-g="starter"><label><input type="radio" name="starter" value="Truffle velouté" checked><span>Truffle velouté</span></label><label><input type="radio" name="starter" value="Seared scallops"><span>Seared scallops</span></label><label><input type="radio" name="starter" value="Garden salad"><span>Garden salad</span></label></div></div>
+        <div class="bgrp"><h3>Main</h3><div class="chips"><label><input type="radio" name="main" value="Slow-braised short rib" checked><span>Short rib</span></label><label><input type="radio" name="main" value="Catch of the day"><span>Catch of the day</span></label><label><input type="radio" name="main" value="Wild mushroom risotto"><span>Mushroom risotto</span></label></div></div>
+        <div class="bgrp"><h3>Dessert</h3><div class="chips"><label><input type="radio" name="dessert" value="Dark chocolate soufflé" checked><span>Chocolate soufflé</span></label><label><input type="radio" name="dessert" value="Seasonal fruit plate"><span>Fruit plate</span></label></div></div>
+        <div class="bgrp"><h3>Dietary needs</h3><div class="chips"><label><input type="checkbox" name="diet" value="Vegetarian"><span>Vegetarian</span></label><label><input type="checkbox" name="diet" value="Halal"><span>Halal</span></label><label><input type="checkbox" name="diet" value="Gluten-free"><span>Gluten-free</span></label><label><input type="checkbox" name="diet" value="Allergies (see note)"><span>Allergies</span></label></div></div>
+        <div class="bgrp"><h3>Add to your evening</h3><div class="chips"><label><input type="checkbox" name="extra" value="Live jazz trio"><span>Live jazz trio</span></label><label><input type="checkbox" name="extra" value="Private singer"><span>Private singer</span></label><label><input type="checkbox" name="extra" value="Flowers and cake"><span>Flowers and cake</span></label><label><input type="checkbox" name="extra" value="Chef at the table"><span>Chef at the table</span></label></div></div>
+        <div class="brow"><input id="bguests" type="number" min="1" placeholder="Guests" aria-label="Guests"><input id="bdate" type="text" placeholder="Preferred date" aria-label="Preferred date"></div>
+        <div class="bsum" id="bsum"></div>
+        <button class="btn" type="button" id="bsend" style="width:100%">Send my custom evening</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="menu">
   <div class="wrap">
     <div class="reveal center"><p class="eyebrow">Sample menu</p><h2>Tonight at the table</h2></div>
@@ -185,8 +248,8 @@
   <div class="wrap">
     <div class="reveal"><p class="eyebrow">FAQ</p><h2>Questions before you reserve</h2></div>
     <details class="reveal"><summary>How do I reserve the private room?</summary><p>Choose your dishes, fill in the quick order form and send it. Tell us your preferred date and the size of your group, and we will take care of the rest.</p></details>
-    <details class="reveal"><summary>Is my date available?</summary><p>Availability depends on the evening you choose. Send your preferred date through the form and we will confirm with you directly.</p></details>
-    <details class="reveal"><summary>Can the menu be adapted for my guests?</summary><p>Yes. Add a note about allergies, preferences or a special occasion in the order form and the kitchen will prepare the evening around it.</p></details>
+    <details class="reveal"><summary>Can the evening be customised?</summary><p>Yes. Build your own menu, add live music, a private singer or a celebration setup, and send it to us. We confirm availability and details with you directly.</p></details>
+    <details class="reveal"><summary>Is this a real restaurant?</summary><p>No. This page is a sample built by Apex Digital Agency to show what a custom offer page includes. The images are AI-generated.</p></details>
   </div>
 </section>
 
@@ -257,6 +320,34 @@
     });
   })();
   if('IntersectionObserver' in window){ var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });},{threshold:.12}); document.querySelectorAll('.reveal').forEach(function(el){ro.observe(el);}); } else { document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');}); }
+</script>
+
+<script>
+  /* shared: open the order with a written message (WhatsApp, e-mail or the order link) */
+  window.apexSend=function(msg){
+    var url=document.querySelector('header .btn').getAttribute('href')||'', go;
+    if(/wa\.me|whatsapp/i.test(url)) go=url.split('?')[0]+'?text='+encodeURIComponent(msg);
+    else if(/^mailto:/i.test(url)) go=url.split('?')[0]+'?subject='+encodeURIComponent(document.title)+'&body='+encodeURIComponent(msg);
+    else go='https://wa.me/?text='+encodeURIComponent(msg);
+    window.open(go,'_blank','noopener');
+  };
+  document.querySelectorAll('img.opt').forEach(function(i){ i.addEventListener('error',function(){ var f=i.closest('figure,.pgc,.imgs'); (f&&f.tagName!=='DIV'?f:i).classList.add('hide'); }); });
+</script>
+<script>
+  (function(){
+    var f=document.getElementById('bform'); if(!f) return;
+    function val(n){ var e=f.querySelector('input[name='+n+']:checked'); return e?e.value:''; }
+    function all(n){ return [].slice.call(f.querySelectorAll('input[name='+n+']:checked')).map(function(e){return e.value;}); }
+    function text(){
+      var l=['Starter: '+val('starter'),'Main: '+val('main'),'Dessert: '+val('dessert')];
+      var d=all('diet'), x=all('extra'), g=document.getElementById('bguests').value, w=document.getElementById('bdate').value;
+      if(d.length) l.push('Dietary: '+d.join(', ')); if(x.length) l.push('Extras: '+x.join(', ')); if(g) l.push('Guests: '+g); if(w) l.push('Date: '+w);
+      return l.join('\n');
+    }
+    function sum(){ document.getElementById('bsum').textContent=text(); }
+    f.addEventListener('change',sum); f.addEventListener('input',sum); sum();
+    document.getElementById('bsend').addEventListener('click',function(){ window.apexSend('Hello, I would like to reserve a private evening with this custom menu:\n'+text()); });
+  })();
 </script>
 </body>
 </html>
