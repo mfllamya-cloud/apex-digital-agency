@@ -182,6 +182,12 @@
   .vframe .rec{position:absolute;top:16px;left:18px;font:600 10px var(--sans);letter-spacing:.26em;color:var(--accent)}
   .vframe .sz{position:absolute;top:16px;right:18px;font:500 10px var(--sans);letter-spacing:.2em;color:#66665f}
   .ph.has{background:#000;border-color:var(--line)}.ph.has img,.ph.has video,.mark.has img{width:100%;height:100%;object-fit:cover;display:block}.ph.has img,.ph.has video{position:absolute;inset:0}.vframe.has video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.vframe.has .play,.vframe.has .cap{display:none}.mark.has{overflow:hidden}
+  .ph.tall{aspect-ratio:9/16;width:100%}
+  .hero .ph.tall{max-width:420px}
+  .promo{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:96px;align-items:center;margin:88px 0 40px}
+  .promo .lead2{color:var(--muted);max-width:36ch;margin:0 0 32px}
+  .promo .pull{margin-bottom:24px}
+  @media (max-width:860px){ .promo{grid-template-columns:1fr;gap:44px} .promo .vframe{max-width:340px;margin:0 auto} .hero .ph.tall,.story2 .ph.tall{max-width:340px;margin:0 auto} }
   .rule{height:1px;background:var(--line);border:0;margin:0}
   .story2{display:grid;grid-template-columns:minmax(260px,400px) 1fr;gap:110px;align-items:center}
   .chap{padding:34px 0;grid-template-columns:70px 1fr}
@@ -249,15 +255,11 @@
       <p data-slot="subhead">Tailored pieces designed for posture, movement and confidence. Made in small runs, built to be worn for years.</p>
       <div class="cta-row">
         <a class="btn" href="#" data-demo="#">Shop the capsule</a>
-        <a class="btn ghost" href="#film">Watch the film</a>
+        <a class="btn ghost" href="#collection">Watch the film</a>
       </div>
     </div>
-    <!-- HERO VIDEO 9:16: replace .vframe content with <video src="/videos/..." muted loop playsinline poster="..."> -->
-    <div class="vframe" data-slot="hero_video">
-      <span class="rec">● HERO FILM</span><span class="sz">9:16</span>
-      <a class="play" href="#" data-demo="#" aria-label="Play film">▶</a>
-      <span class="cap">The power of elegance · 1080 × 1920</span>
-    </div>
+    <!-- HERO IMAGE 9:16 (static, no video credits): slot hero_image -->
+    <div class="ph tall" data-slot="hero_image"><span>Brand image · 9:16 · hero_image</span></div>
   </div>
 </div>
 <hr class="rule">
@@ -266,11 +268,7 @@
 <section id="film">
   <div class="wrap reveal" data-slot="story">
     <div class="story2">
-      <div class="vframe" data-slot="story_video">
-        <span class="rec">● STORY FILM</span><span class="sz">9:16</span>
-        <a class="play" href="#" data-demo="#" aria-label="Play story">▶</a>
-        <span class="cap">Transformation &amp; Confidence</span>
-      </div>
+      <div class="ph tall" data-slot="story_image"><span>Story image · 9:16 · story_image</span></div>
       <div>
         <p class="eyebrow">The narrative</p>
         <p class="pull">She did not change who she was. She changed how she <em>stood</em>.</p>
@@ -288,6 +286,20 @@
 <section id="collection">
   <div class="wrap">
     <div class="reveal center"><p class="eyebrow">As seen in the campaign</p><h2>Worn in the film</h2></div>
+    <!-- THE ONE HERO VIDEO (9:16): slot hero_video. Promotes Capsule 01 directly above its grid -->
+    <div class="promo reveal">
+      <div class="vframe" data-slot="hero_video">
+        <span class="rec">● CAMPAIGN FILM</span><span class="sz">9:16</span>
+        <a class="play" href="#" data-demo="#" aria-label="Play film">▶</a>
+        <span class="cap">The power of elegance · 1080 × 1920</span>
+      </div>
+      <div>
+        <p class="eyebrow">The film</p>
+        <p class="pull">Four pieces. One <em>silhouette</em>.</p>
+        <p class="lead2">Every look in the film is below. Tap a piece to see it from the front, the back and up close.</p>
+        <a class="btn" href="#" data-demo="#">Shop the looks</a>
+      </div>
+    </div>
     <div class="pgrid" data-slot="campaign"><article class="pcard reveal" data-slot="product_1">
       <div class="tagrow"><span class="tg" data-slot="product_1_badge">Worn in the film</span></div>
       <div class="ph main" data-slot="product_1_img_main"><span>Product 1 · front · image placeholder</span></div>
