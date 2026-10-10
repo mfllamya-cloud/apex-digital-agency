@@ -149,7 +149,7 @@
   <section class="intro">
     <p class="eyebrow">Fashion catalog · demo order form</p>
     <h1>Send us your campaign assets</h1>
-    <p>Three focused steps, each mapped to its own part of the store: your hero and story films, the products worn in the film, and the secondary collection.</p>
+    <p>Three focused steps, each mapped to its own part of the store: your campaign video and brand images, the products worn in the film, and the secondary collection.</p>
     <ol class="stepper" id="stepper"><li data-go="1"><b>1</b><span>Hero &amp; video assets</span></li><li data-go="2"><b>2</b><span>Capsule 01</span></li><li data-go="3"><b>3</b><span>Capsule 02</span></li></ol>
   </section>
   <form id="f" novalidate>
@@ -162,10 +162,12 @@
         <div class="f full"><span>Logo (optional)</span><label class="drop" data-for="logo"><input type="file" accept="image/*" data-slot="logo"><span>Tap to add your logo or drop it here</span></label><div class="thumbs" id="th-logo"></div></div>
       </div></fieldset>
       <fieldset><legend>1 · Hero &amp; video assets</legend>
-        <p class="hint" style="margin:0 0 14px">Only your best source material for the AI-generated 9:16 Hero and Story films (Runway / Luma): campaign photos, model shots, fabric close-ups, or short reference clips. Add as many as you like.</p>
+        <p class="hint" style="margin:0 0 14px">Your source material for ONE cinematic 9:16 campaign video (Runway / Luma). It is shown above Capsule Collection 01. Add campaign photos, model shots, fabric close-ups or a short reference clip.</p>
         <div class="f"><span>Source images &amp; videos <span class="cnt" id="cnt-hero"></span></span>
           <label class="drop" data-for="hero"><input type="file" accept="image/*,video/*" multiple data-slot="hero"><span>Tap to add images or videos, or drop them here</span></label>
           <div class="thumbs" id="th-hero"></div></div>
+        <div class="f"><span>Store brand image (static hero, optional)</span><label class="drop" data-for="brand"><input type="file" accept="image/*" data-slot="brand"><span>Tap to add one high-end brand image</span></label><div class="thumbs" id="th-brand"></div></div>
+        <div class="f"><span>Story image (static, optional)</span><label class="drop" data-for="story"><input type="file" accept="image/*" data-slot="story"><span>Tap to add one image for the story section</span></label><div class="thumbs" id="th-story"></div></div>
       </fieldset>
       <div class="fileprog" id="fileprog"><div class="bar"><i></i></div><span></span></div>
       <div class="nav"><span></span><button type="button" class="btn" data-next>Next: Capsule 01 <span class="arr">→</span></button></div>
@@ -198,7 +200,7 @@ var ANG=['front','back','detail'];
 /* upload slots: hero (many images/videos) + 8 products x 3 angles (one image each) */
 var files={hero:[]}, SINGLE={};
 for(var n=1;n<=8;n++) ANG.forEach(function(a){ files['p'+n+'_'+a]=[]; SINGLE['p'+n+'_'+a]=1; });
-files.logo=[]; SINGLE.logo=1;
+files.logo=[]; SINGLE.logo=1; files.brand=[]; SINGLE.brand=1; files.story=[]; SINGLE.story=1;
 
 /* ---------- build the product cards (4 + 4) ---------- */
 function card(n){
@@ -333,8 +335,15 @@ function build(){
   var hero=files.hero.filter(function(i){ return i.state==='ok'&&i.remote; });
   data.hero_image_urls=hero.filter(function(i){return !i.vid;}).map(function(i){return i.remote;}).join('\n');
   data.hero_video_urls=hero.filter(function(i){return i.vid;}).map(function(i){return i.remote;}).join('\n');
+  data.video_jobs=1;                                   /* exactly ONE AI video (hero_video, above Capsule 01) */
+  data.hero_video_source=(data.hero_image_urls.split('\n')[0]||data.hero_video_urls.split('\n')[0]||'');
+  data.brand_image_url=done('brand')[0]||(data.hero_image_urls.split('\n')[0]||'');
+  data.story_image_url=done('story')[0]||'';
   var S={brand:data.brand,order_url:data.contact?(/^https?:|^mailto:|^tel:/i.test(data.contact)?data.contact:(/^[+\d][\d\s()+-]{6,}$/.test(data.contact)?'https://wa.me/'+data.contact.replace(/\D/g,''):'')):''};
   if(data.logo_url) S.logo_img=data.logo_url;
+  if(data.brand_image_url) S.hero_image=data.brand_image_url;
+  if(data.story_image_url) S.story_image=data.story_image_url;
+  /* S.hero_video is added later by Make once the single video is rendered */
   var catalog=[];
   for(var n=1;n<=8;n++){
     var P={n:n,capsule:n<=4?1:2,name:f['p'+n+'_name'].value.trim(),price:f['p'+n+'_price'].value.trim(),desc:f['p'+n+'_desc'].value.trim()};
