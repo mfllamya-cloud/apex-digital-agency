@@ -3,7 +3,11 @@
    Every key matches [data-slot="key"]. Empty or missing keys are ignored, so placeholders stay in place.
    *_img_*, *_img, *_image (logo_img, hero_image, story_image)  -> image    hero_video -> video    *_url -> link href    anything else -> text */
 (function(){
-  var S=window.APEX_SLOTS; if(!S||typeof S!=='object') return;
+  var S=window.APEX_SLOTS; if(!S||typeof S!=='object') S={};
+  /* Make helpers: first uploaded hero image as brand image fallback, and the single generated hero video */
+  if(!S.hero_image&&window.APEX_HERO) S.hero_image=window.APEX_HERO;
+  if(!S.hero_video&&window.APEX_VIDEO) S.hero_video=window.APEX_VIDEO;
+  if(!Object.keys(S).length) return;
   var d=document, URLRE=/^https?:\/\//i;
   function img(el,src,alt){
     var i=d.createElement('img'); i.src=src; i.alt=alt||''; i.loading='lazy'; i.decoding='async';
