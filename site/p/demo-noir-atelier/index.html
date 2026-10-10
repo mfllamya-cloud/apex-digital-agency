@@ -181,6 +181,7 @@
   .vframe .cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;font:500 10px/1.6 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:#77776f}
   .vframe .rec{position:absolute;top:16px;left:18px;font:600 10px var(--sans);letter-spacing:.26em;color:var(--accent)}
   .vframe .sz{position:absolute;top:16px;right:18px;font:500 10px var(--sans);letter-spacing:.2em;color:#66665f}
+  .ph.has{background:#000;border-color:var(--line)}.ph.has img,.ph.has video,.mark.has img{width:100%;height:100%;object-fit:cover;display:block}.ph.has img,.ph.has video{position:absolute;inset:0}.vframe.has video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.vframe.has .play,.vframe.has .cap{display:none}.mark.has{overflow:hidden}
   .rule{height:1px;background:var(--line);border:0;margin:0}
   .story2{display:grid;grid-template-columns:minmax(260px,400px) 1fr;gap:110px;align-items:center}
   .chap{padding:34px 0;grid-template-columns:70px 1fr}
@@ -232,7 +233,7 @@
 <div class="lp-demo"><span class="lp-badge"><i></i>عمل تجريبي / Demo Project - Live Preview</span><span>Sample store by Apex Digital Agency · Fictional brand · Media placeholders · <a href="/#packages">Get yours</a></span><span class="lp-themes" aria-label="Try a theme"><em style="font-style:normal;opacity:.7">Try a theme:</em><button type="button" data-theme="original" data-accent="" style="--sw:#E10600" class="on"><i></i>High-Fashion</button><button type="button" data-theme="light" data-accent="#B8913F" style="--sw:#B8913F"><i></i>Light</button><button type="button" data-theme="dark" data-accent="#D8B878" style="--sw:#D8B878"><i></i>Dark</button><button type="button" data-theme="pastel" data-accent="#D9779B" style="--sw:#D9779B"><i></i>Pastel</button><button type="button" data-theme="vibrant" data-accent="#FF4FA3" style="--sw:#FF4FA3"><i></i>Vibrant</button></span></div>
 <header>
   <div class="wrap">
-    <div class="brand" data-slot="brand"><span class="mark" data-slot="logo" aria-hidden="true">L</span>Lumière</div>
+    <div class="brand"><span class="mark" data-slot="logo_img" aria-hidden="true">L</span><span data-slot="brand">Lumière</span></div>
     <nav class="nav2" aria-label="Main"><a href="#" data-demo="#">New in</a><a href="#" data-demo="#">Women</a><a href="#" data-demo="#">Men</a><a href="#" data-demo="#">Collections</a><a href="#" data-demo="#">Atelier</a></nav>
     <a class="btn" href="#" data-demo="#" data-slot="order_url">Shop now</a>
   </div>
@@ -289,32 +290,32 @@
     <div class="reveal center"><p class="eyebrow">As seen in the campaign</p><h2>Worn in the film</h2></div>
     <div class="pgrid" data-slot="campaign"><article class="pcard reveal" data-slot="product_1">
       <div class="tagrow"><span class="tg" data-slot="product_1_badge">Worn in the film</span></div>
-      <div class="ph main"><span>Product 1 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_1_img_main"><span>Product 1 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_1_img_front"><span>Front</span></div><div class="ph " data-slot="product_1_img_back"><span>Back</span></div><div class="ph " data-slot="product_1_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_1_name">The Column Coat</h3><span class="pr" data-slot="product_1_price">$890.00</span></div>
       <p class="sub" data-slot="product_1_desc">Double-faced wool, sharp shoulder, floor-skimming drop</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_2">
       <div class="tagrow"><span class="tg" data-slot="product_2_badge">Worn in the film</span></div>
-      <div class="ph main"><span>Product 2 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_2_img_main"><span>Product 2 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_2_img_front"><span>Front</span></div><div class="ph " data-slot="product_2_img_back"><span>Back</span></div><div class="ph " data-slot="product_2_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_2_name">Nuit Slip Dress</h3><span class="pr" data-slot="product_2_price">$590.00</span></div>
       <p class="sub" data-slot="product_2_desc">Bias-cut silk satin, open back, weightless movement</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_3">
       <div class="tagrow"><span class="tg" data-slot="product_3_badge">Worn in the film</span></div>
-      <div class="ph main"><span>Product 3 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_3_img_main"><span>Product 3 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_3_img_front"><span>Front</span></div><div class="ph " data-slot="product_3_img_back"><span>Back</span></div><div class="ph " data-slot="product_3_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_3_name">Atelier Blazer</h3><span class="pr" data-slot="product_3_price">$720.00</span></div>
       <p class="sub" data-slot="product_3_desc">Hand-finished lapel, one button, fully canvassed</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_4">
       <div class="tagrow"><span class="tg" data-slot="product_4_badge">Worn in the film</span></div>
-      <div class="ph main"><span>Product 4 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_4_img_main"><span>Product 4 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_4_img_front"><span>Front</span></div><div class="ph " data-slot="product_4_img_back"><span>Back</span></div><div class="ph " data-slot="product_4_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_4_name">The Wide Trouser</h3><span class="pr" data-slot="product_4_price">$350.00</span></div>
       <p class="sub" data-slot="product_4_desc">High waist, pleated front, tailored in Italian wool</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
@@ -349,32 +350,32 @@
     <div class="reveal center"><p class="eyebrow">New arrivals · Best sellers</p><h2>The house favourites</h2></div>
     <div class="pgrid" data-slot="arrivals"><article class="pcard reveal" data-slot="product_5">
       <div class="tagrow"><span class="tg" data-slot="product_5_badge">New</span></div>
-      <div class="ph main"><span>Product 5 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_5_img_main"><span>Product 5 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_5_img_front"><span>Front</span></div><div class="ph " data-slot="product_5_img_back"><span>Back</span></div><div class="ph " data-slot="product_5_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_5_name">Cashmere Turtleneck</h3><span class="pr" data-slot="product_5_price">$480.00</span></div>
       <p class="sub" data-slot="product_5_desc">Featherweight cashmere, ribbed collar, relaxed drape</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_6">
       <div class="tagrow"><span class="tg" data-slot="product_6_badge">Best seller</span></div>
-      <div class="ph main"><span>Product 6 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_6_img_main"><span>Product 6 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_6_img_front"><span>Front</span></div><div class="ph " data-slot="product_6_img_back"><span>Back</span></div><div class="ph " data-slot="product_6_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_6_name">Belted Leather Jacket</h3><span class="pr" data-slot="product_6_price">$1,250.00</span></div>
       <p class="sub" data-slot="product_6_desc">Butter-soft nappa leather, sculpted waist, brushed hardware</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_7">
       <div class="tagrow"><span class="tg" data-slot="product_7_badge">New</span></div>
-      <div class="ph main"><span>Product 7 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_7_img_main"><span>Product 7 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_7_img_front"><span>Front</span></div><div class="ph " data-slot="product_7_img_back"><span>Back</span></div><div class="ph " data-slot="product_7_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_7_name">Pleated Midi Skirt</h3><span class="pr" data-slot="product_7_price">$420.00</span></div>
       <p class="sub" data-slot="product_7_desc">Knife pleats in crisp wool crepe, hand-finished hem</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
       <a class="btn" href="#" data-demo="#">Add to bag</a>
     </article><article class="pcard reveal" data-slot="product_8">
       <div class="tagrow"><span class="tg" data-slot="product_8_badge">Best seller</span></div>
-      <div class="ph main"><span>Product 8 · front · image placeholder</span></div>
-      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="ph main" data-slot="product_8_img_main"><span>Product 8 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on" data-slot="product_8_img_front"><span>Front</span></div><div class="ph " data-slot="product_8_img_back"><span>Back</span></div><div class="ph " data-slot="product_8_img_detail"><span>Detail</span></div></div>
       <div class="meta"><h3 data-slot="product_8_name">The Silk Shirt</h3><span class="pr" data-slot="product_8_price">$380.00</span></div>
       <p class="sub" data-slot="product_8_desc">Heavy washed silk, concealed placket, oversized cuff</p>
       <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
@@ -461,6 +462,8 @@
 <div class="lp-sprog"></div>
 <div class="lp-sticky"><div><b>Lumière</b><span>Capsule 01 · Shop in one tap</span></div><a class="btn" href="#" data-demo="#">Shop now</a></div>
 <div class="lp-toast" role="status" aria-live="polite">عمل تجريبي لأغراض العرض فقط / Demo only, for preview purposes</div>
+<!--APEX_SLOTS-->
+<script src="/p/_lib/slots.js"></script>
 <script src="/p/_lib/lp.js" defer></script>
 </body>
 </html>
