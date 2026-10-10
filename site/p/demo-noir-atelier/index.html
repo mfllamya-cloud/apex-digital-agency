@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NOIR ATELIER | Dress the person you are becoming</title>
-<meta name="description" content="A capsule of sharp, tailored pieces designed for confidence. Demo store by Apex Digital Agency.">
-<meta property="og:title" content="NOIR ATELIER | Dress the person you are becoming">
-<meta property="og:description" content="A capsule of sharp, tailored pieces designed for confidence. Demo store by Apex Digital Agency.">
+<title>LUMIÈRE | The Power of Elegance</title>
+<meta name="description" content="LUMIÈRE: a capsule of tailored pieces designed for posture, movement and confidence. Demo store by Apex Digital Agency.">
+<meta property="og:title" content="LUMIÈRE | The Power of Elegance">
+<meta property="og:description" content="A capsule of tailored pieces designed for posture, movement and confidence. Demo store by Apex Digital Agency.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -160,116 +160,306 @@
   .size{display:flex;gap:6px;margin:6px 0 4px}.size i{font-style:normal;border:1px solid var(--line);padding:3px 9px;font-size:12px;color:var(--muted)}
   .sample{display:none}
   @media (max-width:860px){ .film{grid-template-columns:1fr;gap:36px} .film .frame{max-width:300px;margin:0 auto} .lookbook{grid-template-columns:repeat(2,1fr)} .lookbook .ph:nth-child(n){margin-top:0} }
+
+  /* ===== LUMIERE high-fashion refinements ===== */
+  :root{--accent:#E10600}
+  body{letter-spacing:.01em}
+  section{padding:140px 0}
+  .wrap{width:min(1180px,100% - 48px)}
+  h1,h2,h3{font-weight:400}
+  section h2{font-size:clamp(34px,5vw,64px);letter-spacing:-.005em}
+  .eyebrow{font-size:11px;letter-spacing:.42em}
+  .brand{display:flex;align-items:center;gap:14px;font-size:22px;letter-spacing:.5em}
+  .mark{width:34px;height:34px;border:1px solid var(--text);display:grid;place-items:center;font:400 18px/1 var(--serif);letter-spacing:0}
+  .hero{min-height:0;display:block;overflow:visible;padding:96px 0 120px;background:#0b0b0b}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr minmax(280px,420px);gap:96px;align-items:center;padding:0}
+  .hero .art,.hero::after{display:none}
+  .hero h1{font-size:clamp(46px,7vw,104px);line-height:.98;max-width:9ch;text-transform:uppercase;letter-spacing:.01em}
+  .hero p{max-width:40ch;color:#b9b9b4}
+  .vframe{position:relative;aspect-ratio:9/16;width:100%;border:1px solid #3a3a3a;background:repeating-linear-gradient(135deg,#161616 0 16px,#111 16px 32px);display:grid;place-items:center}
+  .vframe .play{width:92px;height:92px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:28px;text-decoration:none;box-shadow:0 0 0 14px rgba(225,6,0,.16)}
+  .vframe .cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;font:500 10px/1.6 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:#77776f}
+  .vframe .rec{position:absolute;top:16px;left:18px;font:600 10px var(--sans);letter-spacing:.26em;color:var(--accent)}
+  .vframe .sz{position:absolute;top:16px;right:18px;font:500 10px var(--sans);letter-spacing:.2em;color:#66665f}
+  .rule{height:1px;background:var(--line);border:0;margin:0}
+  .story2{display:grid;grid-template-columns:minmax(260px,400px) 1fr;gap:110px;align-items:center}
+  .chap{padding:34px 0;grid-template-columns:70px 1fr}
+  .chap b{font-size:44px}
+  .chap h3{font-size:26px}
+  .pull{font:italic 400 clamp(28px,3.6vw,46px)/1.25 var(--serif);max-width:22ch;margin:0 0 40px}
+  .pull em{color:var(--accent)}
+  .lookbook{grid-template-columns:repeat(3,1fr);gap:28px}
+  .lookbook .ph{aspect-ratio:9/16}
+  .lookbook figure:nth-child(2){margin-top:72px}
+  .lookbook figure{margin:0}.lookbook figcaption{margin-top:14px;font:500 11px var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:72px 24px;margin-top:72px}
+  @media (max-width:1000px){ .pgrid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:520px){ .pgrid{grid-template-columns:1fr} }
+  .pcard .main{aspect-ratio:3/4.4}
+  .pcard .angles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .pcard .angles .ph{aspect-ratio:3/4;font-size:9px;letter-spacing:.18em}
+  .pcard .angles .ph.on{border-color:var(--accent)}
+  .pcard .meta{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:22px}
+  .pcard h3{font-size:24px}
+  .pcard .pr{font:500 16px var(--sans);letter-spacing:.08em}
+  .pcard .sub{color:var(--muted);font-size:14px;margin:6px 0 18px}
+  .pcard .size{margin:0 0 18px}
+  .pcard .btn{width:100%}
+  .tagrow{height:22px;margin-bottom:12px}.tg{font:600 10px var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--accent)}
+  .nav2{display:flex;gap:34px;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase}
+  .nav2 a{color:var(--muted);text-decoration:none}.nav2 a:hover{color:var(--text)}
+  header .wrap{gap:28px}
+  .explore{text-align:center;margin-top:88px}
+  .explore .btn{padding:20px 54px;font-size:13px}
+  .explore p{color:var(--muted);margin:18px 0 0;font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+  .app{display:grid;grid-template-columns:1fr minmax(200px,280px);gap:72px;align-items:center;border:1px solid var(--line);background:linear-gradient(120deg,#141414,#0d0d0d);padding:72px}
+  .app h2{font-size:clamp(30px,4vw,52px);margin:0 0 18px}.app p.lead{color:var(--muted);max-width:44ch;margin:0 0 32px}
+  .stores{display:flex;gap:14px;flex-wrap:wrap}
+  .stores a{display:flex;flex-direction:column;border:1px solid var(--text);padding:12px 26px;text-decoration:none;color:var(--text);font:600 15px var(--sans);letter-spacing:.06em}
+  .stores a small{font:500 9px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .phone{aspect-ratio:9/18;border:1px solid #3a3a3a;border-radius:34px;background:repeating-linear-gradient(135deg,#161616 0 14px,#111 14px 28px);display:grid;place-items:center;text-align:center;font:500 10px/1.8 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:#77776f;padding:20px;position:relative}
+  .phone::before{content:"";position:absolute;top:12px;width:60px;height:5px;border-radius:5px;background:#2a2a2a}
+  .fcols{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:48px;padding:80px 0 56px;border-bottom:1px solid var(--line);margin-bottom:28px}
+  .fcols h4{font:600 11px var(--sans);letter-spacing:.28em;text-transform:uppercase;margin:0 0 20px;color:var(--text)}
+  .fcols a{display:block;color:var(--muted);text-decoration:none;font-size:14px;margin:0 0 12px}.fcols a:hover{color:var(--text)}
+  .fcols .fb{font:400 26px var(--serif);letter-spacing:.4em;text-transform:uppercase}.fcols .fb+p{color:var(--muted);font-size:14px;max-width:30ch}
+  @media (max-width:860px){ .nav2{display:none} .app{grid-template-columns:1fr;padding:44px 28px;gap:44px} .phone{max-width:220px;margin:0 auto} .fcols{grid-template-columns:1fr 1fr} }
+  @media (max-width:860px){ section{padding:88px 0} .hero .wrap{grid-template-columns:1fr;gap:56px} .hero .vframe{max-width:340px;margin:0 auto} .story2{grid-template-columns:1fr;gap:56px} .story2 .vframe{max-width:340px;margin:0 auto} .lookbook{grid-template-columns:1fr 1fr;gap:14px} .lookbook figure:nth-child(2){margin-top:0} }
 </style>
 <link rel="stylesheet" href="/p/_lib/lp.css">
 </head>
 <body>
-<div class="lp-demo"><span class="lp-badge"><i></i>عمل تجريبي / Demo Project - Live Preview</span><span>Sample store by Apex Digital Agency · Demo skeleton, images and video to come · <a href="/#packages">Get yours</a></span><span class="lp-themes" aria-label="Try a theme"><em style="font-style:normal;opacity:.7">Try a theme:</em><button type="button" data-theme="original" data-accent="" style="--sw:#FF3B1D" class="on"><i></i>High-Fashion</button><button type="button" data-theme="light" data-accent="#B8913F" style="--sw:#B8913F"><i></i>Light</button><button type="button" data-theme="dark" data-accent="#D8B878" style="--sw:#D8B878"><i></i>Dark</button><button type="button" data-theme="pastel" data-accent="#D9779B" style="--sw:#D9779B"><i></i>Pastel</button><button type="button" data-theme="vibrant" data-accent="#FF4FA3" style="--sw:#FF4FA3"><i></i>Vibrant</button></span></div>
+<div class="lp-demo"><span class="lp-badge"><i></i>عمل تجريبي / Demo Project - Live Preview</span><span>Sample store by Apex Digital Agency · Fictional brand · Media placeholders · <a href="/#packages">Get yours</a></span><span class="lp-themes" aria-label="Try a theme"><em style="font-style:normal;opacity:.7">Try a theme:</em><button type="button" data-theme="original" data-accent="" style="--sw:#E10600" class="on"><i></i>High-Fashion</button><button type="button" data-theme="light" data-accent="#B8913F" style="--sw:#B8913F"><i></i>Light</button><button type="button" data-theme="dark" data-accent="#D8B878" style="--sw:#D8B878"><i></i>Dark</button><button type="button" data-theme="pastel" data-accent="#D9779B" style="--sw:#D9779B"><i></i>Pastel</button><button type="button" data-theme="vibrant" data-accent="#FF4FA3" style="--sw:#FF4FA3"><i></i>Vibrant</button></span></div>
 <header>
   <div class="wrap">
-    <div class="brand">Noir Atelier</div>
-    <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Shop on WhatsApp</a>
+    <div class="brand" data-slot="brand"><span class="mark" data-slot="logo" aria-hidden="true">L</span>Lumière</div>
+    <nav class="nav2" aria-label="Main"><a href="#" data-demo="#">New in</a><a href="#" data-demo="#">Women</a><a href="#" data-demo="#">Men</a><a href="#" data-demo="#">Collections</a><a href="#" data-demo="#">Atelier</a></nav>
+    <a class="btn" href="#" data-demo="#" data-slot="order_url">Shop now</a>
   </div>
 </header>
-<div class="lp-strip" data-lp-hide><span>Drop 01 ships with free alterations. Closes in</span><span class="lp-cd" data-evergreen="48"><span><b>00</b><i>days</i></span><span><b>00</b><i>hrs</i></span><span><b>00</b><i>min</i></span><span><b>00</b><i>sec</i></span></span></div>
+<div class="lp-strip" data-lp-hide><span>Capsule 01 ships with free alterations. Closes in</span><span class="lp-cd" data-evergreen="48"><span><b>00</b><i>days</i></span><span><b>00</b><i>hrs</i></span><span><b>00</b><i>min</i></span><span><b>00</b><i>sec</i></span></span></div>
+
+<!-- HERO: copy + 9:16 hero film -->
 <div class="hero lp-hero">
-  <div class="art" aria-hidden="true"></div>
-  <!-- HERO MEDIA: replace .art with <img src="photo1.jpg"> and add <video class="lp-bgvid" data-src="/videos/..."> when the shoot is ready -->
   <div class="wrap reveal">
-    <p class="eyebrow">Capsule Collection · Drop 01</p>
-    <h1>Dress the person you are <em>becoming</em></h1>
-    <p>Sharp, tailored pieces designed for posture, movement and confidence. Made in small runs, built to be worn for years.</p>
-    <div class="cta-row">
-      <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Shop the drop</a>
-      <a class="btn ghost" href="#film">Watch the story</a>
+    <div>
+      <p class="eyebrow">Capsule Collection · 01</p>
+      <h1 data-slot="headline">The power of <em>elegance</em></h1>
+      <p data-slot="subhead">Tailored pieces designed for posture, movement and confidence. Made in small runs, built to be worn for years.</p>
+      <div class="cta-row">
+        <a class="btn" href="#" data-demo="#">Shop the capsule</a>
+        <a class="btn ghost" href="#film">Watch the film</a>
+      </div>
+    </div>
+    <!-- HERO VIDEO 9:16: replace .vframe content with <video src="/videos/..." muted loop playsinline poster="..."> -->
+    <div class="vframe" data-slot="hero_video">
+      <span class="rec">● HERO FILM</span><span class="sz">9:16</span>
+      <a class="play" href="#" data-demo="#" aria-label="Play film">▶</a>
+      <span class="cap">The power of elegance · 1080 × 1920</span>
     </div>
   </div>
 </div>
+<hr class="rule">
+
+<!-- STORY: Transformation & Confidence -->
 <section id="film">
-  <div class="wrap reveal">
-    <div class="center"><p class="eyebrow">The film</p><h2>Transformation &amp; Confidence</h2></div>
-    <div class="film" data-concept="Transformation &amp; Confidence">
-      <div class="frame">
-        <span class="rec">● 9:16 · PLACEHOLDER</span>
-        <!-- STORY VIDEO: drop the finished ad here, e.g. <video src="/videos/fashion.mp4" muted loop playsinline poster="..."> -->
-        <a class="play" href="https://wa.me/" aria-label="Play film">▶</a>
-        <span class="tag">Story-driven video · coming soon</span>
+  <div class="wrap reveal" data-slot="story">
+    <div class="story2">
+      <div class="vframe" data-slot="story_video">
+        <span class="rec">● STORY FILM</span><span class="sz">9:16</span>
+        <a class="play" href="#" data-demo="#" aria-label="Play story">▶</a>
+        <span class="cap">Transformation &amp; Confidence</span>
       </div>
       <div>
-        <div class="chap"><b>01</b><div><h3>The doubt</h3><p>A mirror, an ordinary morning, a wardrobe that never quite says who she is.</p></div></div>
-        <div class="chap"><b>02</b><div><h3>The fitting</h3><p>One piece changes the line of the shoulder, the way she stands. Everything goes quiet.</p></div></div>
-        <div class="chap"><b>03</b><div><h3>The walk-out</h3><p>Same street, same person, a different stride. Confidence, worn on the outside.</p></div></div>
+        <p class="eyebrow">The narrative</p>
+        <p class="pull">She did not change who she was. She changed how she <em>stood</em>.</p>
+        <div class="chaps">
+          <div class="chap"><b>01</b><div><h3>The doubt</h3><p>A mirror, an ordinary morning, a wardrobe that never quite says who she is.</p></div></div>
+          <div class="chap"><b>02</b><div><h3>The fitting</h3><p>One piece changes the line of the shoulder, the way she stands. Everything goes quiet.</p></div></div>
+          <div class="chap"><b>03</b><div><h3>The walk-out</h3><p>Same street, same person, a different stride. Confidence, worn on the outside.</p></div></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
+<hr class="rule">
+
+<section id="collection">
+  <div class="wrap">
+    <div class="reveal center"><p class="eyebrow">As seen in the campaign</p><h2>Worn in the film</h2></div>
+    <div class="pgrid" data-slot="campaign"><article class="pcard reveal" data-slot="product_1">
+      <div class="tagrow"><span class="tg" data-slot="product_1_badge">Worn in the film</span></div>
+      <div class="ph main"><span>Product 1 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_1_name">The Column Coat</h3><span class="pr" data-slot="product_1_price">$890.00</span></div>
+      <p class="sub" data-slot="product_1_desc">Double-faced wool, sharp shoulder, floor-skimming drop</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_2">
+      <div class="tagrow"><span class="tg" data-slot="product_2_badge">Worn in the film</span></div>
+      <div class="ph main"><span>Product 2 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_2_name">Nuit Slip Dress</h3><span class="pr" data-slot="product_2_price">$590.00</span></div>
+      <p class="sub" data-slot="product_2_desc">Bias-cut silk satin, open back, weightless movement</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_3">
+      <div class="tagrow"><span class="tg" data-slot="product_3_badge">Worn in the film</span></div>
+      <div class="ph main"><span>Product 3 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_3_name">Atelier Blazer</h3><span class="pr" data-slot="product_3_price">$720.00</span></div>
+      <p class="sub" data-slot="product_3_desc">Hand-finished lapel, one button, fully canvassed</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_4">
+      <div class="tagrow"><span class="tg" data-slot="product_4_badge">Worn in the film</span></div>
+      <div class="ph main"><span>Product 4 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_4_name">The Wide Trouser</h3><span class="pr" data-slot="product_4_price">$350.00</span></div>
+      <p class="sub" data-slot="product_4_desc">High waist, pleated front, tailored in Italian wool</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article></div>
+  </div>
+</section>
+<hr class="rule">
+
 <section>
   <div class="wrap">
     <div class="reveal" data-anim="up"><p class="eyebrow">The difference</p><h2>From fitting in to standing out</h2></div>
     <div class="lp-ps">
       <div class="col bad reveal" data-anim="left"><h3>The usual rack</h3><ul><li>Racks of pieces that look good on a hanger and wrong on you</li><li>Sizing that changes brand to brand</li><li>Trends that expire before the parcel arrives</li><li>No story behind what you are wearing</li></ul></div>
       <div class="arrow reveal" data-anim="zoom">→</div>
-      <div class="col good reveal" data-anim="right"><h3>With Noir Atelier</h3><ul><li>Cuts designed around posture, movement and confidence</li><li>A fit guide for every piece, true to size</li><li>A tight capsule collection built to be worn for years</li><li>A story you can feel the moment you put it on</li></ul></div>
+      <div class="col good reveal" data-anim="right"><h3>With Lumière</h3><ul><li>Cuts designed around posture, movement and confidence</li><li>A fit guide for every piece, true to size</li><li>A tight capsule built to be worn for years</li><li>A story you can feel the moment you put it on</li></ul></div>
     </div>
   </div>
 </section>
+<hr class="rule">
+
 <section>
   <div class="wrap">
     <div class="reveal"><p class="eyebrow">Lookbook</p><h2>Monochrome, with intent</h2></div>
-    <div class="lookbook reveal"><div class="ph a"><span>Look 01 placeholder</span></div><div class="ph a"><span>Look 02 placeholder</span></div><div class="ph a"><span>Look 03 placeholder</span></div><div class="ph a"><span>Look 04 placeholder</span></div></div>
+    <div class="lookbook reveal" data-slot="lookbook" style="margin-top:72px"><figure><div class="ph "><span>Look 01 · 9:16 image placeholder</span></div><figcaption>Look 01</figcaption></figure><figure><div class="ph "><span>Look 02 · 9:16 image placeholder</span></div><figcaption>Look 02</figcaption></figure><figure><div class="ph "><span>Look 03 · 9:16 image placeholder</span></div><figcaption>Look 03</figcaption></figure></div>
   </div>
 </section>
-<section id="collection">
+<hr class="rule">
+
+<section id="arrivals">
   <div class="wrap">
-    <div class="reveal center"><p class="eyebrow">The collection</p><h2>Four pieces. Endless days.</h2></div>
-    <div class="pg"><div class="pgc reveal"><div class="ph a"><span>Product image placeholder</span></div><div class="b"><h3>The Column Coat</h3><p>Long wool-blend coat with a sharp shoulder</p><div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i></div><div class="price">$420</div><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Add to bag</a></div></div><div class="pgc reveal"><div class="ph a"><span>Product image placeholder</span></div><div class="b"><h3>Noir Slip Dress</h3><p>Satin finish, bias cut, made to move</p><div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i></div><div class="price">$240</div><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Add to bag</a></div></div><div class="pgc reveal"><div class="ph a"><span>Product image placeholder</span></div><div class="b"><h3>Atelier Blazer</h3><p>Structured, one-button, double-lined</p><div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i></div><div class="price">$310</div><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Add to bag</a></div></div><div class="pgc reveal"><div class="ph a"><span>Product image placeholder</span></div><div class="b"><h3>The Wide Trouser</h3><p>High waist, clean drop, tailored hem</p><div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i></div><div class="price">$180</div><a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Add to bag</a></div></div></div>
-    <p class="note">Sample products with placeholder images. Real stores show the client’s own photos and prices.</p>
+    <div class="reveal center"><p class="eyebrow">New arrivals · Best sellers</p><h2>The house favourites</h2></div>
+    <div class="pgrid" data-slot="arrivals"><article class="pcard reveal" data-slot="product_5">
+      <div class="tagrow"><span class="tg" data-slot="product_5_badge">New</span></div>
+      <div class="ph main"><span>Product 5 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_5_name">Cashmere Turtleneck</h3><span class="pr" data-slot="product_5_price">$480.00</span></div>
+      <p class="sub" data-slot="product_5_desc">Featherweight cashmere, ribbed collar, relaxed drape</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_6">
+      <div class="tagrow"><span class="tg" data-slot="product_6_badge">Best seller</span></div>
+      <div class="ph main"><span>Product 6 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_6_name">Belted Leather Jacket</h3><span class="pr" data-slot="product_6_price">$1,250.00</span></div>
+      <p class="sub" data-slot="product_6_desc">Butter-soft nappa leather, sculpted waist, brushed hardware</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_7">
+      <div class="tagrow"><span class="tg" data-slot="product_7_badge">New</span></div>
+      <div class="ph main"><span>Product 7 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_7_name">Pleated Midi Skirt</h3><span class="pr" data-slot="product_7_price">$420.00</span></div>
+      <p class="sub" data-slot="product_7_desc">Knife pleats in crisp wool crepe, hand-finished hem</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article><article class="pcard reveal" data-slot="product_8">
+      <div class="tagrow"><span class="tg" data-slot="product_8_badge">Best seller</span></div>
+      <div class="ph main"><span>Product 8 · front · image placeholder</span></div>
+      <div class="angles"><div class="ph on"><span>Front</span></div><div class="ph "><span>Back</span></div><div class="ph "><span>Detail</span></div></div>
+      <div class="meta"><h3 data-slot="product_8_name">The Silk Shirt</h3><span class="pr" data-slot="product_8_price">$380.00</span></div>
+      <p class="sub" data-slot="product_8_desc">Heavy washed silk, concealed placket, oversized cuff</p>
+      <div class="size"><i>XS</i><i>S</i><i>M</i><i>L</i><i>XL</i></div>
+      <a class="btn" href="#" data-demo="#">Add to bag</a>
+    </article></div>
+    <div class="explore reveal">
+      <a class="btn" href="#" data-demo="#" data-slot="catalog_url">Explore all 350+ items</a>
+      <p>Women · Men · Accessories · Outerwear</p>
+    </div>
   </div>
 </section>
+<hr class="rule">
+
+<section>
+  <div class="wrap reveal">
+    <div class="app" data-slot="app_banner">
+      <div>
+        <p class="eyebrow">The Lumière app</p>
+        <h2>The entire house, in your pocket</h2>
+        <p class="lead">Browse all 350+ pieces, get first access to every capsule and track your order in real time.</p>
+        <div class="stores"><a href="#" data-demo="#"><small>Download on the</small>App Store</a><a href="#" data-demo="#"><small>Get it on</small>Google Play</a></div>
+      </div>
+      <div class="phone" data-slot="app_image">App preview<br>placeholder</div>
+    </div>
+  </div>
+</section>
+<hr class="rule">
+
 <section>
   <div class="wrap">
-    <div class="reveal center" data-anim="up"><p class="eyebrow">Compare</p><h2>Noir Atelier vs. fast fashion</h2></div>
-    <div class="lp-vs reveal" data-anim="zoom"><table><thead><tr><th></th><th class="us">Noir Atelier</th><th>Fast fashion</th></tr></thead><tbody><tr><td>Made in small runs, never mass-produced</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Tailored fit guide on every piece</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Free alterations on your first order</td><td class="us">✓</td><td class="mid">~</td></tr><tr><td>Capsule wardrobe, not fast trends</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Order in one tap</td><td class="us">✓</td><td class="mid">~</td></tr></tbody></table></div>
+    <div class="reveal center" data-anim="up"><p class="eyebrow">Compare</p><h2>Lumière vs. fast fashion</h2></div>
+    <div class="lp-vs reveal" data-anim="zoom"><table><thead><tr><th></th><th class="us">Lumière</th><th>Fast fashion</th></tr></thead><tbody><tr><td>Made in small runs, never mass-produced</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Tailored fit guide on every piece</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Free alterations on your first order</td><td class="us">✓</td><td class="mid">~</td></tr><tr><td>Capsule wardrobe, not fast trends</td><td class="us">✓</td><td class="no">✕</td></tr><tr><td>Order in one tap</td><td class="us">✓</td><td class="mid">~</td></tr></tbody></table></div>
   </div>
 </section>
+
 <section>
   <div class="wrap">
     <div class="reveal center"><p class="eyebrow">Limited</p><h2>Small runs sell out</h2></div>
-    <div class="lp-stock reveal" data-anim="up" data-left="7" data-total="40"><p><span>Column Coats left in Drop 01</span><em>Only 7 left</em></p><div class="bar"><i></i></div></div>
+    <div class="lp-stock reveal" data-anim="up" data-left="7" data-total="40"><p><span>Column Coats left in Capsule 01</span><em>Only 7 left</em></p><div class="bar"><i></i></div></div>
   </div>
 </section>
+<hr class="rule">
+
 <section>
   <div class="wrap">
     <div class="reveal center" data-anim="up"><p class="eyebrow">Sample reviews</p><h2>Worn, loved, kept</h2></div>
-    <div class="lp-testi reveal"><div class="lp-track"><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“The coat changed how I walk into a room. I did not expect clothes to do that.”</blockquote><cite><b>Sample review</b>The Column Coat</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“Sizing guide was exact. First time I did not need to return anything.”</blockquote><cite><b>Sample review</b>Atelier Blazer</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“Minimal, sharp, and it goes with everything I already own.”</blockquote><cite><b>Sample review</b>The Wide Trouser</cite></div></div>
+    <div class="lp-testi reveal"><div class="lp-track"><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“The coat changed how I walk into a room. I did not expect clothes to do that.”</blockquote><cite><b>Sample review</b>The Column Coat</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“The fit guide was exact. For the first time I returned nothing.”</blockquote><cite><b>Sample review</b>Atelier Blazer</cite></div><div class="lp-slide"><div class="st">★★★★★</div><blockquote>“Minimal, sharp, and it goes with everything I already own.”</blockquote><cite><b>Sample review</b>The Wide Trouser</cite></div></div>
       <div class="lp-ctrl"><button type="button" data-dir="-1" aria-label="Previous">‹</button><div class="lp-dots"></div><button type="button" data-dir="1" aria-label="Next">›</button></div></div>
     <p class="lp-note">Sample reviews written for this demo. Real stores show their own customers’ words.</p>
   </div>
 </section>
+<hr class="rule">
+
 <section>
   <div class="wrap">
     <div class="reveal"><p class="eyebrow">FAQ</p><h2>Good to know</h2></div>
     <details class="reveal"><summary>How do I order?</summary><p>Choose your piece and size, send the order on WhatsApp, and we confirm availability and delivery with you directly.</p></details>
     <details class="reveal"><summary>What if it does not fit?</summary><p>Every piece has a fit guide, and your first order includes free alterations.</p></details>
-    <details class="reveal"><summary>Is this a real brand store?</summary><p>No. This is a demo skeleton built by Apex Digital Agency to show what a fashion store page can look like. Images and the story video are placeholders.</p></details>
+    <details class="reveal"><summary>Is this a real brand store?</summary><p>No. Lumière is a fictional brand, and this page is a demo built by Apex Digital Agency. Images and films are placeholders.</p></details>
   </div>
 </section>
+
 <section class="closing">
   <div class="wrap reveal">
     <h2>Wear the next version of you</h2>
     <p>Send your order in one tap and we prepare your piece. We answer you directly.</p>
-    <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">Shop on WhatsApp</a>
+    <a class="btn" href="#" data-demo="#">Shop on WhatsApp</a>
   </div>
 </section>
-<a class="btn float" href="https://wa.me/" target="_blank" rel="noopener">Shop on WhatsApp</a>
 <footer>
-  <div class="wrap"><span>© Noir Atelier</span><span>Page &amp; ads by <a href="/">Apex Digital Agency</a></span><span class="legal"><a href="/privacy/">Privacy Policy</a> · <a href="/terms/">Terms of Service</a> · <a href="/refund/">Refund Policy</a></span></div>
+  <div class="wrap">
+    <div class="fcols">
+      <div><div class="fb">Lumière</div><p>Tailored pieces for posture, movement and confidence.</p></div>
+      <div><h4>Shop</h4><a href="#" data-demo="#">New in</a><a href="#" data-demo="#">Women</a><a href="#" data-demo="#">Men</a><a href="#" data-demo="#">Accessories</a></div>
+      <div><h4>The house</h4><a href="#" data-demo="#">Our story</a><a href="#" data-demo="#">Atelier</a><a href="#" data-demo="#">Craftsmanship</a><a href="#" data-demo="#">Stores</a></div>
+      <div><h4>Client care</h4><a href="#" data-demo="#">Contact</a><a href="#" data-demo="#">Shipping</a><a href="#" data-demo="#">Returns</a><a href="#" data-demo="#">Size guide</a></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px"><span>© Lumière</span><span>Page &amp; ads by <a href="/">Apex Digital Agency</a></span><span class="legal"><a href="/privacy/">Privacy Policy</a> · <a href="/terms/">Terms of Service</a> · <a href="/refund/">Refund Policy</a></span></div>
+  </div>
 </footer>
 <script>
   if('IntersectionObserver' in window){ var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });},{threshold:.12}); document.querySelectorAll('.reveal').forEach(function(e){ro.observe(e);}); } else { document.querySelectorAll('.reveal').forEach(function(e){e.classList.add('in');}); }
 </script>
 <div class="lp-sprog"></div>
-<div class="lp-sticky"><div><b>Noir Atelier</b><span>Drop 01 · Shop in one tap</span></div><a class="btn" href="https://wa.me/">Shop now</a></div>
+<div class="lp-sticky"><div><b>Lumière</b><span>Capsule 01 · Shop in one tap</span></div><a class="btn" href="#" data-demo="#">Shop now</a></div>
 <div class="lp-toast" role="status" aria-live="polite">عمل تجريبي لأغراض العرض فقط / Demo only, for preview purposes</div>
 <script src="/p/_lib/lp.js" defer></script>
 </body>
