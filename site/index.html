@@ -117,17 +117,32 @@
   .pf-link { display: inline-flex; margin-top: .75rem; padding: .6rem 1rem; border-radius: 999px; border: 1px solid rgba(212,175,106,.45); color: var(--gold); font-size: .85rem; font-weight: 600; text-decoration: none; transition: background .2s; }
   .pf-link:hover { background: rgba(212,175,106,.12); }
 
+
+  /* hero video */
+  .hero-video { background: #000; }
+  .hero-video::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(10,12,15,0) 55%, rgba(10,12,15,.85) 100%); }
+  .hero-video video { position: absolute; display: block; }
+  .hero-video .hv-bg { inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(26px) brightness(.55) saturate(1.1); transform: scale(1.15); }
+  .hero-video .hv-main { top: 0; bottom: 0; left: 50%; height: 100%; width: auto; max-width: 100%; transform: translateX(-50%); object-fit: contain; z-index: 1; }
+  .hv-snd { position: absolute; z-index: 4; top: .9rem; inset-inline-end: .9rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(10,12,15,.6); color: #fff; cursor: pointer; font-size: 1rem; display: grid; place-items: center; }
+  .hv-snd:hover { border-color: var(--gold); }
+  .hero-video::after { display: none; }
   /* comparison table */
-  .cmp-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--slate); max-width: 62rem; margin-inline: auto; }
-  table.cmp { width: 100%; min-width: 40rem; border-collapse: collapse; font-size: .92rem; }
-  .cmp th, .cmp td { padding: .9rem 1.1rem; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; }
-  .cmp thead th { font-family: var(--font-display); font-size: 1.02rem; font-weight: 600; color: var(--bone); background: var(--abyss); }
-  .cmp tbody th { text-align: start; font-weight: 500; color: var(--mist); }
+  .cmp-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 4px; background: var(--slate); max-width: 64rem; margin-inline: auto; }
+  table.cmp { width: 100%; min-width: 38rem; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: .92rem; line-height: 1.45; }
+  .cmp col.c0 { width: 34%; } .cmp col.c1, .cmp col.c2, .cmp col.c3 { width: 22%; }
+  .cmp th, .cmp td { padding: .85rem .9rem; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; font-weight: 400; color: var(--bone); overflow-wrap: anywhere; }
+  .cmp thead th { font-family: var(--font-display); font-size: 1rem; font-weight: 600; background: var(--abyss); line-height: 1.25; }
+  .cmp tbody th { text-align: start; font-weight: 500; color: var(--mist); position: sticky; inset-inline-start: 0; background: var(--slate); z-index: 1; }
+  .cmp thead th:first-child { position: sticky; inset-inline-start: 0; z-index: 2; }
   .cmp tbody tr:last-child th, .cmp tbody tr:last-child td { border-bottom: 0; }
-  .cmp .col-flag { background: rgba(212,175,106,.07); box-shadow: inset 1px 0 0 rgba(212,175,106,.35), inset -1px 0 0 rgba(212,175,106,.35); }
-  .cmp thead .col-flag { color: var(--gold); background: #1c1a12; }
-  .cmp .yes { color: var(--gold); font-weight: 700; font-size: 1.05rem; }
+  .cmp .col-flag { background: rgba(212,175,106,.08); border-inline: 1px solid rgba(212,175,106,.35); }
+  .cmp thead .col-flag { color: var(--gold); background: #1c1a12; border-top: 0; }
+  .cmp .yes { color: var(--gold); font-weight: 700; font-size: 1.1rem; }
   .cmp .no { color: #5a5d66; }
+  .cmp .price-cell { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .cmp .price-cell.flag { color: var(--gold); }
+  .cmp td { unicode-bidi: isolate; }
   .gold-link { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   /* FAQ */
@@ -164,19 +179,21 @@
 <span class="display text-lg font-semibold tracking-wide">Apex <span class="gold-text">Studio Pro</span></span>
 </a>
 <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-sm">
-<a class="nav-link" data-i18n="1" href="#how">How it works</a>
-<a class="nav-link" data-i18n="2" href="#work">Our work</a>
-<a class="nav-link" data-i18n="3" href="#pricing">Pricing</a>
-<a class="nav-link" data-i18n="4" href="#faq">FAQ</a>
-<a class="nav-link" data-i18n="5" href="#policy">Policy</a>
+<a class="nav-link" data-i18n="0" href="#how">How it works</a>
+<a class="nav-link" data-i18n="1" href="#work">Our work</a>
+<a class="nav-link" data-i18n="2" href="#pricing">Pricing</a>
+<a class="nav-link" data-i18n="3" href="#faq">FAQ</a>
+<a class="nav-link" data-i18n="4" href="#policy">Policy</a>
 </nav>
 <div class="flex items-center gap-2.5">
 <select aria-label="Language" class="lang" id="lang">
 <option lang="en" value="en">English</option>
 <option lang="fr" value="fr">Français</option>
 <option lang="ar" value="ar">العربية</option>
+<option lang="es" value="es">Español</option>
+<option lang="it" value="it">Italiano</option>
 </select>
-<a class="btn-gold rounded-sm px-4 py-2 text-sm whitespace-nowrap" data-i18n="6" href="#pricing">Choose Your Store</a>
+<a class="btn-gold rounded-sm px-4 py-2 text-sm whitespace-nowrap" data-i18n="5" href="#pricing">Choose Your Store</a>
 </div>
 </div>
 </header>
@@ -184,76 +201,69 @@
 <!-- 1. HERO -->
 <section class="glow relative overflow-hidden">
 <div class="wrap relative pt-16 pb-14 sm:pt-24 sm:pb-20">
-<p class="eyebrow mb-6" data-i18n="7">Automated headless e-commerce</p>
-<h1 class="display text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5.4rem] font-semibold max-w-4xl" data-i18n="8">
+<p class="eyebrow mb-6" data-i18n="6">Automated headless e-commerce</p>
+<h1 class="display text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5.4rem] font-semibold max-w-4xl" data-i18n="7">
         Zero Monthly Subscriptions.<br/>
 <span class="gold-text italic font-medium">Lightning-Fast</span> Headless Stores.
       </h1>
-<p class="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed mist" data-i18n="9">
+<p class="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed mist" data-i18n="8">
         Retire Shopify and the monthly bill that comes with it. We build you a custom, automated store that you own outright, with no platform fee and no app stack to rent. You pay once. Your store loads fast and stays yours.
       </p>
 <div class="mt-9 flex flex-wrap items-center gap-3">
-<a class="btn-gold rounded-sm px-7 py-3.5 text-base" data-i18n="6" href="#pricing">Choose Your Store</a>
-<a class="btn-ghost rounded-sm px-7 py-3.5 text-base" data-i18n="10" href="#how">See how it works</a>
+<a class="btn-gold rounded-sm px-7 py-3.5 text-base" data-i18n="5" href="#pricing">Choose Your Store</a>
+<a class="btn-ghost rounded-sm px-7 py-3.5 text-base" data-i18n="9" href="#how">See how it works</a>
 </div>
 <div class="mt-14 sm:mt-20">
-<div aria-label="Placeholder for the Apex Studio Pro cinematic brand video" class="reel" role="img">
-<div class="bar-top"></div><div class="bar-bot"></div>
-<div class="absolute inset-0 z-[3] grid place-items-center">
-<button aria-label="Play cinematic brand video (coming soon)" class="play" type="button">
-<svg aria-hidden="true" fill="#d4af6a" height="22" viewbox="0 0 22 22" width="22"><path d="M6 3.5v15l13-7.5-13-7.5Z"></path></svg>
-</button>
-</div>
-<div class="absolute z-[3] left-[4%] bottom-[11%] right-[4%] flex items-end justify-between gap-3">
-<div class="min-w-0">
-<div class="tc">APEX STUDIO PRO · CINEMATIC BRAND VIDEO</div>
-<div class="display text-lg sm:text-2xl mt-1" data-i18n="12">A store that moves like a film.</div>
-</div>
-<div class="tc hidden sm:block">00:00 / 00:30</div>
+<div class="reel hero-video">
+<video aria-hidden="true" autoplay="" class="hv-bg" loop="" muted="" playsinline="" preload="auto" src="/p/review-lumiere-t5w0/hero.mp4" tabindex="-1"></video>
+<video aria-label="Apex Studio Pro cinematic brand film" autoplay="" class="hv-main" controlslist="nodownload" disablepictureinpicture="" id="heroVid" loop="" muted="" playsinline="" preload="auto" src="/p/review-lumiere-t5w0/hero.mp4"></video>
+<button aria-label="Turn sound on" class="hv-snd" id="heroSnd" type="button">🔇</button>
+<div class="absolute z-[3] left-[4%] bottom-[8%] right-[4%] pointer-events-none">
+<div class="tc" data-i18n="10">APEX STUDIO PRO · CINEMATIC BRAND VIDEO</div>
+<div class="display text-lg sm:text-2xl mt-1" data-i18n="11">A store that moves like a film.</div>
 </div>
 </div>
-<p class="tc mt-3" data-i18n="13">16:9 frame. Replace this block with your MP4 or embed.</p>
 </div>
 </div>
 </section>
 <!-- Proof strip -->
 <section class="hairline" style="background: var(--abyss)">
 <div class="wrap grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 py-8">
-<div><div class="eyebrow" data-i18n="14">Platform fee</div><div class="display text-2xl mt-1" data-i18n="15">$0 / month</div></div>
-<div><div class="eyebrow" data-i18n="16">Ownership</div><div class="display text-2xl mt-1" data-i18n="17">100% yours</div></div>
-<div><div class="eyebrow" data-i18n="18">Management</div><div class="display text-2xl mt-1" data-i18n="19">One Google Sheet</div></div>
-<div><div class="eyebrow" data-i18n="20">Setup</div><div class="display text-2xl mt-1" data-i18n="21">Done for you</div></div>
+<div><div class="eyebrow" data-i18n="12">Platform fee</div><div class="display text-2xl mt-1" data-i18n="13">$0 / month</div></div>
+<div><div class="eyebrow" data-i18n="14">Ownership</div><div class="display text-2xl mt-1" data-i18n="15">100% yours</div></div>
+<div><div class="eyebrow" data-i18n="16">Management</div><div class="display text-2xl mt-1" data-i18n="17">One Google Sheet</div></div>
+<div><div class="eyebrow" data-i18n="18">Setup</div><div class="display text-2xl mt-1" data-i18n="19">Done for you</div></div>
 </div>
 </section>
 <!-- 2. HOW IT WORKS -->
 <section class="hairline" id="how">
 <div class="wrap py-20 sm:py-28">
 <div class="max-w-2xl">
-<p class="eyebrow mb-4" data-i18n="22">How it works · The magic</p>
-<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="23">Your whole store lives in one Google Sheet.</h2>
-<p class="mt-5 text-base sm:text-lg leading-relaxed mist" data-i18n="24">No complex dashboard. No admin panel to learn. If you can edit a spreadsheet, you can run your store.</p>
+<p class="eyebrow mb-4" data-i18n="20">How it works · The magic</p>
+<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="21">Your whole store lives in one Google Sheet.</h2>
+<p class="mt-5 text-base sm:text-lg leading-relaxed mist" data-i18n="22">No complex dashboard. No admin panel to learn. If you can edit a spreadsheet, you can run your store.</p>
 </div>
 <div class="mt-14 grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-14 items-start">
 <ol class="grid gap-9">
 <li class="grid grid-cols-[3rem_1fr] gap-4">
 <div class="display text-4xl gold-text leading-none">I</div>
 <div class="min-w-0">
-<h3 class="display text-2xl font-semibold" data-i18n="25">We build it and connect your sheet</h3>
-<p class="mt-2 leading-relaxed mist" data-i18n="26">Share your brand and products. We design the storefront, link it to your private Google Sheet, and hand you both, ready to sell.</p>
+<h3 class="display text-2xl font-semibold" data-i18n="23">We build it and connect your sheet</h3>
+<p class="mt-2 leading-relaxed mist" data-i18n="24">Share your brand and products. We design the storefront, link it to your private Google Sheet, and hand you both, ready to sell.</p>
 </div>
 </li>
 <li class="grid grid-cols-[3rem_1fr] gap-4">
 <div class="display text-4xl gold-text leading-none">II</div>
 <div class="min-w-0">
-<h3 class="display text-2xl font-semibold" data-i18n="28">Edit inventory and prices in a row</h3>
-<p class="mt-2 leading-relaxed mist" data-i18n="29">Each row is a product. Each column is a detail: name, price, photo, stock. Add an item, change a price or mark something sold out, right in the sheet.</p>
+<h3 class="display text-2xl font-semibold" data-i18n="25">Edit inventory and prices in a row</h3>
+<p class="mt-2 leading-relaxed mist" data-i18n="26">Each row is a product. Each column is a detail: name, price, photo, stock. Add an item, change a price or mark something sold out, right in the sheet.</p>
 </div>
 </li>
 <li class="grid grid-cols-[3rem_1fr] gap-4">
 <div class="display text-4xl gold-text leading-none">III</div>
 <div class="min-w-0">
-<h3 class="display text-2xl font-semibold" data-i18n="31">Your live store updates by itself</h3>
-<p class="mt-2 leading-relaxed mist" data-i18n="32">Save the sheet and the storefront follows automatically. You keep selling while the technology stays out of your way.</p>
+<h3 class="display text-2xl font-semibold" data-i18n="27">Your live store updates by itself</h3>
+<p class="mt-2 leading-relaxed mist" data-i18n="28">Save the sheet and the storefront follows automatically. You keep selling while the technology stays out of your way.</p>
 </div>
 </li>
 </ol>
@@ -261,7 +271,7 @@
 <div class="flex items-center gap-2 px-3 py-2 border-b" style="border-color: var(--line); background: var(--slate)">
 <svg aria-hidden="true" fill="none" height="16" viewbox="0 0 16 16" width="16"><rect height="13" rx="1.5" stroke="#d4af6a" width="12" x="2" y="1.5"></rect><path d="M2 6h12M2 10h12M6.5 6v8.5" stroke="#d4af6a" stroke-width=".9"></path></svg>
 <span>my-store-products</span>
-<span class="ms-auto mist" data-i18n="34">Saved</span>
+<span class="ms-auto mist" data-i18n="29">Saved</span>
 </div>
 <div class="sheet-scroll">
 <table>
@@ -274,7 +284,7 @@
 </tbody>
 </table>
 </div>
-<div class="px-3 py-2.5 border-t mist" data-i18n="35" style="border-color: var(--line)">
+<div class="px-3 py-2.5 border-t mist" data-i18n="30" style="border-color: var(--line)">
 <span style="color: var(--gold)">●</span> Example only. Change a price here and it goes live on your store.
           </div>
 </div>
@@ -285,9 +295,9 @@
 <section class="hairline" id="work">
 <div class="wrap py-20 sm:py-28">
 <div class="text-center mb-12">
-<p class="eyebrow" data-i18n="2">Our work</p>
-<h2 class="display text-3xl sm:text-4xl mt-3" data-i18n="36">Ads produced by Apex</h2>
-<p class="mist mt-3 max-w-xl mx-auto" data-i18n="37">Each production starts from the client’s real photos. Tap a video to turn the sound on.</p>
+<p class="eyebrow" data-i18n="1">Our work</p>
+<h2 class="display text-3xl sm:text-4xl mt-3" data-i18n="31">Ads produced by Apex</h2>
+<p class="mist mt-3 max-w-xl mx-auto" data-i18n="32">Each production starts from the client’s real photos. Tap a video to turn the sound on.</p>
 </div>
 <div class="pf-grid">
 <figure class="pf-item">
@@ -297,10 +307,10 @@
 <button aria-label="Turn sound on" class="pf-sound" type="button">🔇</button>
 </div>
 <figcaption>
-<div class="pf-cat" data-i18n="39">Beauty · Perfume</div>
+<div class="pf-cat" data-i18n="33">Beauty · Perfume</div>
 <div class="pf-name display">Maison Alaric</div>
-<div class="pf-meta" data-i18n="41">Concept ad · 9:16 · voiceover, music, titles</div>
-<a class="pf-link" data-i18n="42" href="/p/demo-maison-alaric/" rel="noopener" target="_blank">See the product gallery (store) we built for this client →</a>
+<div class="pf-meta" data-i18n="34">Concept ad · 9:16 · voiceover, music, titles</div>
+<a class="pf-link" data-i18n="35" href="/p/demo-maison-alaric/" rel="noopener" target="_blank">See the product gallery (store) we built for this client →</a>
 </figcaption>
 </figure>
 <figure class="pf-item">
@@ -310,10 +320,10 @@
 <button aria-label="Turn sound on" class="pf-sound" type="button">🔇</button>
 </div>
 <figcaption>
-<div class="pf-cat" data-i18n="43">Restaurant · Fine dining</div>
+<div class="pf-cat" data-i18n="36">Restaurant · Fine dining</div>
 <div class="pf-name display">Maison Aurelle</div>
-<div class="pf-meta" data-i18n="41">Concept ad · 9:16 · voiceover, music, titles</div>
-<a class="pf-link" data-i18n="45" href="/p/demo-maison-aurelle/" rel="noopener" target="_blank">See the offer page (store) we built for this client →</a>
+<div class="pf-meta" data-i18n="34">Concept ad · 9:16 · voiceover, music, titles</div>
+<a class="pf-link" data-i18n="37" href="/p/demo-maison-aurelle/" rel="noopener" target="_blank">See the offer page (store) we built for this client →</a>
 </figcaption>
 </figure>
 </div>
@@ -323,142 +333,143 @@
 <section class="hairline" id="pricing" style="background: var(--abyss)">
 <div class="wrap py-20 sm:py-28">
 <div class="max-w-2xl mx-auto text-center">
-<p class="eyebrow mb-4" data-i18n="3">Pricing</p>
-<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="46">One payment. Three ways to level up.</h2>
-<p class="mt-5 text-base sm:text-lg leading-relaxed mist" data-i18n="47">Pick the pack or store that fits where your business is today. No monthly platform fee on any plan.</p>
+<p class="eyebrow mb-4" data-i18n="2">Pricing</p>
+<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="38">One payment. Three ways to level up.</h2>
+<p class="mt-5 text-base sm:text-lg leading-relaxed mist" data-i18n="39">Pick the pack or store that fits where your business is today. No monthly platform fee on any plan.</p>
 </div>
 <div class="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-6 xl:gap-8 max-w-6xl mx-auto items-stretch">
 <!-- Tier 1 -->
 <article class="tier p-7 sm:p-8">
-<p class="eyebrow" data-i18n="48">Tier 1</p>
-<h3 class="display text-3xl font-semibold mt-2" data-i18n="49">The Cinematic Pack</h3>
-<p class="target mt-3" data-i18n="50">For owners who already have a store</p>
+<p class="eyebrow" data-i18n="40">Tier 1</p>
+<h3 class="display text-3xl font-semibold mt-2" data-i18n="41">The Cinematic Pack</h3>
+<p class="target mt-3" data-i18n="42">For owners who already have a store</p>
 <div class="mt-6 flex items-baseline gap-2">
 <span class="display text-6xl font-semibold">$89</span>
-<span class="text-sm mist" data-i18n="51">one time</span>
+<span class="text-sm mist" data-i18n="43">one time</span>
 </div>
 <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="52">1 Cinematic Promo Video</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="53">10 High-End Photo Enhancements</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="54">24-hour delivery</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="44">1 Cinematic Promo Video</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="45">10 High-End Photo Enhancements</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="46">24-hour delivery</strong></span></li>
 </ul>
 <div class="x-note mt-7 px-4 py-3 flex gap-3 text-sm mist">
 <svg aria-hidden="true" class="check check-dim" fill="none" viewbox="0 0 20 20"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></svg>
-<span data-i18n="55"><strong style="color: var(--bone)">No store setup included.</strong> Content only.</span>
+<span data-i18n="47"><strong style="color: var(--bone)">No store setup included.</strong> Content only.</span>
 </div>
 <div class="mt-auto pt-9">
-<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="56" data-plan="cinematic" href="#">Get the Cinematic Pack</a>
+<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="48" data-plan="cinematic" href="#">Get the Cinematic Pack</a>
 </div>
 </article>
 <!-- Tier 2 -->
 <article class="tier p-7 sm:p-8">
-<p class="eyebrow" data-i18n="57">Tier 2</p>
-<h3 class="display text-3xl font-semibold mt-2" data-i18n="58">The Micro-Store</h3>
-<p class="target mt-3" data-i18n="59">For drop-shippers</p>
+<p class="eyebrow" data-i18n="49">Tier 2</p>
+<h3 class="display text-3xl font-semibold mt-2" data-i18n="50">The Micro-Store</h3>
+<p class="target mt-3" data-i18n="51">For drop-shippers</p>
 <div class="mt-6 flex items-baseline gap-2">
 <span class="display text-6xl font-semibold">$200</span>
-<span class="text-sm mist" data-i18n="51">one time</span>
+<span class="text-sm mist" data-i18n="43">one time</span>
 </div>
 <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="60">Ultra-fast 1-page layout</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="61">Max <strong>10 products</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="62">Simple cart, limit of <strong>5 items per checkout</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="63">1 Cinematic Video</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="64">Free Vercel hosting</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="52">Ultra-fast 1-page layout</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="53">Max <strong>10 products</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="54">Simple cart, limit of <strong>5 items per checkout</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="55">1 Cinematic Video</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="56">Free Vercel hosting</strong></span></li>
 </ul>
 <div class="mt-auto pt-9">
-<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="65" data-plan="micro" href="#">Start with the Micro-Store</a>
-<a class="demo-link" data-i18n="66" href="/p/store-micro/">View the live demo store →</a>
+<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="57" data-plan="micro" href="#">Start with the Micro-Store</a>
+<a class="demo-link" data-i18n="58" href="/p/store-micro/">View the live demo store →</a>
 </div>
 </article>
 <!-- Tier 3 -->
 <article class="tier tier-flagship p-7 sm:p-8">
-<span class="ribbon" data-i18n="67">Most popular</span>
-<p class="eyebrow" data-i18n="68">Tier 3</p>
-<h3 class="display text-3xl font-semibold mt-2" data-i18n="69">The Flagship Brand Store</h3>
-<p class="target mt-3" data-i18n="70" style="color: var(--gold)">For brands built to scale</p>
+<span class="ribbon" data-i18n="59">Most popular</span>
+<p class="eyebrow" data-i18n="60">Tier 3</p>
+<h3 class="display text-3xl font-semibold mt-2" data-i18n="61">The Flagship Brand Store</h3>
+<p class="target mt-3" data-i18n="62" style="color: var(--gold)">For brands built to scale</p>
 <div class="mt-6 flex items-baseline gap-2">
 <span class="display text-6xl font-semibold gold-text">$500</span>
-<span class="text-sm mist" data-i18n="51">one time</span>
+<span class="text-sm mist" data-i18n="43">one time</span>
 </div>
 <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="71">Full headless e-commerce platform</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="72">UNLIMITED products &amp; categories</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="73">Dynamic slide-out cart</strong></span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="74"><strong>Custom .com domain included</strong> (1st year)</span></li>
-<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="75">2 Cinematic Videos</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="63">Full headless e-commerce platform</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="64">UNLIMITED products &amp; categories</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="65">Dynamic slide-out cart</strong></span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span data-i18n="66"><strong>Custom .com domain included</strong> (1st year)</span></li>
+<li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="67">2 Cinematic Videos</strong></span></li>
 </ul>
 <div class="bonus mt-8 p-5">
 <div class="flex flex-wrap items-center justify-between gap-2">
-<span class="eyebrow" data-i18n="76">Bonus included</span>
-<span class="text-sm mist" data-i18n="77">Value <span class="strike">$250</span> <span style="color: var(--gold)">free</span></span>
+<span class="eyebrow" data-i18n="68">Bonus included</span>
+<span class="text-sm mist" data-i18n="69">Value <span class="strike">$250</span> <span style="color: var(--gold)">free</span></span>
 </div>
-<h4 class="display text-xl font-semibold mt-2" data-i18n="78">The Apex Executive Playbook</h4>
-<p class="mt-1.5 text-sm leading-relaxed mist" data-i18n="79">A custom marketing and pricing strategy for your brand, written by our elite strategists.</p>
+<h4 class="display text-xl font-semibold mt-2" data-i18n="70">The Apex Executive Playbook</h4>
+<p class="mt-1.5 text-sm leading-relaxed mist" data-i18n="71">A custom marketing and pricing strategy for your brand, written by our elite strategists.</p>
 </div>
 <div class="mt-auto pt-9">
-<a class="btn-gold block text-center rounded-sm px-6 py-3.5" data-i18n="80" data-plan="flagship" href="#">Claim the Flagship Store</a>
-<a class="demo-link" data-i18n="66" href="/p/store-flagship/">View the live demo store →</a>
+<a class="btn-gold block text-center rounded-sm px-6 py-3.5" data-i18n="72" data-plan="flagship" href="#">Claim the Flagship Store</a>
+<a class="demo-link" data-i18n="58" href="/p/store-flagship/">View the live demo store →</a>
 <p class="mt-4 flex gap-2.5 text-xs leading-relaxed" style="color: var(--gold)">
 <span aria-hidden="true" class="scarcity-dot"></span>
-<span data-i18n="81">Only 5 slots available per month to ensure dedicated server performance – 2 spots remaining.</span>
+<span data-i18n="73">Only 5 slots available per month to ensure dedicated server performance – 2 spots remaining.</span>
 </p>
 </div>
 </article>
 </div>
-<p class="mt-14 text-center text-sm mist" data-i18n="82">Prices are in USD and paid once. No monthly platform fee on any plan.</p>
+<p class="mt-14 text-center text-sm mist" data-i18n="74">Prices are in USD and paid once. No monthly platform fee on any plan.</p>
 </div>
 </section>
 <!-- 3b. COMPARISON TABLE (restored, rebuilt for the 3 tiers) -->
 <section class="hairline" id="compare">
 <div class="wrap py-20 sm:py-28">
 <div class="max-w-2xl mx-auto text-center">
-<p class="eyebrow mb-4" data-i18n="83">Compare</p>
-<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="84">What is inside each plan</h2>
+<p class="eyebrow mb-4" data-i18n="75">Compare</p>
+<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="76">What is inside each plan</h2>
 </div>
 <div class="cmp-wrap mt-12">
 <table class="cmp">
-<thead><tr><th scope="col"><span class="sr-only" data-i18n="85">Feature</span></th><th data-i18n="49" scope="col">The Cinematic Pack</th><th data-i18n="58" scope="col">The Micro-Store</th><th class="col-flag" data-i18n="69" scope="col">The Flagship Brand Store</th></tr></thead>
+<colgroup><col class="c0"/><col class="c1"/><col class="c2"/><col class="c3"/></colgroup>
+<thead><tr><th scope="col"><span class="sr-only" data-i18n="77">Feature</span></th><th data-i18n="41" scope="col">The Cinematic Pack</th><th data-i18n="50" scope="col">The Micro-Store</th><th class="col-flag" data-i18n="61" scope="col">The Flagship Brand Store</th></tr></thead>
 <tbody>
-<tr><th data-i18n="86" scope="row">Price</th><td><span class="display">$89</span></td><td><span class="display">$200</span></td><td class="col-flag"><span class="display gold-text">$500</span></td></tr>
-<tr><th data-i18n="87" scope="row">Payment</th><td data-i18n="88">One time</td><td data-i18n="88">One time</td><td class="col-flag" data-i18n="88">One time</td></tr>
-<tr><th data-i18n="89" scope="row">Store included</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="90">1-page store</td><td class="col-flag" data-i18n="91">Full headless platform</td></tr>
-<tr><th data-i18n="92" scope="row">Products</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="93">Up to 10</td><td class="col-flag" data-i18n="94">Unlimited</td></tr>
-<tr><th data-i18n="95" scope="row">Categories</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag" data-i18n="94">Unlimited</td></tr>
-<tr><th data-i18n="96" scope="row">Cart</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="97">Simple, 5 items per checkout</td><td class="col-flag" data-i18n="73">Dynamic slide-out cart</td></tr>
-<tr><th data-i18n="98" scope="row">Managed from a Google Sheet</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Included" class="yes">✓</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
-<tr><th data-i18n="64" scope="row">Free Vercel hosting</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Included" class="yes">✓</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
-<tr><th data-i18n="99" scope="row">Custom .com domain (1st year)</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
-<tr><th data-i18n="100" scope="row">Cinematic videos</th><td>1</td><td>1</td><td class="col-flag">2</td></tr>
-<tr><th data-i18n="101" scope="row">High-end photo enhancements</th><td>10</td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Not included" class="no">—</span></td></tr>
-<tr><th data-i18n="102" scope="row">Apex Executive Playbook (value $250)</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
-<tr><th data-i18n="103" scope="row">Monthly platform fee</th><td>$0</td><td>$0</td><td class="col-flag">$0</td></tr>
+<tr><th data-i18n="78" scope="row">Price</th><td><span class="price-cell">$89</span></td><td><span class="price-cell">$200</span></td><td class="col-flag"><span class="price-cell flag">$500</span></td></tr>
+<tr><th data-i18n="79" scope="row">Payment</th><td data-i18n="80">One time</td><td data-i18n="80">One time</td><td class="col-flag" data-i18n="80">One time</td></tr>
+<tr><th data-i18n="81" scope="row">Store included</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="82">1-page store</td><td class="col-flag" data-i18n="83">Full headless platform</td></tr>
+<tr><th data-i18n="84" scope="row">Products</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="85">Up to 10</td><td class="col-flag" data-i18n="86">Unlimited</td></tr>
+<tr><th data-i18n="87" scope="row">Categories</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag" data-i18n="86">Unlimited</td></tr>
+<tr><th data-i18n="88" scope="row">Cart</th><td><span aria-label="Not included" class="no">—</span></td><td data-i18n="89">Simple, 5 items per checkout</td><td class="col-flag" data-i18n="65">Dynamic slide-out cart</td></tr>
+<tr><th data-i18n="90" scope="row">Managed from a Google Sheet</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Included" class="yes">✓</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
+<tr><th data-i18n="56" scope="row">Free Vercel hosting</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Included" class="yes">✓</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
+<tr><th data-i18n="91" scope="row">Custom .com domain (1st year)</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
+<tr><th data-i18n="92" scope="row">Cinematic videos</th><td>1</td><td>1</td><td class="col-flag">2</td></tr>
+<tr><th data-i18n="93" scope="row">High-end photo enhancements</th><td>10</td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Not included" class="no">—</span></td></tr>
+<tr><th data-i18n="94" scope="row">Apex Executive Playbook (value $250)</th><td><span aria-label="Not included" class="no">—</span></td><td><span aria-label="Not included" class="no">—</span></td><td class="col-flag"><span aria-label="Included" class="yes">✓</span></td></tr>
+<tr><th data-i18n="95" scope="row">Monthly platform fee</th><td>$0</td><td>$0</td><td class="col-flag">$0</td></tr>
 </tbody>
 </table>
 </div>
-<p class="mt-6 text-center text-sm mist" data-i18n="104">Not sure which plan fits? <a class="gold-link" href="#faq">Read the questions below</a>.</p>
+<p class="mt-6 text-center text-sm mist" data-i18n="96">Not sure which plan fits? <a class="gold-link" href="#faq">Read the questions below</a>.</p>
 </div>
 </section>
 <!-- Closing CTA -->
 <section class="hairline">
 <div class="wrap py-20 sm:py-24 text-center">
-<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight max-w-3xl mx-auto" data-i18n="105">Own your store. <span class="gold-text italic font-medium">Keep your margin.</span></h2>
-<a class="btn-gold inline-block rounded-sm px-8 py-4 mt-9 text-base" data-i18n="6" href="#pricing">Choose Your Store</a>
+<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight max-w-3xl mx-auto" data-i18n="97">Own your store. <span class="gold-text italic font-medium">Keep your margin.</span></h2>
+<a class="btn-gold inline-block rounded-sm px-8 py-4 mt-9 text-base" data-i18n="5" href="#pricing">Choose Your Store</a>
 </div>
 </section>
 <!-- 5. FAQ (restored, rewritten for the 3 plans) -->
 <section class="hairline" id="faq" style="background: var(--abyss)">
 <div class="wrap py-20 sm:py-28 faq">
 <div class="text-center mb-10">
-<p class="eyebrow mb-4" data-i18n="4">FAQ</p>
-<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="106">Questions before you order</h2>
+<p class="eyebrow mb-4" data-i18n="3">FAQ</p>
+<h2 class="display text-4xl sm:text-5xl font-semibold leading-tight" data-i18n="98">Questions before you order</h2>
 </div>
-<details class="faq-item"><summary data-i18n="107">Do I really pay no monthly fee?</summary><p data-i18n="108">Yes. You pay once. There is no platform fee and no app stack to rent. Hosting runs on Vercel’s free plan. With the Flagship store, your custom .com domain is included for the first year; after that, the renewal is paid directly to the domain registrar.</p></details>
-<details class="faq-item"><summary data-i18n="109">How do I manage my products?</summary><p data-i18n="110">Everything lives in one Google Sheet. Each row is a product: name, price, photo, stock. Change a cell, save, and your live store follows automatically within a couple of minutes. Set Visible to FALSE to hide a product.</p></details>
-<details class="faq-item"><summary data-i18n="111">Which plan should I choose?</summary><p data-i18n="112">Choose the Cinematic Pack if you already have a store and only need premium content. Choose the Micro-Store if you sell up to 10 products, as a drop-shipper for example. Choose the Flagship Brand Store if you want unlimited products and categories, a slide-out cart and your own .com domain.</p></details>
-<details class="faq-item"><summary data-i18n="113">What do I need to send after I order?</summary><p data-i18n="114">Your brand name and your products with prices and clear photos. For the Cinematic Pack, send your product photos and a short brief about your offer. We take it from there.</p></details>
-<details class="faq-item"><summary data-i18n="115">Do I own my store?</summary><p data-i18n="116">Yes, outright. Your store, your Google Sheet and your content belong to you. There is no lock-in and nothing to rent from us.</p></details>
-<details class="faq-item"><summary data-i18n="117">Can I get a refund?</summary><p data-i18n="118">No. Every order is custom work that starts the moment your payment is confirmed, so all sales are final. That is why we invite you to ask us any question before you order, and we will gladly answer it.</p></details>
+<details class="faq-item"><summary data-i18n="99">Do I really pay no monthly fee?</summary><p data-i18n="100">Yes. You pay once. There is no platform fee and no app stack to rent. Hosting runs on Vercel’s free plan. With the Flagship store, your custom .com domain is included for the first year; after that, the renewal is paid directly to the domain registrar.</p></details>
+<details class="faq-item"><summary data-i18n="101">How do I manage my products?</summary><p data-i18n="102">Everything lives in one Google Sheet. Each row is a product: name, price, photo, stock. Change a cell, save, and your live store follows automatically within a couple of minutes. Set Visible to FALSE to hide a product.</p></details>
+<details class="faq-item"><summary data-i18n="103">Which plan should I choose?</summary><p data-i18n="104">Choose the Cinematic Pack if you already have a store and only need premium content. Choose the Micro-Store if you sell up to 10 products, as a drop-shipper for example. Choose the Flagship Brand Store if you want unlimited products and categories, a slide-out cart and your own .com domain.</p></details>
+<details class="faq-item"><summary data-i18n="105">What do I need to send after I order?</summary><p data-i18n="106">Your brand name and your products with prices and clear photos. For the Cinematic Pack, send your product photos and a short brief about your offer. We take it from there.</p></details>
+<details class="faq-item"><summary data-i18n="107">Do I own my store?</summary><p data-i18n="108">Yes, outright. Your store, your Google Sheet and your content belong to you. There is no lock-in and nothing to rent from us.</p></details>
+<details class="faq-item"><summary data-i18n="109">Can I get a refund?</summary><p data-i18n="110">No. Every order is custom work that starts the moment your payment is confirmed, so all sales are final. That is why we invite you to ask us any question before you order, and we will gladly answer it.</p></details>
 </div>
 </section>
 </main>
@@ -471,21 +482,21 @@
 <svg aria-hidden="true" fill="none" height="24" viewbox="0 0 26 26" width="24"><path d="M13 2 24 23H2L13 2Z" stroke="#d4af6a" stroke-width="1.4"></path><path d="M13 10 18.2 20H7.8L13 10Z" fill="#d4af6a"></path></svg>
 <span class="display text-lg font-semibold">Apex <span class="gold-text">Studio Pro</span></span>
 </div>
-<p class="mt-4 text-sm leading-relaxed max-w-xs mist" data-i18n="119">Automated, headless e-commerce stores with no monthly subscriptions.</p>
+<p class="mt-4 text-sm leading-relaxed max-w-xs mist" data-i18n="111">Automated, headless e-commerce stores with no monthly subscriptions.</p>
 </div>
 <div>
-<p class="eyebrow mb-3" data-i18n="120">No refund policy</p>
-<p class="text-sm leading-relaxed mist" data-i18n="121">
+<p class="eyebrow mb-3" data-i18n="112">No refund policy</p>
+<p class="text-sm leading-relaxed mist" data-i18n="113">
           Every Apex Studio Pro order is built to your brand. The moment your payment is confirmed, our team begins your custom setup, and your store, sheet connection and creative assets are produced and delivered straight away. Because this work is digital, personal and starts instantly, all sales are final and we are unable to offer refunds.
         </p>
-<p class="text-sm leading-relaxed mt-3 mist" data-i18n="122">
+<p class="text-sm leading-relaxed mt-3 mist" data-i18n="114">
           We want you to buy with full confidence, so please review each plan above and ask us any question before you order. We will gladly answer it.
         </p>
 </div>
 </div>
 <div class="hairline mt-10 pt-6 flex flex-wrap items-center justify-between gap-3 text-xs mist">
-<span data-i18n="123">© <span id="yr">2026</span> Apex Studio Pro. All rights reserved.</span>
-<span class="flex flex-wrap gap-x-5 gap-y-1"><a class="nav-link" data-i18n="124" href="/terms/">Terms</a><a class="nav-link" data-i18n="125" href="/privacy/">Privacy</a><a class="nav-link" data-i18n="126" href="/refund/">Refund policy</a><span class="tc" data-i18n="127">ALL SALES FINAL</span></span>
+<span data-i18n="115">© <span id="yr">2026</span> Apex Studio Pro. All rights reserved.</span>
+<span class="flex flex-wrap gap-x-5 gap-y-1"><a class="nav-link" data-i18n="116" href="/terms/">Terms</a><a class="nav-link" data-i18n="117" href="/privacy/">Privacy</a><a class="nav-link" data-i18n="118" href="/refund/">Refund policy</a><span class="tc" data-i18n="119">ALL SALES FINAL</span></span>
 </div>
 </div>
 </footer>
@@ -557,9 +568,9 @@
   })();
 </script>
 <script>
-  // ===== Language switcher (EN, FR, AR) =====
+  // ===== Language switcher (EN, FR, AR, ES, IT) =====
   (function () {
-    var D = {"fr": {"1": "Comment ça marche", "2": "Nos réalisations", "3": "Tarifs", "4": "FAQ", "5": "Conditions", "6": "Choisir ma boutique", "7": "E-commerce headless automatisé", "8": "Zéro abonnement mensuel.<br/>Des boutiques headless <span class=\"gold-text italic font-medium\">ultra-rapides</span>.", "9": "Dites adieu à Shopify et à sa facture mensuelle. Nous créons pour vous une boutique sur mesure et automatisée, dont vous êtes propriétaire à 100 %, sans frais de plateforme ni applications à louer. Vous payez une seule fois. Votre boutique se charge vite et reste à vous.", "10": "Voir comment ça marche", "12": "Une boutique qui bouge comme un film.", "13": "Cadre 16:9. Remplacez ce bloc par votre MP4 ou votre intégration.", "14": "Frais de plateforme", "15": "0 $ / mois", "16": "Propriété", "17": "100 % à vous", "18": "Gestion", "19": "Un seul Google Sheet", "20": "Installation", "21": "Clé en main", "22": "Comment ça marche · La magie", "23": "Toute votre boutique vit dans un seul Google Sheet.", "24": "Pas de tableau de bord complexe. Pas d’interface d’administration à apprendre. Si vous savez modifier un tableur, vous savez gérer votre boutique.", "25": "Nous la créons et connectons votre Sheet", "26": "Partagez votre marque et vos produits. Nous concevons la vitrine, la relions à votre Google Sheet privé et vous remettons les deux, prêts à vendre.", "28": "Modifiez stock et prix sur une ligne", "29": "Chaque ligne est un produit, chaque colonne un détail : nom, prix, photo, stock. Ajoutez un article, changez un prix ou marquez une rupture, directement dans le Sheet.", "31": "Votre boutique se met à jour toute seule", "32": "Enregistrez le Sheet et la vitrine suit automatiquement. Vous continuez à vendre, la technique reste en coulisses.", "34": "Enregistré", "35": "<span style=\"color: var(--gold)\">●</span> Exemple uniquement. Changez un prix ici et il passe en ligne dans votre boutique.", "36": "Publicités réalisées par Apex", "37": "Chaque production part de vraies photos du client. Touchez une vidéo pour activer le son.", "39": "Beauté · Parfum", "41": "Publicité concept · 9:16 · voix off, musique, titres", "42": "Voir la galerie de produits (boutique) créée pour ce client →", "43": "Restaurant · Gastronomie", "45": "Voir la page d’offre (boutique) créée pour ce client →", "46": "Un seul paiement. Trois façons de passer à la vitesse supérieure.", "47": "Choisissez le pack ou la boutique qui correspond à votre activité aujourd’hui. Aucun frais mensuel de plateforme, quelle que soit l’offre.", "48": "Offre 1", "49": "Le Pack Cinématique", "50": "Pour ceux qui ont déjà une boutique", "51": "une seule fois", "52": "1 vidéo promo cinématique", "53": "10 retouches photo haut de gamme", "54": "Livraison en 24 heures", "55": "<strong style=\"color: var(--bone)\">Mise en place de boutique non incluse.</strong> Contenu uniquement.", "56": "Obtenir le Pack Cinématique", "57": "Offre 2", "58": "La Micro-Boutique", "59": "Pour les dropshippers", "60": "Mise en page d’une seule page ultra-rapide", "61": "Maximum <strong>10 produits</strong>", "62": "Panier simple, limité à <strong>5 articles par commande</strong>", "63": "1 vidéo cinématique", "64": "Hébergement Vercel gratuit", "65": "Commencer avec la Micro-Boutique", "66": "Voir la boutique de démonstration →", "67": "Le plus choisi", "68": "Offre 3", "69": "La Boutique Flagship", "70": "Pour les marques conçues pour grandir", "71": "Plateforme e-commerce headless complète", "72": "Produits &amp; catégories ILLIMITÉS", "73": "Panier latéral dynamique", "74": "<strong>Nom de domaine .com personnalisé inclus</strong> (1re année)", "75": "2 vidéos cinématiques", "76": "Bonus inclus", "77": "Valeur <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">offert</span>", "78": "Le Playbook Exécutif Apex", "79": "Une stratégie marketing et tarifaire sur mesure pour votre marque, rédigée par nos stratèges.", "80": "Réserver la boutique Flagship", "81": "Seulement 5 places par mois pour garantir des performances serveur dédiées – 2 places restantes.", "82": "Prix en USD, payés une seule fois. Aucun frais mensuel de plateforme, quelle que soit l’offre.", "83": "Comparer", "84": "Ce que contient chaque offre", "85": "Fonctionnalité", "86": "Prix", "87": "Paiement", "88": "Une fois", "89": "Boutique incluse", "90": "Boutique d’une page", "91": "Plateforme headless complète", "92": "Produits", "93": "Jusqu’à 10", "94": "Illimité", "95": "Catégories", "96": "Panier", "97": "Simple, 5 articles par commande", "98": "Géré depuis un Google Sheet", "99": "Domaine .com personnalisé (1re année)", "100": "Vidéos cinématiques", "101": "Retouches photo haut de gamme", "102": "Playbook Exécutif Apex (valeur 250 $)", "103": "Frais mensuels de plateforme", "104": "Vous hésitez ? <a class=\"gold-link\" href=\"#faq\">Lisez les questions ci-dessous</a>.", "105": "Votre boutique, votre marge. <span class=\"gold-text italic font-medium\">Gardez-la.</span>", "106": "Questions avant de commander", "107": "Est-ce vraiment sans abonnement mensuel ?", "108": "Oui. Vous payez une seule fois. Pas de frais de plateforme ni d’applications à louer. L’hébergement tourne sur l’offre gratuite de Vercel. Avec la boutique Flagship, votre domaine .com personnalisé est inclus la première année ; ensuite, le renouvellement se règle directement auprès du registraire.", "109": "Comment gérer mes produits ?", "110": "Tout se passe dans un seul Google Sheet. Chaque ligne est un produit : nom, prix, photo, stock. Modifiez une cellule, enregistrez, et votre boutique se met à jour automatiquement en quelques minutes. Mettez Visible sur FALSE pour masquer un produit.", "111": "Quelle offre choisir ?", "112": "Choisissez le Pack Cinématique si vous avez déjà une boutique et ne voulez que du contenu premium. Choisissez la Micro-Boutique si vous vendez jusqu’à 10 produits, en dropshipping par exemple. Choisissez la Boutique Flagship pour des produits et catégories illimités, un panier latéral et votre propre domaine .com.", "113": "Que dois-je envoyer après ma commande ?", "114": "Le nom de votre marque, vos produits avec leurs prix et des photos nettes. Pour le Pack Cinématique, envoyez vos photos produit et un court brief sur votre offre. Nous nous occupons du reste.", "115": "Suis-je propriétaire de ma boutique ?", "116": "Oui, entièrement. Votre boutique, votre Google Sheet et vos contenus vous appartiennent. Aucun verrouillage, rien à louer chez nous.", "117": "Puis-je être remboursé ?", "118": "Non. Chaque commande est un travail sur mesure qui démarre dès la confirmation du paiement ; toutes les ventes sont donc définitives. C’est pourquoi nous vous invitons à nous poser toutes vos questions avant de commander, avec plaisir.", "119": "Boutiques e-commerce headless automatisées, sans abonnement mensuel.", "120": "Politique de non-remboursement", "121": "Chaque commande Apex Studio Pro est réalisée pour votre marque. Dès la confirmation du paiement, notre équipe démarre votre mise en place sur mesure, et votre boutique, la connexion au Sheet et vos contenus créatifs sont produits et livrés aussitôt. Ce travail étant numérique, personnalisé et lancé immédiatement, toutes les ventes sont définitives et nous ne pouvons pas proposer de remboursement.", "122": "Pour acheter en toute confiance, consultez chaque offre ci-dessus et posez-nous vos questions avant de commander. Nous y répondrons avec plaisir.", "123": "© <span id=\"yr\">2026</span> Apex Studio Pro. Tous droits réservés.", "124": "Conditions", "125": "Confidentialité", "126": "Remboursement", "127": "VENTES DÉFINITIVES", "__title": "Apex Studio Pro | Zéro abonnement mensuel. Boutiques headless ultra-rapides.", "__desc": "Apex Studio Pro crée des boutiques e-commerce headless automatisées dont vous êtes propriétaire. Pas de Shopify, pas d’abonnement mensuel. Tout se gère depuis un simple Google Sheet."}, "ar": {"1": "كيف يعمل", "2": "أعمالنا", "3": "الأسعار", "4": "الأسئلة الشائعة", "5": "السياسات", "6": "اختر متجرك", "7": "تجارة إلكترونية آلية بتقنية Headless", "8": "بدون اشتراكات شهرية.<br/><span class=\"gold-text italic font-medium\">متاجر فائقة السرعة</span> بتقنية Headless.", "9": "تخلَّ عن Shopify وفاتورته الشهرية. نبني لك متجراً مخصصاً وآلياً تملكه بالكامل، بلا رسوم منصة ولا تطبيقات مدفوعة. تدفع مرة واحدة، ويبقى متجرك سريعاً وملكاً لك.", "10": "شاهد كيف يعمل", "12": "متجر يتحرك كأنه فيلم.", "13": "إطار 16:9. استبدل هذا المربع بملف MP4 أو تضمين.", "14": "رسوم المنصة", "15": "0 $ / شهر", "16": "الملكية", "17": "ملكك بالكامل", "18": "الإدارة", "19": "ملف Google Sheet واحد", "20": "الإعداد", "21": "نتولاه عنك", "22": "كيف يعمل · السحر", "23": "متجرك بالكامل في ملف Google Sheet واحد.", "24": "لا لوحة تحكم معقدة ولا واجهة إدارة لتتعلمها. إن كنت تعرف تعديل جدول بيانات، فأنت تعرف إدارة متجرك.", "25": "نبنيه ونربطه بملفك", "26": "شاركنا علامتك ومنتجاتك. نصمم واجهة المتجر ونربطها بملف Google Sheet الخاص بك، ونسلمك الاثنين جاهزين للبيع.", "28": "عدّل المخزون والأسعار في سطر واحد", "29": "كل سطر منتج وكل عمود تفصيل: الاسم، السعر، الصورة، المخزون. أضف منتجاً أو غيّر سعراً أو أشر إلى نفاد الكمية مباشرة في الملف.", "31": "متجرك المباشر يتحدّث تلقائياً", "32": "احفظ الملف فتتبعه واجهة المتجر تلقائياً. تواصل البيع بينما تبقى التقنية بعيدة عن طريقك.", "34": "تم الحفظ", "35": "<span style=\"color: var(--gold)\">●</span> مثال فقط. غيّر سعراً هنا فيظهر مباشرة في متجرك.", "36": "إعلانات من إنتاج Apex", "37": "كل إنتاج ينطلق من صور حقيقية للعميل. اضغط على الفيديو لتشغيل الصوت.", "39": "تجميل · عطور", "41": "إعلان تجريبي · 9:16 · تعليق صوتي، موسيقى، عناوين", "42": "شاهد معرض المنتجات (المتجر) الذي صممناه لهذا العميل ←", "43": "مطعم · مطبخ راقٍ", "45": "شاهد صفحة العروض (المتجر) التي صممناها لهذا العميل ←", "46": "دفعة واحدة. ثلاث طرق للارتقاء.", "47": "اختر الباقة أو المتجر المناسب لمرحلة عملك الآن. بلا رسوم منصة شهرية في أي باقة.", "48": "الباقة 1", "49": "الباقة السينمائية", "50": "لمن يملكون متجراً بالفعل", "51": "مرة واحدة", "52": "فيديو ترويجي سينمائي واحد", "53": "10 تحسينات صور فاخرة", "54": "تسليم خلال 24 ساعة", "55": "<strong style=\"color: var(--bone)\">لا يشمل إعداد المتجر.</strong> محتوى فقط.", "56": "احصل على الباقة السينمائية", "57": "الباقة 2", "58": "المتجر المصغّر", "59": "لأصحاب الدروبشيبينغ", "60": "تصميم صفحة واحدة فائق السرعة", "61": "حتى <strong>10 منتجات</strong>", "62": "سلة بسيطة بحد أقصى <strong>5 عناصر للطلب</strong>", "63": "فيديو سينمائي واحد", "64": "استضافة Vercel مجانية", "65": "ابدأ بالمتجر المصغّر", "66": "شاهد المتجر التجريبي المباشر ←", "67": "الأكثر طلباً", "68": "الباقة 3", "69": "متجر العلامة الرائد (Flagship)", "70": "للعلامات المصممة للنمو", "71": "منصة تجارة إلكترونية Headless متكاملة", "72": "منتجات وتصنيفات &amp; غير محدودة", "73": "سلة منزلقة ديناميكية", "74": "<strong>نطاق .com مخصص مشمول</strong> (السنة الأولى)", "75": "فيديوهان سينمائيان", "76": "مكافأة مشمولة", "77": "القيمة <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">مجاناً</span>", "78": "دليل Apex التنفيذي (Playbook)", "79": "استراتيجية تسويق وتسعير مخصصة لعلامتك، يكتبها خبراؤنا الاستراتيجيون.", "80": "احجز متجر Flagship", "81": "5 أماكن فقط شهرياً لضمان أداء خادم مخصص – بقي مكانان.", "82": "الأسعار بالدولار وتُدفع مرة واحدة. بلا رسوم منصة شهرية في أي باقة.", "83": "قارن", "84": "ما تتضمنه كل باقة", "85": "الميزة", "86": "السعر", "87": "الدفع", "88": "مرة واحدة", "89": "المتجر مشمول", "90": "متجر من صفحة واحدة", "91": "منصة Headless متكاملة", "92": "المنتجات", "93": "حتى 10", "94": "غير محدود", "95": "التصنيفات", "96": "السلة", "97": "بسيطة، 5 عناصر للطلب", "98": "تُدار من Google Sheet", "99": "نطاق .com مخصص (السنة الأولى)", "100": "فيديوهات سينمائية", "101": "تحسينات صور فاخرة", "102": "دليل Apex التنفيذي (قيمته 250 $)", "103": "رسوم المنصة الشهرية", "104": "لست متأكداً أي باقة تناسبك؟ <a class=\"gold-link\" href=\"#faq\">اقرأ الأسئلة أدناه</a>.", "105": "متجرك ملكك. <span class=\"gold-text italic font-medium\">واحتفظ بهامش ربحك.</span>", "106": "أسئلة قبل أن تطلب", "107": "هل فعلاً لا توجد رسوم شهرية؟", "108": "نعم. تدفع مرة واحدة، بلا رسوم منصة ولا تطبيقات مدفوعة. الاستضافة على خطة Vercel المجانية. مع متجر Flagship يشمل السعر نطاق .com مخصصاً للسنة الأولى، وبعدها يُدفع التجديد مباشرة لشركة تسجيل النطاقات.", "109": "كيف أدير منتجاتي؟", "110": "كل شيء في ملف Google Sheet واحد. كل سطر منتج: الاسم، السعر، الصورة، المخزون. عدّل خلية واحفظ، فيتحدّث متجرك تلقائياً خلال دقائق. اجعل عمود Visible يساوي FALSE لإخفاء منتج.", "111": "أي باقة أختار؟", "112": "اختر الباقة السينمائية إن كان لديك متجر وتحتاج محتوى فاخراً فقط. اختر المتجر المصغّر إن كنت تبيع حتى 10 منتجات، كأصحاب الدروبشيبينغ. اختر متجر Flagship إن أردت منتجات وتصنيفات غير محدودة وسلة منزلقة ونطاق .com خاصاً بك.", "113": "ماذا أرسل بعد الطلب؟", "114": "اسم علامتك ومنتجاتك مع أسعارها وصور واضحة. وللباقة السينمائية أرسل صور المنتجات وملخصاً قصيراً عن عرضك. ونتولى الباقي.", "115": "هل أملك متجري؟", "116": "نعم، بالكامل. المتجر وملف Google Sheet والمحتوى كلها ملكك، بلا التزام ولا شيء تستأجره منا.", "117": "هل يمكنني استرداد المبلغ؟", "118": "لا. كل طلب عمل مخصص يبدأ لحظة تأكيد الدفع، لذا جميع المبيعات نهائية. ولهذا ندعوك لطرح أي سؤال قبل الطلب ويسعدنا الإجابة.", "119": "متاجر تجارة إلكترونية آلية بتقنية Headless بلا اشتراكات شهرية.", "120": "سياسة عدم الاسترداد", "121": "كل طلب في Apex Studio Pro يُبنى خصيصاً لعلامتك. فور تأكيد الدفع يبدأ فريقنا الإعداد المخصص، ويُنتَج متجرك وربط الملف والمحتوى الإبداعي ويُسلَّم مباشرة. ولأن العمل رقمي وشخصي ويبدأ فوراً، فجميع المبيعات نهائية ولا يمكننا تقديم استرداد.", "122": "لتشتري بثقة كاملة، راجع كل باقة أعلاه واسألنا أي سؤال قبل الطلب، ويسعدنا الإجابة.", "123": "© <span id=\"yr\">2026</span> Apex Studio Pro. جميع الحقوق محفوظة.", "124": "الشروط", "125": "الخصوصية", "126": "سياسة الاسترداد", "127": "جميع المبيعات نهائية", "__title": "Apex Studio Pro | بدون اشتراكات شهرية. متاجر Headless فائقة السرعة.", "__desc": "تبني Apex Studio Pro متاجر تجارة إلكترونية آلية بتقنية Headless تملكها بالكامل. بلا Shopify وبلا اشتراكات شهرية. تدير كل شيء من ملف Google Sheet بسيط."}};
+    var D = {"fr": {"0": "Comment ça marche", "1": "Nos réalisations", "2": "Tarifs", "3": "FAQ", "4": "Conditions", "5": "Choisir ma boutique", "6": "E-commerce headless automatisé", "7": "Zéro abonnement mensuel.<br/>Des boutiques headless <span class=\"gold-text italic font-medium\">ultra-rapides</span>.", "8": "Dites adieu à Shopify et à sa facture mensuelle. Nous créons pour vous une boutique sur mesure et automatisée, dont vous êtes propriétaire à 100 %, sans frais de plateforme ni applications à louer. Vous payez une seule fois. Votre boutique se charge vite et reste à vous.", "9": "Voir comment ça marche", "10": "APEX STUDIO PRO · FILM DE MARQUE", "11": "Une boutique qui bouge comme un film.", "12": "Frais de plateforme", "13": "0 $ / mois", "14": "Propriété", "15": "100 % à vous", "16": "Gestion", "17": "Un seul Google Sheet", "18": "Installation", "19": "Clé en main", "20": "Comment ça marche · La magie", "21": "Toute votre boutique vit dans un seul Google Sheet.", "22": "Pas de tableau de bord complexe. Pas d’interface d’administration à apprendre. Si vous savez modifier un tableur, vous savez gérer votre boutique.", "23": "Nous la créons et connectons votre Sheet", "24": "Partagez votre marque et vos produits. Nous concevons la vitrine, la relions à votre Google Sheet privé et vous remettons les deux, prêts à vendre.", "25": "Modifiez stock et prix sur une ligne", "26": "Chaque ligne est un produit, chaque colonne un détail : nom, prix, photo, stock. Ajoutez un article, changez un prix ou marquez une rupture, directement dans le Sheet.", "27": "Votre boutique se met à jour toute seule", "28": "Enregistrez le Sheet et la vitrine suit automatiquement. Vous continuez à vendre, la technique reste en coulisses.", "29": "Enregistré", "30": "<span style=\"color: var(--gold)\">●</span> Exemple uniquement. Changez un prix ici et il passe en ligne dans votre boutique.", "31": "Publicités réalisées par Apex", "32": "Chaque production part de vraies photos du client. Touchez une vidéo pour activer le son.", "33": "Beauté · Parfum", "34": "Publicité concept · 9:16 · voix off, musique, titres", "35": "Voir la galerie de produits (boutique) créée pour ce client →", "36": "Restaurant · Gastronomie", "37": "Voir la page d’offre (boutique) créée pour ce client →", "38": "Un seul paiement. Trois façons de passer à la vitesse supérieure.", "39": "Choisissez le pack ou la boutique qui correspond à votre activité aujourd’hui. Aucun frais mensuel de plateforme, quelle que soit l’offre.", "40": "Offre 1", "41": "Le Pack Cinématique", "42": "Pour ceux qui ont déjà une boutique", "43": "une seule fois", "44": "1 vidéo promo cinématique", "45": "10 retouches photo haut de gamme", "46": "Livraison en 24 heures", "47": "<strong style=\"color: var(--bone)\">Mise en place de boutique non incluse.</strong> Contenu uniquement.", "48": "Obtenir le Pack Cinématique", "49": "Offre 2", "50": "La Micro-Boutique", "51": "Pour les dropshippers", "52": "Mise en page d’une seule page ultra-rapide", "53": "Maximum <strong>10 produits</strong>", "54": "Panier simple, limité à <strong>5 articles par commande</strong>", "55": "1 vidéo cinématique", "56": "Hébergement Vercel gratuit", "57": "Commencer avec la Micro-Boutique", "58": "Voir la boutique de démonstration →", "59": "Le plus choisi", "60": "Offre 3", "61": "La Boutique Flagship", "62": "Pour les marques conçues pour grandir", "63": "Plateforme e-commerce headless complète", "64": "Produits &amp; catégories ILLIMITÉS", "65": "Panier latéral dynamique", "66": "<strong>Nom de domaine .com personnalisé inclus</strong> (1re année)", "67": "2 vidéos cinématiques", "68": "Bonus inclus", "69": "Valeur <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">offert</span>", "70": "Le Playbook Exécutif Apex", "71": "Une stratégie marketing et tarifaire sur mesure pour votre marque, rédigée par nos stratèges.", "72": "Réserver la boutique Flagship", "73": "Seulement 5 places par mois pour garantir des performances serveur dédiées – 2 places restantes.", "74": "Prix en USD, payés une seule fois. Aucun frais mensuel de plateforme, quelle que soit l’offre.", "75": "Comparer", "76": "Ce que contient chaque offre", "77": "Fonctionnalité", "78": "Prix", "79": "Paiement", "80": "Une fois", "81": "Boutique", "82": "Boutique d’une page", "83": "Plateforme headless complète", "84": "Nombre de produits", "85": "Jusqu’à 10", "86": "Illimité", "87": "Catégories", "88": "Panier", "89": "Simple (5 articles par commande)", "90": "Gestion via Google Sheet", "91": "Domaine .com personnalisé (1re année)", "92": "Vidéos cinématiques", "93": "Retouches photo haut de gamme", "94": "Playbook Exécutif Apex (valeur 250 $)", "95": "Frais mensuels de plateforme", "96": "Vous hésitez ? <a class=\"gold-link\" href=\"#faq\">Lisez les questions ci-dessous</a>.", "97": "Votre boutique, votre marge. <span class=\"gold-text italic font-medium\">Gardez-la.</span>", "98": "Questions avant de commander", "99": "Est-ce vraiment sans abonnement mensuel ?", "100": "Oui. Vous payez une seule fois. Pas de frais de plateforme ni d’applications à louer. L’hébergement tourne sur l’offre gratuite de Vercel. Avec la boutique Flagship, votre domaine .com personnalisé est inclus la première année ; ensuite, le renouvellement se règle directement auprès du registraire.", "101": "Comment gérer mes produits ?", "102": "Tout se passe dans un seul Google Sheet. Chaque ligne est un produit : nom, prix, photo, stock. Modifiez une cellule, enregistrez, et votre boutique se met à jour automatiquement en quelques minutes. Mettez Visible sur FALSE pour masquer un produit.", "103": "Quelle offre choisir ?", "104": "Choisissez le Pack Cinématique si vous avez déjà une boutique et ne voulez que du contenu premium. Choisissez la Micro-Boutique si vous vendez jusqu’à 10 produits, en dropshipping par exemple. Choisissez la Boutique Flagship pour des produits et catégories illimités, un panier latéral et votre propre domaine .com.", "105": "Que dois-je envoyer après ma commande ?", "106": "Le nom de votre marque, vos produits avec leurs prix et des photos nettes. Pour le Pack Cinématique, envoyez vos photos produit et un court brief sur votre offre. Nous nous occupons du reste.", "107": "Suis-je propriétaire de ma boutique ?", "108": "Oui, entièrement. Votre boutique, votre Google Sheet et vos contenus vous appartiennent. Aucun verrouillage, rien à louer chez nous.", "109": "Puis-je être remboursé ?", "110": "Non. Chaque commande est un travail sur mesure qui démarre dès la confirmation du paiement ; toutes les ventes sont donc définitives. C’est pourquoi nous vous invitons à nous poser toutes vos questions avant de commander, avec plaisir.", "111": "Boutiques e-commerce headless automatisées, sans abonnement mensuel.", "112": "Politique de non-remboursement", "113": "Chaque commande Apex Studio Pro est réalisée pour votre marque. Dès la confirmation du paiement, notre équipe démarre votre mise en place sur mesure, et votre boutique, la connexion au Sheet et vos contenus créatifs sont produits et livrés aussitôt. Ce travail étant numérique, personnalisé et lancé immédiatement, toutes les ventes sont définitives et nous ne pouvons pas proposer de remboursement.", "114": "Pour acheter en toute confiance, consultez chaque offre ci-dessus et posez-nous vos questions avant de commander. Nous y répondrons avec plaisir.", "115": "© <span id=\"yr\">2026</span> Apex Studio Pro. Tous droits réservés.", "116": "Conditions", "117": "Confidentialité", "118": "Remboursement", "119": "VENTES DÉFINITIVES", "__title": "Apex Studio Pro | Zéro abonnement mensuel. Boutiques headless ultra-rapides.", "__desc": "Apex Studio Pro crée des boutiques e-commerce headless automatisées dont vous êtes propriétaire. Pas de Shopify, pas d’abonnement mensuel. Tout se gère depuis un simple Google Sheet."}, "ar": {"0": "كيف يعمل", "1": "أعمالنا", "2": "الأسعار", "3": "الأسئلة الشائعة", "4": "السياسات", "5": "اختر متجرك", "6": "تجارة إلكترونية آلية بتقنية <bdi dir=\"ltr\">Headless</bdi>", "7": "بدون اشتراكات شهرية.<br/>متاجر <bdi dir=\"ltr\">Headless</bdi> <span class=\"gold-text italic font-medium\">فائقة السرعة</span>.", "8": "قل وداعاً لـ <bdi dir=\"ltr\">Shopify</bdi> وفاتورته الشهرية. نبني لك متجراً مخصصاً وآلياً تملكه بالكامل، بلا رسوم منصة ولا تطبيقات مدفوعة. تدفع مرة واحدة، فيبقى متجرك سريعاً وملكاً لك.", "9": "شاهد كيف يعمل", "10": "<bdi dir=\"ltr\">APEX STUDIO PRO</bdi> · فيديو العلامة السينمائي", "11": "متجر يتحرك كأنه فيلم.", "12": "رسوم المنصة", "13": "0 $ شهرياً", "14": "الملكية", "15": "ملكك بالكامل", "16": "الإدارة", "17": "ملف <bdi dir=\"ltr\">Google Sheet</bdi> واحد", "18": "الإعداد", "19": "نتولاه عنك", "20": "كيف يعمل · السحر", "21": "متجرك بالكامل في ملف <bdi dir=\"ltr\">Google Sheet</bdi> واحد.", "22": "لا لوحة تحكم معقدة ولا واجهة إدارة لتتعلمها. إن كنت تعرف تعديل جدول بيانات، فأنت تعرف إدارة متجرك.", "23": "نبنيه ونربطه بملفك", "24": "شاركنا علامتك ومنتجاتك. نصمم واجهة المتجر ونربطها بملف <bdi dir=\"ltr\">Google Sheet</bdi> الخاص بك، ونسلمك الاثنين جاهزين للبيع.", "25": "عدّل المخزون والأسعار في سطر واحد", "26": "كل سطر منتج وكل عمود تفصيل: الاسم، السعر، الصورة، المخزون. أضف منتجاً أو غيّر سعراً أو أشر إلى نفاد الكمية مباشرة في الملف.", "27": "متجرك المباشر يتحدّث تلقائياً", "28": "احفظ الملف فتتبعه واجهة المتجر تلقائياً. تواصل البيع بينما تبقى التقنية بعيدة عن طريقك.", "29": "تم الحفظ", "30": "<span style=\"color: var(--gold)\">●</span> مثال فقط. غيّر سعراً هنا فيظهر مباشرة في متجرك.", "31": "إعلانات من إنتاج <bdi dir=\"ltr\">Apex</bdi>", "32": "كل إنتاج ينطلق من صور حقيقية للعميل. اضغط على الفيديو لتشغيل الصوت.", "33": "تجميل · عطور", "34": "إعلان تجريبي · 9:16 · تعليق صوتي، موسيقى، عناوين", "35": "شاهد معرض المنتجات (المتجر) الذي صممناه لهذا العميل ←", "36": "مطعم · مطبخ راقٍ", "37": "شاهد صفحة العروض (المتجر) التي صممناها لهذا العميل ←", "38": "دفعة واحدة. ثلاث طرق للارتقاء بعملك.", "39": "اختر الباقة أو المتجر المناسب لمرحلة عملك الآن. بلا رسوم منصة شهرية في أي باقة.", "40": "الباقة 1", "41": "الباقة السينمائية", "42": "لمن يملكون متجراً بالفعل", "43": "مرة واحدة", "44": "فيديو ترويجي سينمائي واحد", "45": "10 تحسينات لصور المنتجات بجودة فاخرة", "46": "تسليم خلال 24 ساعة", "47": "<strong style=\"color: var(--bone)\">لا يشمل إعداد المتجر.</strong> محتوى فقط.", "48": "احصل على الباقة السينمائية", "49": "الباقة 2", "50": "المتجر المصغّر", "51": "لأصحاب الدروبشيبينغ", "52": "تصميم من صفحة واحدة فائق السرعة", "53": "حتى <strong>10 منتجات</strong> كحد أقصى", "54": "سلة بسيطة بحد أقصى <strong>5 عناصر لكل طلب</strong>", "55": "فيديو سينمائي واحد", "56": "استضافة <bdi dir=\"ltr\">Vercel</bdi> مجانية", "57": "ابدأ بالمتجر المصغّر", "58": "شاهد المتجر التجريبي المباشر ←", "59": "الأكثر طلباً", "60": "الباقة 3", "61": "متجر العلامة الرائد (<bdi dir=\"ltr\">Flagship</bdi>)", "62": "للعلامات المصممة للنمو", "63": "منصة تجارة إلكترونية <bdi dir=\"ltr\">Headless</bdi> متكاملة", "64": "منتجات وتصنيفات غير محدودة", "65": "سلة جانبية منزلقة وديناميكية", "66": "<strong>نطاق <bdi dir=\"ltr\">.com</bdi> خاص بك مشمول</strong> (السنة الأولى)", "67": "فيديوهان سينمائيان", "68": "مكافأة مشمولة", "69": "القيمة <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">مجاناً</span>", "70": "دليل <bdi dir=\"ltr\">Apex</bdi> التنفيذي (<bdi dir=\"ltr\">Playbook</bdi>)", "71": "استراتيجية تسويق وتسعير مخصصة لعلامتك، يكتبها خبراؤنا الاستراتيجيون.", "72": "احجز متجر <bdi dir=\"ltr\">Flagship</bdi>", "73": "5 أماكن فقط شهرياً لضمان أداء خادم مخصص – بقي مكانان.", "74": "الأسعار بالدولار وتُدفع مرة واحدة. بلا رسوم منصة شهرية في أي باقة.", "75": "قارن", "76": "ما الذي تتضمنه كل باقة", "77": "الميزة", "78": "السعر", "79": "طريقة الدفع", "80": "مرة واحدة", "81": "المتجر", "82": "متجر من صفحة واحدة", "83": "منصة متجر متكاملة", "84": "عدد المنتجات", "85": "حتى 10", "86": "غير محدود", "87": "التصنيفات", "88": "سلة المشتريات", "89": "بسيطة (5 عناصر لكل طلب)", "90": "الإدارة عبر <bdi dir=\"ltr\">Google Sheet</bdi>", "91": "نطاق <bdi dir=\"ltr\">.com</bdi> خاص بك (السنة الأولى)", "92": "فيديوهات سينمائية", "93": "تحسين صور المنتجات", "94": "دليل <bdi dir=\"ltr\">Apex</bdi> التنفيذي (قيمته 250 دولار)", "95": "رسوم المنصة الشهرية", "96": "لست متأكداً أي باقة تناسبك؟ <a class=\"gold-link\" href=\"#faq\">اقرأ الأسئلة أدناه</a>.", "97": "متجرك ملكك. <span class=\"gold-text italic font-medium\">واحتفظ بهامش ربحك.</span>", "98": "أسئلة قبل أن تطلب", "99": "هل فعلاً لا توجد رسوم شهرية؟", "100": "نعم. تدفع مرة واحدة، بلا رسوم منصة ولا تطبيقات مدفوعة. الاستضافة على الخطة المجانية من <bdi dir=\"ltr\">Vercel</bdi>. مع متجر <bdi dir=\"ltr\">Flagship</bdi> يشمل السعر نطاق <bdi dir=\"ltr\">.com</bdi> خاصاً بك للسنة الأولى، وبعدها يُدفع التجديد مباشرة لشركة تسجيل النطاقات.", "101": "كيف أدير منتجاتي؟", "102": "كل شيء في ملف <bdi dir=\"ltr\">Google Sheet</bdi> واحد. كل سطر منتج: الاسم، السعر، الصورة، المخزون. عدّل خلية واحفظ، فيتحدّث متجرك تلقائياً خلال دقائق. اجعل عمود <bdi dir=\"ltr\">Visible</bdi> يساوي <bdi dir=\"ltr\">FALSE</bdi> لإخفاء منتج.", "103": "أي باقة أختار؟", "104": "اختر الباقة السينمائية إن كان لديك متجر وتحتاج محتوى فاخراً فقط. اختر المتجر المصغّر إن كنت تبيع حتى 10 منتجات، كأصحاب الدروبشيبينغ. اختر متجر <bdi dir=\"ltr\">Flagship</bdi> إن أردت منتجات وتصنيفات غير محدودة وسلة جانبية ونطاق <bdi dir=\"ltr\">.com</bdi> خاصاً بك.", "105": "ماذا أرسل بعد الطلب؟", "106": "اسم علامتك ومنتجاتك مع أسعارها وصور واضحة. وللباقة السينمائية أرسل صور المنتجات وملخصاً قصيراً عن عرضك. ونتولى نحن الباقي.", "107": "هل أملك متجري؟", "108": "نعم، بالكامل. المتجر وملف <bdi dir=\"ltr\">Google Sheet</bdi> والمحتوى كلها ملكك، بلا التزام ولا شيء تستأجره منا.", "109": "هل يمكنني استرداد المبلغ؟", "110": "لا. كل طلب عمل مخصص يبدأ لحظة تأكيد الدفع، لذا جميع المبيعات نهائية. ولهذا ندعوك لطرح أي سؤال قبل الطلب، ويسعدنا الإجابة عنه.", "111": "متاجر تجارة إلكترونية آلية بتقنية <bdi dir=\"ltr\">Headless</bdi> بلا اشتراكات شهرية.", "112": "سياسة عدم الاسترداد", "113": "كل طلب في <bdi dir=\"ltr\">Apex Studio Pro</bdi> يُبنى خصيصاً لعلامتك. فور تأكيد الدفع يبدأ فريقنا الإعداد المخصص، ويُنتَج متجرك وربط الملف والمحتوى الإبداعي ويُسلَّم مباشرة. ولأن العمل رقمي وشخصي ويبدأ فوراً، فجميع المبيعات نهائية ولا يمكننا تقديم استرداد.", "114": "لتشتري بثقة كاملة، راجع كل باقة أعلاه واسألنا أي سؤال قبل الطلب، ويسعدنا الإجابة.", "115": "© <span id=\"yr\">2026</span> <bdi dir=\"ltr\">Apex Studio Pro</bdi>. جميع الحقوق محفوظة.", "116": "الشروط", "117": "الخصوصية", "118": "سياسة الاسترداد", "119": "جميع المبيعات نهائية", "__title": "Apex Studio Pro | بدون اشتراكات شهرية. متاجر Headless فائقة السرعة.", "__desc": "تبني Apex Studio Pro متاجر تجارة إلكترونية آلية بتقنية Headless تملكها بالكامل. بلا Shopify وبلا اشتراكات شهرية. تدير كل شيء من ملف Google Sheet بسيط."}, "es": {"0": "Cómo funciona", "1": "Nuestro trabajo", "2": "Precios", "3": "Preguntas frecuentes", "4": "Políticas", "5": "Elige tu tienda", "6": "E-commerce headless automatizado", "7": "Cero suscripciones mensuales.<br/>Tiendas headless <span class=\"gold-text italic font-medium\">ultrarrápidas</span>.", "8": "Olvídate de Shopify y de su factura mensual. Creamos para ti una tienda a medida y automatizada que es tuya por completo, sin cuota de plataforma ni aplicaciones que alquilar. Pagas una sola vez. Tu tienda carga rápido y sigue siendo tuya.", "9": "Ver cómo funciona", "10": "APEX STUDIO PRO · VÍDEO DE MARCA", "11": "Una tienda que se mueve como una película.", "12": "Cuota de plataforma", "13": "0 $ / mes", "14": "Propiedad", "15": "100 % tuya", "16": "Gestión", "17": "Una sola Google Sheet", "18": "Configuración", "19": "Lo hacemos por ti", "20": "Cómo funciona · La magia", "21": "Toda tu tienda vive en una sola Google Sheet.", "22": "Sin paneles complejos. Sin administrador que aprender. Si sabes editar una hoja de cálculo, sabes gestionar tu tienda.", "23": "Lo construimos y conectamos tu hoja", "24": "Comparte tu marca y tus productos. Diseñamos el escaparate, lo conectamos a tu Google Sheet privada y te entregamos ambos, listos para vender.", "25": "Edita inventario y precios en una fila", "26": "Cada fila es un producto y cada columna un dato: nombre, precio, foto, stock. Añade un artículo, cambia un precio o marca algo como agotado, directamente en la hoja.", "27": "Tu tienda se actualiza sola", "28": "Guarda la hoja y el escaparate la sigue automáticamente. Tú sigues vendiendo mientras la tecnología no estorba.", "29": "Guardado", "30": "<span style=\"color: var(--gold)\">●</span> Solo un ejemplo. Cambia un precio aquí y se publica en tu tienda.", "31": "Anuncios producidos por Apex", "32": "Cada producción parte de las fotos reales del cliente. Toca un vídeo para activar el sonido.", "33": "Belleza · Perfume", "34": "Anuncio conceptual · 9:16 · voz en off, música, títulos", "35": "Ver la galería de productos (tienda) que creamos para este cliente →", "36": "Restaurante · Alta cocina", "37": "Ver la página de oferta (tienda) que creamos para este cliente →", "38": "Un solo pago. Tres formas de dar el salto.", "39": "Elige el pack o la tienda que encaja con tu negocio hoy. Sin cuota mensual de plataforma en ningún plan.", "40": "Plan 1", "41": "El Pack Cinematográfico", "42": "Para quienes ya tienen una tienda", "43": "pago único", "44": "1 vídeo promocional cinematográfico", "45": "10 mejoras de foto de alta gama", "46": "Entrega en 24 horas", "47": "<strong style=\"color: var(--bone)\">No incluye la configuración de la tienda.</strong> Solo contenido.", "48": "Obtener el Pack Cinematográfico", "49": "Plan 2", "50": "La Micro-Tienda", "51": "Para dropshippers", "52": "Diseño de una sola página ultrarrápido", "53": "Máximo <strong>10 productos</strong>", "54": "Carrito sencillo, límite de <strong>5 artículos por pedido</strong>", "55": "1 vídeo cinematográfico", "56": "Hosting gratuito en Vercel", "57": "Empieza con la Micro-Tienda", "58": "Ver la tienda demo en vivo →", "59": "Más popular", "60": "Plan 3", "61": "La Tienda Flagship", "62": "Para marcas hechas para crecer", "63": "Plataforma e-commerce headless completa", "64": "Productos y categorías ILIMITADOS", "65": "Carrito lateral dinámico", "66": "<strong>Dominio .com personalizado incluido</strong> (1.er año)", "67": "2 vídeos cinematográficos", "68": "Bonus incluido", "69": "Valor <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">gratis</span>", "70": "El Playbook Ejecutivo de Apex", "71": "Una estrategia de marketing y precios a medida para tu marca, escrita por nuestros estrategas.", "72": "Reservar la tienda Flagship", "73": "Solo 5 plazas al mes para garantizar un rendimiento de servidor dedicado – quedan 2.", "74": "Precios en USD, de pago único. Sin cuota mensual de plataforma en ningún plan.", "75": "Comparar", "76": "Qué incluye cada plan", "77": "Característica", "78": "Precio", "79": "Pago", "80": "Pago único", "81": "Tienda", "82": "Tienda de una página", "83": "Plataforma headless completa", "84": "Productos", "85": "Hasta 10", "86": "Ilimitado", "87": "Categorías", "88": "Carrito", "89": "Sencillo (5 artículos por pedido)", "90": "Gestión con Google Sheet", "91": "Dominio .com propio (1.er año)", "92": "Vídeos cinematográficos", "93": "Mejoras de foto de alta gama", "94": "Playbook Ejecutivo de Apex (valor 250 $)", "95": "Cuota mensual de plataforma", "96": "¿No sabes qué plan elegir? <a class=\"gold-link\" href=\"#faq\">Lee las preguntas de abajo</a>.", "97": "Tu tienda, tu margen. <span class=\"gold-text italic font-medium\">Quédatelo.</span>", "98": "Preguntas antes de pedir", "99": "¿De verdad no hay cuota mensual?", "100": "Sí. Pagas una sola vez. No hay cuota de plataforma ni aplicaciones que alquilar. El alojamiento funciona con el plan gratuito de Vercel. Con la tienda Flagship, tu dominio .com personalizado va incluido el primer año; después, la renovación se paga directamente al registrador.", "101": "¿Cómo gestiono mis productos?", "102": "Todo vive en una sola Google Sheet. Cada fila es un producto: nombre, precio, foto, stock. Cambia una celda, guarda, y tu tienda se actualiza sola en un par de minutos. Pon Visible en FALSE para ocultar un producto.", "103": "¿Qué plan elijo?", "104": "Elige el Pack Cinematográfico si ya tienes tienda y solo necesitas contenido premium. Elige la Micro-Tienda si vendes hasta 10 productos, por ejemplo como dropshipper. Elige la Tienda Flagship si quieres productos y categorías ilimitados, un carrito lateral y tu propio dominio .com.", "105": "¿Qué debo enviar después de pedir?", "106": "El nombre de tu marca y tus productos con precios y fotos claras. Para el Pack Cinematográfico, envía tus fotos de producto y un breve resumen de tu oferta. Nosotros nos encargamos del resto.", "107": "¿Soy dueño de mi tienda?", "108": "Sí, por completo. Tu tienda, tu Google Sheet y tu contenido te pertenecen. Sin ataduras y sin nada que alquilarnos.", "109": "¿Puedo pedir un reembolso?", "110": "No. Cada pedido es un trabajo a medida que empieza en cuanto se confirma el pago, por lo que todas las ventas son definitivas. Por eso te invitamos a hacernos cualquier pregunta antes de pedir; con gusto la responderemos.", "111": "Tiendas e-commerce headless automatizadas, sin suscripciones mensuales.", "112": "Política de no reembolso", "113": "Cada pedido de Apex Studio Pro se crea a medida de tu marca. En cuanto se confirma el pago, nuestro equipo empieza tu configuración personalizada, y tu tienda, la conexión con la hoja y tus recursos creativos se producen y entregan de inmediato. Al ser un trabajo digital, personal y que empieza al instante, todas las ventas son definitivas y no podemos ofrecer reembolsos.", "114": "Para que compres con total confianza, revisa cada plan de arriba y pregúntanos lo que quieras antes de pedir. Con gusto te responderemos.", "115": "© <span id=\"yr\">2026</span> Apex Studio Pro. Todos los derechos reservados.", "116": "Términos", "117": "Privacidad", "118": "Reembolsos", "119": "VENTAS DEFINITIVAS", "__title": "Apex Studio Pro | Cero suscripciones mensuales. Tiendas headless ultrarrápidas.", "__desc": "Apex Studio Pro crea tiendas e-commerce headless automatizadas que son tuyas por completo. Sin Shopify, sin suscripciones mensuales. Lo gestionas todo desde una simple Google Sheet."}, "it": {"0": "Come funziona", "1": "I nostri lavori", "2": "Prezzi", "3": "Domande frequenti", "4": "Condizioni", "5": "Scegli il tuo negozio", "6": "E-commerce headless automatizzato", "7": "Zero abbonamenti mensili.<br/>Negozi headless <span class=\"gold-text italic font-medium\">velocissimi</span>.", "8": "Dimentica Shopify e la sua bolletta mensile. Creiamo per te un negozio su misura e automatizzato, tuo al 100%, senza canone di piattaforma né app da noleggiare. Paghi una sola volta. Il tuo negozio è velocissimo e resta tuo.", "9": "Scopri come funziona", "10": "APEX STUDIO PRO · VIDEO DI BRAND", "11": "Un negozio che si muove come un film.", "12": "Canone piattaforma", "13": "0 $ / mese", "14": "Proprietà", "15": "100% tuo", "16": "Gestione", "17": "Un solo Google Sheet", "18": "Configurazione", "19": "Fatto per te", "20": "Come funziona · La magia", "21": "Tutto il tuo negozio vive in un solo Google Sheet.", "22": "Nessuna dashboard complicata. Nessun pannello da imparare. Se sai modificare un foglio di calcolo, sai gestire il tuo negozio.", "23": "Lo costruiamo e colleghiamo il tuo foglio", "24": "Condividi il tuo brand e i tuoi prodotti. Progettiamo la vetrina, la colleghiamo al tuo Google Sheet privato e ti consegniamo entrambi, pronti a vendere.", "25": "Modifica scorte e prezzi in una riga", "26": "Ogni riga è un prodotto, ogni colonna un dettaglio: nome, prezzo, foto, scorte. Aggiungi un articolo, cambia un prezzo o segna un esaurito, direttamente nel foglio.", "27": "Il tuo negozio si aggiorna da solo", "28": "Salva il foglio e la vetrina lo segue in automatico. Tu continui a vendere, la tecnologia resta in disparte.", "29": "Salvato", "30": "<span style=\"color: var(--gold)\">●</span> Solo un esempio. Cambia un prezzo qui e va online nel tuo negozio.", "31": "Annunci prodotti da Apex", "32": "Ogni produzione parte dalle foto reali del cliente. Tocca un video per attivare l’audio.", "33": "Bellezza · Profumo", "34": "Annuncio concept · 9:16 · voce fuori campo, musica, titoli", "35": "Vedi la galleria prodotti (negozio) creata per questo cliente →", "36": "Ristorante · Alta cucina", "37": "Vedi la pagina offerta (negozio) creata per questo cliente →", "38": "Un solo pagamento. Tre modi per fare il salto.", "39": "Scegli il pacchetto o il negozio adatto al tuo business di oggi. Nessun canone mensile di piattaforma, in nessun piano.", "40": "Piano 1", "41": "Il Pacchetto Cinematico", "42": "Per chi ha già un negozio", "43": "una tantum", "44": "1 video promozionale cinematico", "45": "10 miglioramenti foto di alta gamma", "46": "Consegna in 24 ore", "47": "<strong style=\"color: var(--bone)\">Allestimento del negozio non incluso.</strong> Solo contenuti.", "48": "Ottieni il Pacchetto Cinematico", "49": "Piano 2", "50": "Il Micro-Negozio", "51": "Per i dropshipper", "52": "Layout a pagina singola velocissimo", "53": "Massimo <strong>10 prodotti</strong>", "54": "Carrello semplice, limite di <strong>5 articoli per ordine</strong>", "55": "1 video cinematico", "56": "Hosting Vercel gratuito", "57": "Inizia con il Micro-Negozio", "58": "Vedi il negozio demo live →", "59": "Il più scelto", "60": "Piano 3", "61": "Il Negozio Flagship", "62": "Per i brand nati per crescere", "63": "Piattaforma e-commerce headless completa", "64": "Prodotti e categorie ILLIMITATI", "65": "Carrello laterale dinamico", "66": "<strong>Dominio .com personalizzato incluso</strong> (1° anno)", "67": "2 video cinematici", "68": "Bonus incluso", "69": "Valore <span class=\"strike\">250 $</span> <span style=\"color: var(--gold)\">gratis</span>", "70": "Il Playbook Executive di Apex", "71": "Una strategia di marketing e prezzi su misura per il tuo brand, scritta dai nostri strateghi.", "72": "Prenota il Negozio Flagship", "73": "Solo 5 posti al mese per garantire prestazioni server dedicate – ne restano 2.", "74": "Prezzi in USD, pagamento unico. Nessun canone mensile di piattaforma in nessun piano.", "75": "Confronta", "76": "Cosa include ogni piano", "77": "Caratteristica", "78": "Prezzo", "79": "Pagamento", "80": "Una tantum", "81": "Negozio", "82": "Negozio a pagina singola", "83": "Piattaforma headless completa", "84": "Prodotti", "85": "Fino a 10", "86": "Illimitato", "87": "Categorie", "88": "Carrello", "89": "Semplice (5 articoli per ordine)", "90": "Gestione con Google Sheet", "91": "Dominio .com personalizzato (1° anno)", "92": "Video cinematici", "93": "Miglioramenti foto di alta gamma", "94": "Playbook Executive di Apex (valore 250 $)", "95": "Canone mensile di piattaforma", "96": "Non sai quale piano scegliere? <a class=\"gold-link\" href=\"#faq\">Leggi le domande qui sotto</a>.", "97": "Il tuo negozio, il tuo margine. <span class=\"gold-text italic font-medium\">Tienitelo.</span>", "98": "Domande prima di ordinare", "99": "Davvero nessun canone mensile?", "100": "Sì. Paghi una sola volta. Nessun canone di piattaforma e nessuna app da noleggiare. L’hosting usa il piano gratuito di Vercel. Con il negozio Flagship il dominio .com personalizzato è incluso per il primo anno; poi il rinnovo si paga direttamente al registrar.", "101": "Come gestisco i miei prodotti?", "102": "Tutto vive in un solo Google Sheet. Ogni riga è un prodotto: nome, prezzo, foto, scorte. Modifica una cella, salva, e il tuo negozio si aggiorna da solo in un paio di minuti. Imposta Visible su FALSE per nascondere un prodotto.", "103": "Quale piano scelgo?", "104": "Scegli il Pacchetto Cinematico se hai già un negozio e ti servono solo contenuti premium. Scegli il Micro-Negozio se vendi fino a 10 prodotti, ad esempio come dropshipper. Scegli il Negozio Flagship se vuoi prodotti e categorie illimitati, un carrello laterale e il tuo dominio .com.", "105": "Cosa devo inviare dopo l’ordine?", "106": "Il nome del tuo brand e i tuoi prodotti con prezzi e foto nitide. Per il Pacchetto Cinematico, invia le foto dei prodotti e un breve brief sulla tua offerta. Al resto pensiamo noi.", "107": "Il negozio è di mia proprietà?", "108": "Sì, interamente. Il tuo negozio, il tuo Google Sheet e i tuoi contenuti ti appartengono. Nessun vincolo e nulla da noleggiare da noi.", "109": "Posso ottenere un rimborso?", "110": "No. Ogni ordine è un lavoro su misura che inizia appena il pagamento è confermato, quindi tutte le vendite sono definitive. Per questo ti invitiamo a farci qualsiasi domanda prima di ordinare: risponderemo volentieri.", "111": "Negozi e-commerce headless automatizzati, senza abbonamenti mensili.", "112": "Politica di non rimborso", "113": "Ogni ordine Apex Studio Pro è realizzato su misura per il tuo brand. Appena il pagamento è confermato, il nostro team avvia la configurazione personalizzata e il tuo negozio, il collegamento al foglio e i materiali creativi vengono prodotti e consegnati subito. Poiché il lavoro è digitale, personale e parte all’istante, tutte le vendite sono definitive e non possiamo offrire rimborsi.", "114": "Perché tu acquisti con piena fiducia, controlla ogni piano qui sopra e facci tutte le domande prima di ordinare. Risponderemo volentieri.", "115": "© <span id=\"yr\">2026</span> Apex Studio Pro. Tutti i diritti riservati.", "116": "Termini", "117": "Privacy", "118": "Rimborsi", "119": "VENDITE DEFINITIVE", "__title": "Apex Studio Pro | Zero abbonamenti mensili. Negozi headless velocissimi.", "__desc": "Apex Studio Pro crea negozi e-commerce headless automatizzati che sono tuoi al 100%. Niente Shopify, niente abbonamenti mensili. Gestisci tutto da un semplice Google Sheet."}};
     var EN_TITLE = document.title, metaD = document.querySelector('meta[name="description"]'), EN_DESC = metaD ? metaD.content : '';
     var els = [].slice.call(document.querySelectorAll('[data-i18n]'));
     els.forEach(function (el) { el.setAttribute('data-en', el.innerHTML); });
@@ -584,6 +595,19 @@
     if (!l) { var n = (navigator.language || 'en').slice(0, 2).toLowerCase(); l = D[n] ? n : 'en'; }
     if (l !== 'en') setLang(l);
     if (sel) { sel.value = l; sel.addEventListener('change', function () { setLang(sel.value); }); }
+  })();
+  // ===== Hero video: make sure it plays; sound toggle =====
+  (function () {
+    var v = document.getElementById('heroVid'), bg = document.querySelector('.hv-bg'), b = document.getElementById('heroSnd');
+    if (!v) return;
+    function go(x) { if (!x) return; x.muted = x === bg ? true : x.muted; var p = x.play(); if (p && p.catch) p.catch(function () {}); }
+    go(v); go(bg);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { go(v); go(bg); } });
+    ['click', 'touchstart', 'scroll'].forEach(function (ev) { window.addEventListener(ev, function once() { go(v); go(bg); window.removeEventListener(ev, once); }, { passive: true }); });
+    if (b) b.addEventListener('click', function () {
+      var on = v.muted; v.muted = !on; if (on) { v.currentTime = 0; } go(v);
+      b.innerHTML = on ? '&#128266;' : '&#128263;'; b.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
+    });
   })();
 </script>
 </body>
