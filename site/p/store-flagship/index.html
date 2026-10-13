@@ -44,8 +44,11 @@
   .btn{display:inline-block;background:linear-gradient(180deg,#e3c27f,var(--gold));color:var(--gold-ink);border:0;font-weight:600;padding:.9rem 1.6rem;border-radius:2px;text-decoration:none;transition:transform .2s}
   .btn:hover{transform:translateY(-2px)}
   .btn-line{background:transparent;color:var(--bone);border:1px solid var(--line)} .btn-line:hover{border-color:var(--gold);color:var(--gold)}
-  .hero-art{aspect-ratio:5/4;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--slate);max-width:100%}
-  .hero-art img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero-art{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--slate);max-width:100%}
+  .hero-art{position:relative;aspect-ratio:9/16;max-height:36rem;margin-inline:auto}
+  @media(min-width:900px){.hero-art{margin-inline:0 0;justify-self:end}}
+  .hero-art img,.hero-art video{width:100%;height:100%;object-fit:cover;display:block}
+  .snd{position:absolute;right:.7rem;bottom:.7rem;background:rgba(10,12,15,.7);border:1px solid var(--gold);color:var(--bone);font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .7rem;border-radius:2px}
   .cats{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));margin-block:3rem 1rem}
   .cat{position:relative;aspect-ratio:4/3;border:1px solid var(--line);border-radius:3px;overflow:hidden;text-align:left;padding:0;background:var(--slate);transition:border-color .2s}
   .cat:hover{border-color:var(--gold)}
@@ -126,7 +129,11 @@
       <p class="lead">Watches, leather goods, bags and silks, made in small runs and sold without a middleman. Browse by category, open any piece for detail, and fill the cart as full as you like.</p>
       <p style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem"><a class="btn" href="#shop">Shop all pieces</a><a class="btn btn-line" href="#cats">Browse categories</a></p>
     </div>
-    <div class="hero-art"><img id="heroImg" alt="Featured piece from the Noir and Gilt collection"></div>
+    <div class="hero-art" id="heroArt">
+      <video id="heroVideo" src="/p/review-lumiere-t5w0/hero.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Brand film"></video>
+      <button type="button" class="snd" id="snd" aria-label="Turn sound on">Sound off</button>
+      <img id="heroImg" alt="Featured piece from the Noir and Gilt collection" hidden>
+    </div>
   </div></section>
 
   <div class="wrap">
@@ -254,6 +261,9 @@ $('q').oninput=function(){query=this.value.trim().toLowerCase();cat='All';render
 $('sort').onchange=function(){sortBy=this.value;render()};
 $('checkout').onclick=function(){toast('Demo mode: in a live store this opens secure payment.')};
 
+var hv=$('heroVideo');
+hv.addEventListener('error',function(){hv.hidden=true;$('snd').hidden=true;$('heroImg').hidden=false});
+$('snd').onclick=function(){hv.muted=!hv.muted;this.textContent=hv.muted?'Sound off':'Sound on';if(!hv.muted)hv.play().catch(function(){})};
 products=DEMO;render();drawCart();
 if(SHEET_CSV_URL){fetch(SHEET_CSV_URL).then(function(r){return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat='All';render()}}).catch(function(){})}
 </script>
