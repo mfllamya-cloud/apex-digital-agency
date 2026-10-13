@@ -1,507 +1,413 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apex Digital Agency | Cinematic video ads from your photos</title>
-<meta name="description" content="Send a photo of your product, dish or place. Receive cinematic vertical video ads with voiceover, music and on-screen titles, ready for TikTok, Reels and Shorts.">
-<meta property="og:title" content="Apex Digital Agency | Cinematic video ads from your photos">
-<meta property="og:description" content="Cinematic 9:16 video ads with voiceover, music and titles. From $89.">
-<meta property="og:image" content="https://lh3.googleusercontent.com/d/18MfjlJ0rPZZQ_FRWhYU613qg5WBlBUj_=w1080">
+<title>Apex Studio Pro | Zero Monthly Subscriptions. Lightning-Fast Headless Stores.</title>
+<meta name="description" content="Apex Studio Pro builds automated, headless e-commerce stores you own outright. No Shopify, no monthly subscriptions. Manage everything from a simple Google Sheet.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600;6..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <style>
-  :root{
-    --bg:#07080e; --bg2:#0b0d15; --panel:#10131d; --line:#232838; --gold:#d4af5f; --gold2:#f0d79a;
-    --text:#f5f2eb; --muted:#a7a397; --ok:#7fc79a;
-    --serif:"Playfair Display", Georgia, serif; --sans:Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  :root {
+    --coal: #0f1115;
+    --slate: #1f2228;
+    --gold: #d4af6a;
+    --mist: #a1a1aa;
+    --bone: #f3f4f6;
+    --line: #2d3038;
+    --abyss: #0a0c0f;        /* deeper band for alternating sections */
+    --gold-deep: #9c7a3c;
+    --gold-ink: #1a1306;     /* text on gold */
+    --font-display: "Bodoni Moda", "Didot", Georgia, serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: dark;
   }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
-  a{color:inherit}
-  img,video{max-width:100%}
-  .wrap{width:min(1120px,100% - 32px);margin:0 auto}
-  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
-  .eyebrow{color:var(--gold);letter-spacing:.32em;font-size:12px;text-transform:uppercase;margin:0 0 14px;font-weight:500}
-  .sub{color:var(--muted);max-width:62ch;margin:12px 0 0}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 28px;border-radius:999px;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#0a0a0f;text-decoration:none;font-weight:600;letter-spacing:.02em;border:0;cursor:pointer;transition:transform .2s, box-shadow .2s}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px -10px rgba(212,175,95,.6)}
-  .btn.ghost{background:transparent;color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
-  .btn.ghost:hover{background:rgba(212,175,95,.08)}
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--coal); color: var(--bone); font-family: var(--font-body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  .wrap { width: 100%; max-width: 72rem; margin-inline: auto; padding-inline: 1rem; }
+  @media (min-width: 640px) { .wrap { padding-inline: 1.5rem; } }
+  .display { font-family: var(--font-display); letter-spacing: -0.01em; text-wrap: balance; }
+  .eyebrow { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+  .mist { color: var(--mist); }
+  .gold-text { background: linear-gradient(100deg, #f1d99b 0%, var(--gold) 45%, var(--gold-deep) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .btn-gold { background: linear-gradient(180deg, #e3c27f, var(--gold)); color: var(--gold-ink); font-weight: 600; transition: transform .2s, box-shadow .2s; box-shadow: 0 0 0 1px rgba(212,175,106,.5), 0 10px 30px -12px rgba(212,175,106,.55); }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(212,175,106,.8), 0 16px 34px -12px rgba(212,175,106,.7); }
+  .btn-ghost { border: 1px solid var(--line); color: var(--bone); transition: border-color .2s, color .2s; }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  .hairline { border-top: 1px solid var(--line); }
+  .nav-link { color: var(--mist); transition: color .2s; }
+  .nav-link:hover { color: var(--bone); }
 
-  /* header */
-  header{position:sticky;top:0;z-index:20;background:rgba(7,8,14,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
-  .brand{font-family:var(--serif);letter-spacing:.24em;font-size:15px;text-decoration:none;white-space:nowrap}
-  .brand b{color:var(--gold);font-weight:400}
-  nav{display:flex;gap:26px;font-size:14px}
-  nav a{text-decoration:none;color:var(--muted)}
-  nav a:hover{color:var(--text)}
-  header .btn{padding:10px 20px;font-size:14px}
+  /* Hero glow */
+  .glow::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(60rem 28rem at 70% -10%, rgba(212,175,106,.14), transparent 60%),
+                radial-gradient(40rem 24rem at 0% 30%, rgba(212,175,106,.05), transparent 60%); }
 
-  /* hero */
-  .hero{position:relative;padding:80px 0 72px;overflow:hidden}
-  .hero::before{content:"";position:absolute;inset:-200px -100px auto;height:700px;background:radial-gradient(600px 380px at 70% 30%,rgba(212,175,95,.22),transparent 70%),radial-gradient(500px 300px at 15% 10%,rgba(120,90,200,.12),transparent 70%);pointer-events:none}
-  .hero .wrap{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
-  .hero h1{font-size:clamp(38px,5.6vw,68px);line-height:1.04;letter-spacing:-.01em}
-  .hero h1 em{color:var(--gold);font-style:italic}
-  .hero .lead{color:var(--muted);font-size:18px;max-width:50ch;margin:22px 0 32px}
-  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
-  .trust{display:flex;gap:22px;flex-wrap:wrap;margin-top:28px;color:var(--muted);font-size:13px}
-  .trust span::before{content:"✓";color:var(--gold);margin-right:8px}
-  .phones{position:relative;height:560px}
-  .phone{position:absolute;width:250px;aspect-ratio:9/16;border-radius:30px;overflow:hidden;background:#000;border:1px solid rgba(212,175,95,.55);box-shadow:0 40px 80px -30px rgba(0,0,0,.9),0 0 0 8px rgba(255,255,255,.03)}
-  .phone video{width:100%;height:100%;object-fit:cover;display:block}
-  .phone.a{left:6%;top:30px;transform:rotate(-5deg);z-index:2}
-  .phone.b{right:4%;top:0;transform:rotate(4deg)}
-  .phone .label{position:absolute;left:12px;bottom:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;background:rgba(7,8,14,.7);padding:6px 10px;border-radius:999px;color:var(--gold2)}
+  /* 16:9 cinematic placeholder */
+  .reel { position: relative; aspect-ratio: 16 / 9; width: 100%; max-width: 100%; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(10,12,15,0) 55%, rgba(10,12,15,.85) 100%),
+      radial-gradient(70% 90% at 30% 20%, rgba(212,175,106,.28), transparent 60%),
+      radial-gradient(60% 80% at 85% 90%, rgba(156,122,60,.22), transparent 60%),
+      linear-gradient(135deg, var(--slate), var(--abyss)); }
+  .reel::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .bar-top, .bar-bot { position: absolute; left: 0; right: 0; height: 7%; background: #000; z-index: 2; }
+  .bar-top { top: 0; } .bar-bot { bottom: 0; }
+  .play { width: 4.5rem; height: 4.5rem; border-radius: 999px; border: 1px solid var(--gold); display: grid; place-items: center; background: rgba(10,12,15,.55); backdrop-filter: blur(6px); transition: transform .25s, background .25s; cursor: pointer; }
+  .reel:hover .play { transform: scale(1.07); background: rgba(212,175,106,.18); }
+  .tc { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em; color: var(--mist); }
 
-  section{padding:96px 0;border-top:1px solid var(--line)}
-  section h2{font-size:clamp(30px,4vw,46px);line-height:1.1}
-  .head{margin-bottom:44px}
-  .center{text-align:center}.center .sub{margin-left:auto;margin-right:auto}
+  /* Google Sheet mock */
+  .sheet { font-family: var(--font-mono); font-size: .78rem; border: 1px solid var(--line); background: var(--coal); border-radius: 4px; overflow: hidden; min-width: 0; }
+  .sheet-scroll { overflow-x: auto; }
+  .sheet table { border-collapse: collapse; width: 100%; min-width: 30rem; }
+  .sheet th, .sheet td { border: 1px solid var(--line); padding: .5rem .7rem; text-align: left; white-space: nowrap; }
+  .sheet th { background: var(--slate); color: var(--mist); font-weight: 400; }
+  .sheet td.rn, .sheet th.rn { width: 2.2rem; text-align: center; color: var(--mist); background: var(--slate); }
+  .sheet tr.edit td { background: rgba(212,175,106,.1); }
+  .sheet td.cell-edit { outline: 1.5px solid var(--gold); outline-offset: -1.5px; color: var(--gold); }
+  .caret { display: inline-block; width: 1px; height: 1em; background: var(--gold); vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
 
-  /* showcase */
-  .work{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,320px));gap:28px;justify-content:center}
-  .work-item{margin:0}
-  .frame{position:relative;aspect-ratio:9/16;border-radius:24px;overflow:hidden;background:#000;border:1px solid var(--line);user-select:none;-webkit-user-select:none}
-  .frame video{width:100%;height:100%;object-fit:cover;display:block}
-  .frame .wm{position:absolute;inset:auto 0 46% 0;text-align:center;color:rgba(255,255,255,.18);letter-spacing:.3em;font-size:11px;pointer-events:none}
-  .sound{position:absolute;right:12px;top:12px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(7,8,14,.6);color:#fff;cursor:pointer;font-size:16px;display:grid;place-items:center}
-  .work-item figcaption{padding:16px 4px 0}
-  .work-item .cat{color:var(--gold);font-size:12px;letter-spacing:.22em;text-transform:uppercase}
-  .work-item .name{font-family:var(--serif);font-size:22px;margin-top:4px}
-  .work-item .meta{color:var(--muted);font-size:14px}
+  /* Pricing */
+  .tier { position: relative; background: var(--slate); border: 1px solid var(--line); border-radius: 4px; display: flex; flex-direction: column; min-width: 0; }
+  .tier-flagship { background: linear-gradient(180deg, #2a2618 0%, var(--slate) 55%); border-color: var(--gold); box-shadow: 0 0 0 1px rgba(212,175,106,.25), 0 40px 80px -40px rgba(212,175,106,.4); }
+  @media (min-width: 1024px) { .tier-flagship { transform: translateY(-1rem); } }
+  .check { flex: none; width: 1.1rem; height: 1.1rem; margin-top: .2rem; color: var(--gold); }
+  .check-dim { color: var(--mist); }
+  .ribbon { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: var(--gold); color: var(--gold-ink); font-family: var(--font-mono); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; padding: .38rem .9rem; font-weight: 500; white-space: nowrap; }
+  .bonus { border: 1px dashed rgba(212,175,106,.55); background: rgba(212,175,106,.06); border-radius: 3px; }
+  .strike { text-decoration: line-through; text-decoration-color: var(--gold); text-decoration-thickness: 1px; }
+  .target { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--mist); }
+  .x-note { border: 1px solid var(--line); background: var(--coal); border-radius: 3px; }
 
-  /* steps */
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
-  .step{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;position:relative}
-  .step::before{counter-increment:s;content:"0" counter(s);font-family:var(--serif);color:var(--gold);font-size:30px;display:block;margin-bottom:12px}
-  .step h3{font-size:20px;margin-bottom:8px}
-  .step p{color:var(--muted);margin:0;font-size:15px}
-
-  /* packages */
-  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
-  .plan{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px 28px;position:relative}
-  .plan.featured{background:linear-gradient(180deg,rgba(212,175,95,.1),rgba(16,19,29,1) 40%);border-color:var(--gold);transform:translateY(-10px);box-shadow:0 30px 60px -30px rgba(212,175,95,.35)}
-  .badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0a0a0f;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:6px 14px;border-radius:999px;font-weight:600;white-space:nowrap}
-  .tier{color:var(--gold);font-size:12px;letter-spacing:.24em;text-transform:uppercase}
-  .plan h3{font-size:26px;margin:8px 0 4px}
-  .for{color:var(--muted);font-size:14px;min-height:44px}
-  .price{font-family:var(--serif);font-size:56px;line-height:1;margin:18px 0 4px}
-  .price small{font-family:var(--sans);font-size:14px;color:var(--muted);margin-left:6px}
-  .plan ul{list-style:none;padding:0;margin:22px 0 28px;flex:1}
-  .plan li{padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line);font-size:15px}
-  .plan li::before{content:"";position:absolute;left:4px;top:17px;width:10px;height:6px;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(-45deg)}
-  .plan li b{font-weight:600}
-  .plan .btn{width:100%}
-  .addon{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;color:var(--muted);font-size:14px}
-  .addon span{border:1px solid var(--line);border-radius:999px;padding:8px 16px}
-
-  /* compare */
-  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px}
-  table{width:100%;border-collapse:collapse;min-width:620px;font-size:15px}
-  th,td{padding:16px 20px;text-align:center;border-bottom:1px solid var(--line)}
-  th:first-child,td:first-child{text-align:left;color:var(--muted)}
-  thead th{font-family:var(--serif);font-weight:400;font-size:18px;background:var(--bg2)}
-  thead th.hl{color:var(--gold)}
-  tbody tr:last-child td{border-bottom:0}
-  .y{color:var(--gold)} .n{color:#4c5164}
-
-  /* types */
-  .chips{display:flex;flex-wrap:wrap;gap:10px}
-  .chips span{border:1px solid var(--line);border-radius:999px;padding:9px 18px;color:var(--muted);font-size:14px;background:var(--bg2)}
-
-  /* faq */
-  .faq{max-width:820px}
-  details{border-bottom:1px solid var(--line);padding:20px 0}
-  summary{cursor:pointer;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:16px}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:"+";color:var(--gold);font-size:22px;line-height:1}
-  details[open] summary::after{content:"−"}
-  details p{color:var(--muted);margin:12px 0 0;max-width:70ch}
-
-  .final{text-align:center;background:radial-gradient(700px 360px at 50% 110%,rgba(212,175,95,.2),transparent 70%)}
-  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:13px}
-  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  footer .legal{display:flex;gap:18px;flex-wrap:wrap;width:100%;padding-top:14px;border-top:1px solid var(--line)}
-  footer .legal a{color:var(--muted);text-decoration:none}
-  footer .legal a:hover{color:var(--gold2)}
-
-  .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease, transform .8s ease}
-  .reveal.in{opacity:1;transform:none}
-  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.btn{transition:none}}
-
-  @media (max-width:960px){
-    .hero .wrap{grid-template-columns:1fr}
-    .phones{height:470px;max-width:460px;margin:0 auto;width:100%}
-    .phone{width:210px}
-    .steps{grid-template-columns:repeat(2,1fr)}
-    .plans{grid-template-columns:1fr;max-width:460px;margin:0 auto}
-    .plan.featured{transform:none}
-    nav{display:none}
-  }
-  @media (max-width:520px){
-    .hero{padding:48px 0}
-    .phones{height:400px}
-    .phone{width:170px;border-radius:24px}
-    .phone.a{left:2%}.phone.b{right:2%}
-    .steps{grid-template-columns:1fr}
-    section{padding:72px 0}
-    header .btn{padding:8px 12px;font-size:12px}
-    .brand{font-size:11px;letter-spacing:.1em;white-space:normal;line-height:1.3;max-width:120px}
-    .hdr-r{gap:6px}
-    .lang{padding:6px 8px;font-size:12px;max-width:96px}
+  /* Pulsing gold scarcity dot */
+  .scarcity-dot { flex: none; width: .55rem; height: .55rem; margin-top: .38rem; border-radius: 999px; background: var(--gold); animation: pulse-gold 1.8s ease-out infinite; }
+  @keyframes pulse-gold {
+    0%   { box-shadow: 0 0 0 0 rgba(212,175,106,.7); transform: scale(1); }
+    70%  { box-shadow: 0 0 0 10px rgba(212,175,106,0); transform: scale(1.12); }
+    100% { box-shadow: 0 0 0 0 rgba(212,175,106,0); transform: scale(1); }
   }
 
-  /* language switcher + RTL */
-  .hdr-r{display:flex;align-items:center;gap:10px}
-  .lang{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font:500 13px var(--sans);cursor:pointer}
-  .lang option{background:#111;color:#f6f3ee}
-  .lang option{background:#0b0d15;color:#f5f2eb}
-  html[lang=ar] body{font-family:"Tajawal",var(--sans)}
-  html[lang=ar] h1,html[lang=ar] h2,html[lang=ar] h3,html[lang=ar] .price,html[lang=ar] .name{font-family:"Amiri","Playfair Display",serif}
-  html[lang=ar] .eyebrow,html[lang=ar] .tier,html[lang=ar] .badge,html[lang=ar] .work-item .cat,html[lang=ar] .phone .label{letter-spacing:0}
-  [dir=rtl] .plan li{padding:10px 28px 10px 0}
-  [dir=rtl] .plan li::before{left:auto;right:4px}
-  [dir=rtl] th:first-child,[dir=rtl] td:first-child{text-align:right}
-  [dir=rtl] .trust span::before{margin-right:0;margin-left:8px}
-  [dir=rtl] .price small{margin-left:0;margin-right:6px}
-  [dir=rtl] .sound{right:auto;left:12px}
-  .plan li.store{background:rgba(212,175,95,.07);border:1px solid rgba(212,175,95,.35);border-radius:14px;margin:6px 0;padding:14px 14px 12px 40px}
-  .plan li.store::before{left:16px;top:21px}
-  .plan ul.subl{list-style:none;margin:8px 0 0;padding:0;flex:none}
-  .subl li{border:0!important;padding:4px 0 4px 18px!important;font-size:14px;color:var(--muted);position:relative}
-  .subl li::before{content:"";position:absolute;left:2px!important;top:13px!important;width:6px!important;height:6px!important;border:0!important;border-radius:50%;background:var(--gold);transform:none!important}
-  [dir=rtl] .plan li.store{padding:14px 40px 12px 14px}
-  [dir=rtl] .plan li.store::before{left:auto;right:16px}
-  [dir=rtl] .subl li{padding:4px 18px 4px 0!important}
-  [dir=rtl] .subl li::before{left:auto!important;right:2px}
-.store-link{display:inline-flex;margin-top:12px;padding:10px 16px;border-radius:999px;border:1px solid rgba(232,185,106,.45);color:#E8B96A;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s}.store-link:hover{background:rgba(232,185,106,.12)}
+  .demo-link { display: block; text-align: center; margin-top: .9rem; font-size: .82rem; color: var(--mist); text-decoration: none; border-bottom: 1px solid transparent; transition: color .2s; }
+  .demo-link:hover { color: var(--gold); }
+  .ck-shade { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; place-items: center; padding: 1rem; z-index: 80; overflow: auto; }
+  .ck-shade.open { display: grid; }
+  .ck { background: var(--coal); border: 1px solid var(--gold); border-radius: 4px; width: 100%; max-width: 30rem; padding: 1.8rem; position: relative; }
+  .ck ol { margin: 1rem 0 0; padding-left: 1.2rem; color: var(--mist); font-size: .88rem; line-height: 1.7; }
+  .ck .x { position: absolute; top: .7rem; right: .7rem; background: transparent; border: 1px solid var(--line); color: var(--bone); width: 2rem; height: 2rem; border-radius: 99px; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .caret, .scarcity-dot { animation: none; }
+    .btn-gold, .reel .play { transition: none; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap">
-    <a class="brand" href="#top">APEX <b>DIGITAL</b> AGENCY</a>
-    <nav>
-      <a href="#work" data-i18n="nav_work">Work</a>
-      <a href="#how" data-i18n="nav_how">How it works</a>
-      <a href="#packages" data-i18n="nav_packages">Packages</a>
-      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+<header class="sticky top-0 z-40 border-b" style="background: rgba(15,17,21,.88); backdrop-filter: blur(10px); border-color: var(--line);">
+  <div class="wrap flex items-center justify-between gap-3 py-3">
+    <a href="#top" class="flex items-center gap-2.5" aria-label="Apex Studio Pro home">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M13 2 24 23H2L13 2Z" stroke="#d4af6a" stroke-width="1.4"/><path d="M13 10 18.2 20H7.8L13 10Z" fill="#d4af6a"/></svg>
+      <span class="display text-lg font-semibold tracking-wide">Apex <span class="gold-text">Studio Pro</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm" aria-label="Primary">
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#policy" class="nav-link">Policy</a>
     </nav>
-    <div class="hdr-r">
-    <select id="lang" class="lang" aria-label="Language">
-      <option value="ar" lang="ar">العربية</option><option value="en" lang="en">English</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option><option value="it" lang="it">Italiano</option>
-    </select>
-    <a class="btn" href="#packages" data-i18n="order_now">Order now</a>
-    </div>
+    <a href="#pricing" class="btn-gold rounded-sm px-4 py-2 text-sm whitespace-nowrap">Choose Your Store</a>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- ============ HERO ============ -->
-  <div class="hero">
-    <div class="wrap">
-      <div class="reveal">
-        <p class="eyebrow" data-i18n="hero_eyebrow">Luxury cinematic production · Delivered ready to publish</p>
-        <h1 data-i18n="hero_h1">Your product, presented like a <em>luxury commercial</em>.</h1>
-        <p class="lead" data-i18n="hero_lead">We turn your product photos into striking cinematic productions that lift your sales: a distinctive concept, professional direction, voiceover, music and finishing, delivered as a vertical video ready to post.</p>
-        <div class="cta-row">
-          <a class="btn" href="#packages" data-i18n="choose_pkg">Choose my package</a>
-          <a class="btn ghost" href="#work" data-i18n="see_work">See our work</a>
-        </div>
-        <div class="trust">
-          <span data-i18n="trust1">Cinematic quality, ready to post</span>
-          <span data-i18n="trust2">Voiceover in your language</span>
-          <span data-i18n="trust3">Ready for TikTok, Reels, Shorts</span>
-        </div>
-      </div>
-      <div class="phones reveal" aria-hidden="true">
-        <!-- Same two files as the "Our work" section below -->
-        <div class="phone a" oncontextmenu="return false">
-          <video src="/videos/perfume.mp4" poster="https://lh3.googleusercontent.com/d/18MfjlJ0rPZZQ_FRWhYU613qg5WBlBUj_=w1080" muted loop autoplay playsinline preload="metadata" disablePictureInPicture></video>
-          <span class="label" data-i18n="lbl_perfume">Perfume</span>
-        </div>
-        <div class="phone b" oncontextmenu="return false">
-          <video src="/videos/restaurant.mp4" poster="https://lh3.googleusercontent.com/d/1BGMteIH4lVP78Kaa9BmtQHgv3aX2w13A=w1080" muted loop autoplay playsinline preload="metadata" disablePictureInPicture></video>
-          <span class="label" data-i18n="lbl_restaurant">Restaurant</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ OUR WORK (showcase) ============
-       Videos live in the repo folder site/videos/ (perfume.mp4, restaurant.mp4).
-       Posters (still images) are served from the Google Drive folder "videos":
-         https://lh3.googleusercontent.com/d/FILE_ID=w1080
-       To add a new project: upload the mp4 to site/videos/ and the jpg to the Drive folder,
-       copy one <figure class="work-item"> block, change the video name, the poster ID and the three text lines.
-  -->
-  <section id="work">
-    <div class="wrap">
-      <div class="head center reveal">
-        <p class="eyebrow" data-i18n="work_eyebrow">Our work</p>
-        <h2 data-i18n="work_h2">Ads produced by Apex</h2>
-        <p class="sub" data-i18n="work_sub">Each production starts from the client’s real photos. Tap a video to turn the sound on.</p>
+  <!-- 1. HERO -->
+  <section class="glow relative overflow-hidden">
+    <div class="wrap relative pt-16 pb-14 sm:pt-24 sm:pb-20">
+      <p class="eyebrow mb-6">Automated headless e-commerce</p>
+      <h1 class="display text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[5.4rem] font-semibold max-w-4xl">
+        Zero Monthly Subscriptions.<br>
+        <span class="gold-text italic font-medium">Lightning-Fast</span> Headless Stores.
+      </h1>
+      <p class="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed mist">
+        Retire Shopify and the monthly bill that comes with it. We build you a custom, automated store that you own outright, with no platform fee and no app stack to rent. You pay once. Your store loads fast and stays yours.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-3">
+        <a href="#pricing" class="btn-gold rounded-sm px-7 py-3.5 text-base">Choose Your Store</a>
+        <a href="#how" class="btn-ghost rounded-sm px-7 py-3.5 text-base">See how it works</a>
       </div>
 
-      <div class="work">
-        <figure class="work-item reveal">
-          <div class="frame" oncontextmenu="return false">
-            <video src="/videos/perfume.mp4" poster="https://lh3.googleusercontent.com/d/18MfjlJ0rPZZQ_FRWhYU613qg5WBlBUj_=w1080" muted loop playsinline preload="metadata" disablePictureInPicture controlsList="nodownload"></video>
-            <span class="wm">APEX DIGITAL AGENCY</span>
-            <button class="sound" type="button" aria-label="Turn sound on">🔇</button>
+      <div class="mt-14 sm:mt-20">
+        <div class="reel" role="img" aria-label="Placeholder for the Apex Studio Pro cinematic brand video">
+          <div class="bar-top"></div><div class="bar-bot"></div>
+          <div class="absolute inset-0 z-[3] grid place-items-center">
+            <button type="button" class="play" aria-label="Play cinematic brand video (coming soon)">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="#d4af6a" aria-hidden="true"><path d="M6 3.5v15l13-7.5-13-7.5Z"/></svg>
+            </button>
           </div>
-          <figcaption>
-            <div class="cat" data-i18n="cat_perfume">Beauty · Perfume</div>
-            <div class="name">Maison Alaric</div>
-            <div class="meta" data-i18n="work_meta">Concept ad · 9:16 · voiceover, music, titles</div>
-            <a class="store-link" href="/p/demo-maison-alaric/" target="_blank" rel="noopener" data-i18n="work_store2">See the product gallery (store) we built for this client →</a>
-          </figcaption>
-        </figure>
-
-        <figure class="work-item reveal">
-          <div class="frame" oncontextmenu="return false">
-            <video src="/videos/restaurant.mp4" poster="https://lh3.googleusercontent.com/d/1BGMteIH4lVP78Kaa9BmtQHgv3aX2w13A=w1080" muted loop playsinline preload="metadata" disablePictureInPicture controlsList="nodownload"></video>
-            <span class="wm">APEX DIGITAL AGENCY</span>
-            <button class="sound" type="button" aria-label="Turn sound on">🔇</button>
+          <div class="absolute z-[3] left-[4%] bottom-[11%] right-[4%] flex items-end justify-between gap-3">
+            <div class="min-w-0">
+              <div class="tc">APEX STUDIO PRO &middot; CINEMATIC BRAND VIDEO</div>
+              <div class="display text-lg sm:text-2xl mt-1">A store that moves like a film.</div>
+            </div>
+            <div class="tc hidden sm:block">00:00 / 00:30</div>
           </div>
-          <figcaption>
-            <div class="cat" data-i18n="cat_restaurant">Restaurant · Fine dining</div>
-            <div class="name">Maison Aurelle</div>
-            <div class="meta" data-i18n="work_meta">Concept ad · 9:16 · voiceover, music, titles</div>
-            <a class="store-link" href="/p/demo-maison-aurelle/" target="_blank" rel="noopener" data-i18n="work_store">See the offer page (store) we built for this client →</a>
-          </figcaption>
-        </figure>
-
-        <!-- NEW PROJECT: copy the block above here -->
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ HOW IT WORKS ============ -->
-  <section id="how">
-    <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow" data-i18n="nav_how">How it works</p>
-        <h2 data-i18n="how_h2">From your photo to a finished production.</h2>
-        <p class="sub" data-i18n="how_sub">Send your brief once. We handle the creative direction, production and finishing.</p>
-      </div>
-      <div class="steps">
-        <div class="step reveal"><h3 data-i18n="s1_t">Order</h3><p data-i18n="s1_p">Choose a package, upload one to three clear photos and tell us your brand, your offer and the voiceover language.</p></div>
-        <div class="step reveal"><h3 data-i18n="s2_t">Creative direction</h3><p data-i18n="s2_p">We study your photos and shape the story, the script and a sequence of cinematic shots built for your category.</p></div>
-        <div class="step reveal"><h3 data-i18n="s3_t">Production</h3><p data-i18n="s3_p">Your shots are crafted from your real photos and finished with voiceover, music and elegant on-screen titles.</p></div>
-        <div class="step reveal"><h3 data-i18n="s4_t">Delivery</h3><p data-i18n="s4_p">Your videos, and your copy pack for larger packages, arrive in a private folder, ready to upload as ads or posts.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ CATEGORIES ============ -->
-  <section>
-    <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow" data-i18n="cat_eyebrow">Made for your business</p>
-        <h2 data-i18n="cat_h2">A perfume is not filmed like a restaurant.</h2>
-        <p class="sub" data-i18n="cat_sub">The concept adapts to what you sell. A product gets macro details and hands, a restaurant gets the kitchen, the fire and the guests.</p>
-      </div>
-      <div class="chips reveal">
-        <span data-i18n="chip1">Beauty and perfume</span><span data-i18n="chip2">Fashion and jewellery</span><span data-i18n="chip3">Restaurants and cafes</span><span data-i18n="chip4">Shops and showrooms</span><span data-i18n="chip5">Salons and spas</span><span data-i18n="chip6">Packaged products</span><span data-i18n="chip7">Local services</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ PACKAGES ============ -->
-  <section id="packages">
-    <div class="wrap">
-      <div class="head center reveal">
-        <p class="eyebrow" data-i18n="nav_packages">Packages</p>
-        <h2 data-i18n="pk_h2">Choose your launch package.</h2>
-        <p class="sub" data-i18n="pk_sub">Every video is vertical 9:16, about 30 seconds, with a script, a voiceover in your language, music and on-screen titles.</p>
-      </div>
-
-      <div class="plans">
-        <div class="plan reveal">
-          <span class="tier" data-i18n="tier_start">Start</span>
-          <h3>Single Hook</h3>
-          <p class="for" data-i18n="for1">Test one cinematic ad for one product or business.</p>
-          <div class="price">$89<small data-i18n="onetime">one-time</small></div>
-          <ul>
-            <li data-i18n="li_1prod"><b>1</b> product or business</li>
-            <li data-i18n="li_1ad"><b>1</b> cinematic video ad</li>
-            <li data-i18n="li_script">Script and voiceover in your language</li>
-            <li data-i18n="li_music">Music and on-screen titles</li>
-            <li data-i18n="li_voice">Female or male voice</li>
-            <li class="perk" data-i18n="li_logo_free">Free professional logo design (Logo)</li>
-            <li class="perk" data-i18n="li_publish">Smart publishing pack (ad texts and a publishing strategy)</li>
-            <li class="perk" data-i18n="li_thumb">Ad thumbnail (Thumbnail)</li>
-          </ul>
-          <a class="btn ghost" href="/order/?package=89" data-i18n="btn1">Choose Single Hook</a>
         </div>
+        <p class="tc mt-3">16:9 frame. Replace this block with your MP4 or embed.</p>
+      </div>
+    </div>
+  </section>
 
-        <div class="plan featured reveal">
-          <span class="badge" data-i18n="badge">Most popular</span>
-          <span class="tier" data-i18n="tier_convert">Convert</span>
-          <h3>Conversion Funnel</h3>
-          <p class="for" data-i18n="for2">Two ads with two angles and all the words to run them.</p>
-          <div class="price">$200<small data-i18n="onetime">one-time</small></div>
-          <ul>
-            <li data-i18n="li_1prod"><b>1</b> product or business</li>
-            <li data-i18n="li_2ads"><b>2</b> video ads with two different angles: desire, then reason to buy now</li>
-            <li data-i18n="li_copy1">Ad copy pack: 3 primary texts, 5 headlines, 3 calls to action</li>
-            <li class="store" data-i18n="li_store"><b>Professional custom offer page (your own product store)</b><ul class="subl"><li>Professional design that showcases your videos and product photos to lift your sales</li><li>Persuasive, ready-to-sell copy</li><li>A direct WhatsApp button or quick order link, so customers order in one tap</li></ul></li>
-            <li class="perk" data-i18n="li_logo">Professional logo design for your brand</li>
-            <li data-i18n="li_every">Script, voiceover, music and titles in every video</li>
-          </ul>
-          <a class="btn" href="/order/?package=200" data-i18n="btn2">Choose Conversion Funnel</a>
-        </div>
+  <!-- Proof strip -->
+  <section class="hairline" style="background: var(--abyss)">
+    <div class="wrap grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 py-8">
+      <div><div class="eyebrow">Platform fee</div><div class="display text-2xl mt-1">$0 / month</div></div>
+      <div><div class="eyebrow">Ownership</div><div class="display text-2xl mt-1">100% yours</div></div>
+      <div><div class="eyebrow">Management</div><div class="display text-2xl mt-1">One Google Sheet</div></div>
+      <div><div class="eyebrow">Setup</div><div class="display text-2xl mt-1">Done for you</div></div>
+    </div>
+  </section>
 
-        <div class="plan reveal">
-          <span class="tier" data-i18n="tier_scale">Scale</span>
-          <h3>Multi-Product Scaler</h3>
-          <p class="for" data-i18n="for3">A complete ad set for two products or two offers.</p>
-          <div class="price">$500<small data-i18n="onetime">one-time</small></div>
-          <ul>
-            <li data-i18n="li_2prod">Up to <b>2</b> products</li>
-            <li data-i18n="li_4ads"><b>4</b> video ads, two angles per product</li>
-            <li data-i18n="li_copy2">Ad copy pack: primary texts, headlines, calls to action</li>
-            <li class="store" data-i18n="li_store500"><b>2 separate custom stores (your own landing pages)</b><ul class="subl"><li>One dedicated store for each of your two products, each with its own private link</li><li>Product gallery in each store to showcase your other products</li><li>Direct WhatsApp button or quick order link in each store</li></ul></li>
-            <li class="vip" data-i18n="li_vip">Optional VIP co-marketing: free exposure in our agency’s ad campaigns</li>
-            <li class="perk" data-i18n="li_logo">Professional logo design for your brand</li>
-            <li data-i18n="li_every">Script, voiceover, music and titles in every video</li>
-          </ul>
-          <a class="btn ghost" href="/order/?package=500" data-i18n="btn3">Choose Multi-Product Scaler</a>
+  <!-- 2. HOW IT WORKS -->
+  <section id="how" class="hairline">
+    <div class="wrap py-20 sm:py-28">
+      <div class="max-w-2xl">
+        <p class="eyebrow mb-4">How it works &middot; The magic</p>
+        <h2 class="display text-4xl sm:text-5xl font-semibold leading-tight">Your whole store lives in one Google Sheet.</h2>
+        <p class="mt-5 text-base sm:text-lg leading-relaxed mist">No complex dashboard. No admin panel to learn. If you can edit a spreadsheet, you can run your store.</p>
+      </div>
+
+      <div class="mt-14 grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-14 items-start">
+        <ol class="grid gap-9">
+          <li class="grid grid-cols-[3rem_1fr] gap-4">
+            <div class="display text-4xl gold-text leading-none">I</div>
+            <div class="min-w-0">
+              <h3 class="display text-2xl font-semibold">We build it and connect your sheet</h3>
+              <p class="mt-2 leading-relaxed mist">Share your brand and products. We design the storefront, link it to your private Google Sheet, and hand you both, ready to sell.</p>
+            </div>
+          </li>
+          <li class="grid grid-cols-[3rem_1fr] gap-4">
+            <div class="display text-4xl gold-text leading-none">II</div>
+            <div class="min-w-0">
+              <h3 class="display text-2xl font-semibold">Edit inventory and prices in a row</h3>
+              <p class="mt-2 leading-relaxed mist">Each row is a product. Each column is a detail: name, price, photo, stock. Add an item, change a price or mark something sold out, right in the sheet.</p>
+            </div>
+          </li>
+          <li class="grid grid-cols-[3rem_1fr] gap-4">
+            <div class="display text-4xl gold-text leading-none">III</div>
+            <div class="min-w-0">
+              <h3 class="display text-2xl font-semibold">Your live store updates by itself</h3>
+              <p class="mt-2 leading-relaxed mist">Save the sheet and the storefront follows automatically. You keep selling while the technology stays out of your way.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="sheet" role="img" aria-label="Example Google Sheet with product rows, one price being edited">
+          <div class="flex items-center gap-2 px-3 py-2 border-b" style="border-color: var(--line); background: var(--slate)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="#d4af6a"/><path d="M2 6h12M2 10h12M6.5 6v8.5" stroke="#d4af6a" stroke-width=".9"/></svg>
+            <span>my-store-products</span>
+            <span class="ml-auto mist">Saved</span>
+          </div>
+          <div class="sheet-scroll">
+            <table>
+              <thead><tr><th class="rn"></th><th>A &middot; Product</th><th>B &middot; Price</th><th>C &middot; Stock</th><th>D &middot; Visible</th></tr></thead>
+              <tbody>
+                <tr><td class="rn">1</td><td>Obsidian Watch</td><td>$420</td><td>12</td><td>TRUE</td></tr>
+                <tr class="edit"><td class="rn">2</td><td>Gilt Leather Wallet</td><td class="cell-edit">$95<span class="caret"></span></td><td>40</td><td>TRUE</td></tr>
+                <tr><td class="rn">3</td><td>Noir Silk Scarf</td><td>$130</td><td>0</td><td>FALSE</td></tr>
+                <tr><td class="rn">4</td><td>Atelier Tote</td><td>$260</td><td>8</td><td>TRUE</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="px-3 py-2.5 border-t mist" style="border-color: var(--line)">
+            <span style="color: var(--gold)">&#9679;</span> Example only. Change a price here and it goes live on your store.
+          </div>
         </div>
       </div>
-
-      <div class="addon reveal">
-        <span data-i18n="addon1">Express 24-hour delivery available at checkout</span>
-        <span data-i18n="addon2">Production starts after payment is confirmed</span>
-      </div>
     </div>
   </section>
 
-  <!-- ============ COMPARE ============ -->
-  <section>
-    <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow" data-i18n="cmp_eyebrow">Compare</p>
-        <h2 data-i18n="cmp_h2">What is inside each package</h2>
+  <!-- 3. PRICING -->
+  <section id="pricing" class="hairline" style="background: var(--abyss)">
+    <div class="wrap py-20 sm:py-28">
+      <div class="max-w-2xl mx-auto text-center">
+        <p class="eyebrow mb-4">Pricing</p>
+        <h2 class="display text-4xl sm:text-5xl font-semibold leading-tight">One payment. Three ways to level up.</h2>
+        <p class="mt-5 text-base sm:text-lg leading-relaxed mist">Pick the pack or store that fits where your business is today. No monthly platform fee on any plan.</p>
       </div>
-      <div class="table-wrap reveal">
-        <table>
-          <thead><tr><th></th><th>Single Hook<br>$89</th><th class="hl">Conversion Funnel<br>$200</th><th>Multi-Product Scaler<br>$500</th></tr></thead>
-          <tbody>
-            <tr><td data-i18n="r_products">Products</td><td>1</td><td>1</td><td>2</td></tr>
-            <tr><td data-i18n="r_videos">Video ads (9:16, about 30 s)</td><td>1</td><td>2</td><td>4</td></tr>
-            <tr><td data-i18n="r_angles">Different creative angles</td><td>1</td><td>2</td><td data-i18n="r_2per">2 per product</td></tr>
-            <tr><td data-i18n="li_script">Script and voiceover in your language</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="li_music">Music and on-screen titles</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_copy">Ad copy pack</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_stores">Custom store / landing page</td><td class="n">—</td><td>1</td><td>2</td></tr>
-            <tr><td data-i18n="r_gallery">Product gallery in the store</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_vip">Optional VIP co-marketing (free ad exposure)</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="li_lp2">Landing page copy</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_logo">Professional logo design</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_publish">Smart publishing pack</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_thumb">Ad thumbnail</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-            <tr><td data-i18n="r_express">Express 24-hour option</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
-          </tbody>
-        </table>
+
+      <div class="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-6 xl:gap-8 max-w-6xl mx-auto items-stretch">
+
+        <!-- Tier 1 -->
+        <article class="tier p-7 sm:p-8">
+          <p class="eyebrow">Tier 1</p>
+          <h3 class="display text-3xl font-semibold mt-2">The Cinematic Pack</h3>
+          <p class="target mt-3">For owners who already have a store</p>
+          <div class="mt-6 flex items-baseline gap-2">
+            <span class="display text-6xl font-semibold">$89</span>
+            <span class="text-sm mist">one time</span>
+          </div>
+          <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>1 Cinematic Promo Video</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>10 High-End Photo Enhancements</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>24-hour delivery</strong></span></li>
+          </ul>
+          <div class="x-note mt-7 px-4 py-3 flex gap-3 text-sm mist">
+            <svg class="check check-dim" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span><strong style="color: var(--bone)">No store setup included.</strong> Content only.</span>
+          </div>
+          <div class="mt-auto pt-9">
+            <a href="#" data-plan="cinematic" class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium">Get the Cinematic Pack</a>
+          </div>
+        </article>
+
+        <!-- Tier 2 -->
+        <article class="tier p-7 sm:p-8">
+          <p class="eyebrow">Tier 2</p>
+          <h3 class="display text-3xl font-semibold mt-2">The Micro-Store</h3>
+          <p class="target mt-3">For drop-shippers</p>
+          <div class="mt-6 flex items-baseline gap-2">
+            <span class="display text-6xl font-semibold">$200</span>
+            <span class="text-sm mist">one time</span>
+          </div>
+          <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Ultra-fast 1-page layout</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Max <strong>10 products</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Simple cart, limit of <strong>5 items per checkout</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>1 Cinematic Video</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Free Vercel hosting</strong></span></li>
+          </ul>
+          <div class="mt-auto pt-9">
+            <a href="#" data-plan="micro" class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium">Start with the Micro-Store</a>
+            <a href="/p/store-micro/" class="demo-link">View the live demo store &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Tier 3 -->
+        <article class="tier tier-flagship p-7 sm:p-8">
+          <span class="ribbon">Most popular</span>
+          <p class="eyebrow">Tier 3</p>
+          <h3 class="display text-3xl font-semibold mt-2">The Flagship Brand Store</h3>
+          <p class="target mt-3" style="color: var(--gold)">For brands built to scale</p>
+          <div class="mt-6 flex items-baseline gap-2">
+            <span class="display text-6xl font-semibold gold-text">$500</span>
+            <span class="text-sm mist">one time</span>
+          </div>
+          <ul class="mt-8 grid gap-3.5 text-[0.95rem]">
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Full headless e-commerce platform</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>UNLIMITED products &amp; categories</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Dynamic slide-out cart</strong></span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Custom .com domain included</strong> (1st year)</span></li>
+            <li class="flex gap-3"><svg class="check" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>2 Cinematic Videos</strong></span></li>
+          </ul>
+
+          <div class="bonus mt-8 p-5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="eyebrow">Bonus included</span>
+              <span class="text-sm mist">Value <span class="strike">$250</span> <span style="color: var(--gold)">free</span></span>
+            </div>
+            <h4 class="display text-xl font-semibold mt-2">The Apex Executive Playbook</h4>
+            <p class="mt-1.5 text-sm leading-relaxed mist">A custom marketing and pricing strategy for your brand, written by our elite strategists.</p>
+          </div>
+
+          <div class="mt-auto pt-9">
+            <a href="#" data-plan="flagship" class="btn-gold block text-center rounded-sm px-6 py-3.5">Claim the Flagship Store</a>
+            <a href="/p/store-flagship/" class="demo-link">View the live demo store &rarr;</a>
+            <p class="mt-4 flex gap-2.5 text-xs leading-relaxed" style="color: var(--gold)">
+              <span class="scarcity-dot" aria-hidden="true"></span>
+              <span>Only 5 slots available per month to ensure dedicated server performance &ndash; 2 spots remaining.</span>
+            </p>
+          </div>
+        </article>
       </div>
+
+      <p class="mt-14 text-center text-sm mist">Prices are in USD and paid once. No monthly platform fee on any plan.</p>
     </div>
   </section>
 
-  <!-- ============ FAQ ============ -->
-  <section id="faq">
-    <div class="wrap faq">
-      <div class="head reveal">
-        <p class="eyebrow" data-i18n="nav_faq">FAQ</p>
-        <h2 data-i18n="faq_h2">Questions before you order</h2>
-      </div>
-      <details><summary data-i18n="q1">What do I need to send?</summary><p data-i18n="a1">One to three sharp, well-lit photos of your product or place, your brand name, your offer or key message and the voiceover language. For the Multi-Product Scaler, write one product name per line and add photos for each product. The better the photos, the better the ad.</p></details>
-      <details><summary data-i18n="q2">Do I need to write a script or describe the video?</summary><p data-i18n="a2">No. We develop the concept, the shots, the voiceover and the titles from your photos. You only give the business information.</p></details>
-      <details><summary data-i18n="q3">How are the videos made?</summary><p data-i18n="a3">The visuals are generated with AI from your real photos, then edited with a voiceover, music and titles. Some platforms ask advertisers to label AI-generated content; we recommend turning that label on when you post.</p></details>
-      <details><summary data-i18n="q4">Will my product look like the real one?</summary><p data-i18n="a4">The main shots are built from your photos to keep the shape, colours and label of your product. Small details can vary from shot to shot, which is why clear photos matter.</p></details>
-      <details><summary data-i18n="q5">What is a creative angle?</summary><p data-i18n="a5">Two ads for the same product that sell it differently. The first sells the desire and the experience, the second sells the occasion, the benefit or your offer. Testing both shows you which one your audience prefers.</p></details>
-      <details><summary data-i18n="q6">Which formats do I receive?</summary><p data-i18n="a6">MP4 files in vertical 9:16 at 1080 × 1920, the format used by TikTok, Instagram Reels, Stories and YouTube Shorts. Copy packs are delivered as text files.</p></details>
+  <!-- Closing CTA -->
+  <section class="hairline">
+    <div class="wrap py-20 sm:py-24 text-center">
+      <h2 class="display text-4xl sm:text-5xl font-semibold leading-tight max-w-3xl mx-auto">Own your store. <span class="gold-text italic font-medium">Keep your margin.</span></h2>
+      <a href="#pricing" class="btn-gold inline-block rounded-sm px-8 py-4 mt-9 text-base">Choose Your Store</a>
     </div>
   </section>
-
-  <!-- ============ FINAL CTA ============ -->
-  <section class="final">
-    <div class="wrap reveal">
-      <p class="eyebrow" data-i18n="final_eyebrow">Your brand, next</p>
-      <h2 data-i18n="final_h2">Ready to see your product in a cinematic ad?</h2>
-      <p class="sub" style="margin:14px auto 30px" data-i18n="final_sub">Start with one video for $89, or launch a full campaign.</p>
-      <a class="btn" href="#packages" data-i18n="choose_pkg">Choose my package</a>
-    </div>
-  </section>
-
 </main>
 
-<footer>
-  <div class="wrap">
-    <span>© Apex Digital Agency</span>
-    <span data-i18n="footer_tag">Cinematic ad productions, delivered ready to publish</span>
-    <nav class="legal"><a href="/privacy/" data-i18n="f_priv">Privacy Policy</a><a href="/terms/" data-i18n="f_terms">Terms of Service</a><a href="/refund/" data-i18n="f_refund">Refund Policy</a></nav>
+<!-- 4. FOOTER / LEGAL -->
+<footer id="policy" class="hairline" style="background: var(--abyss)">
+  <div class="wrap py-14">
+    <div class="grid gap-10 md:grid-cols-[1.1fr_1.4fr] md:gap-16">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <svg width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M13 2 24 23H2L13 2Z" stroke="#d4af6a" stroke-width="1.4"/><path d="M13 10 18.2 20H7.8L13 10Z" fill="#d4af6a"/></svg>
+          <span class="display text-lg font-semibold">Apex <span class="gold-text">Studio Pro</span></span>
+        </div>
+        <p class="mt-4 text-sm leading-relaxed max-w-xs mist">Automated, headless e-commerce stores with no monthly subscriptions.</p>
+      </div>
+      <div>
+        <p class="eyebrow mb-3">No refund policy</p>
+        <p class="text-sm leading-relaxed mist">
+          Every Apex Studio Pro order is built to your brand. The moment your payment is confirmed, our team begins your custom setup, and your store, sheet connection and creative assets are produced and delivered straight away. Because this work is digital, personal and starts instantly, all sales are final and we are unable to offer refunds.
+        </p>
+        <p class="text-sm leading-relaxed mt-3 mist">
+          We want you to buy with full confidence, so please review each plan above and ask us any question before you order. We will gladly answer it.
+        </p>
+      </div>
+    </div>
+    <div class="hairline mt-10 pt-6 flex flex-wrap items-center justify-between gap-3 text-xs mist">
+      <span>&copy; <span id="yr">2026</span> Apex Studio Pro. All rights reserved.</span>
+      <span class="flex flex-wrap gap-x-5 gap-y-1"><a href="/terms/" class="nav-link">Terms</a><a href="/privacy/" class="nav-link">Privacy</a><a href="/refund/" class="nav-link">Refund policy</a><span class="tc">ALL SALES FINAL</span></span>
+    </div>
   </div>
 </footer>
 
+<div class="ck-shade" id="ck" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+  <div class="ck">
+    <button class="x" id="ckClose" aria-label="Close">&times;</button>
+    <p class="eyebrow">Checkout preview &middot; demo</p>
+    <h3 class="display text-2xl font-semibold mt-2" id="ckTitle">Plan</h3>
+    <p class="mt-1"><span class="display text-4xl gold-text" id="ckPrice">$0</span> <span class="mist text-sm">one time</span></p>
+    <ol id="ckSteps"></ol>
+    <p class="mist text-xs mt-5">This is a visual placeholder. No payment is taken until the live payment link is connected.</p>
+    <a href="#" id="ckDemo" class="btn-gold block text-center rounded-sm px-6 py-3.5 mt-5">View the live demo store</a>
+  </div>
+</div>
+
 <script>
-  // Sound toggle on showcase videos; only one video plays with sound at a time
-  document.querySelectorAll('.work-item .frame').forEach(function (frame) {
-    var v = frame.querySelector('video'), b = frame.querySelector('.sound');
-    function toggle() {
-      var turnOn = v.muted;
-      document.querySelectorAll('.work-item video').forEach(function (o) {
-        if (o !== v) { o.muted = true; var ob = o.parentNode.querySelector('.sound'); if (ob) ob.textContent = '🔇'; }
-      });
-      v.muted = !turnOn; if (turnOn) { v.currentTime = 0; }
-      v.play(); b.textContent = turnOn ? '🔊' : '🔇';
-      b.setAttribute('aria-label', turnOn ? 'Turn sound off' : 'Turn sound on');
-    }
-    b.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
-    v.addEventListener('click', toggle);
+  // Final payment links: replace "" with the payment-processor link for each plan when it is ready.
+  var PLANS = {
+    cinematic: { name: "The Cinematic Pack", price: "$89", pay: "", demo: "/order/", demoLabel: "Open the order form",
+      steps: ["Upload your product photos and brief.", "Your cinematic video and 10 enhanced photos are made.", "Delivered to your inbox within 24 hours."] },
+    micro: { name: "The Micro-Store", price: "$200", pay: "", demo: "/p/store-micro/", demoLabel: "View the live demo store",
+      steps: ["Pay once. Your store sheet is created for you.", "Your 1-page store goes live on free Vercel hosting.", "You receive your store link, your Google Sheet and a how-to video by email."] },
+    flagship: { name: "The Flagship Brand Store", price: "$500", pay: "", demo: "/p/store-flagship/", demoLabel: "View the live demo store",
+      steps: ["Pay once. Your store sheet is created for you.", "Your headless store and custom .com domain are set up.", "You receive your store link, your Google Sheet, the how-to video and your Executive Playbook by email."] }
+  };
+  var ck = document.getElementById("ck");
+  function closeCk() { ck.classList.remove("open"); }
+  document.querySelectorAll("[data-plan]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var k = a.getAttribute("data-plan"), p = PLANS[k];
+      if (p.pay) { a.setAttribute("href", p.pay); return; }   /* live payment link connected */
+      e.preventDefault();
+      document.getElementById("ckTitle").textContent = p.name;
+      document.getElementById("ckPrice").textContent = p.price;
+      document.getElementById("ckSteps").innerHTML = p.steps.map(function (t) { return "<li>" + t + "</li>"; }).join("");
+      var d = document.getElementById("ckDemo"); d.setAttribute("href", p.demo); d.textContent = p.demoLabel;
+      ck.classList.add("open");
+    });
   });
-  // Play showcase videos only while visible; reveal sections on scroll
-  if ('IntersectionObserver' in window) {
-    var vo = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) { e.target.play().catch(function(){}); } else { e.target.pause(); } });
-    }, { threshold: 0.4 });
-    document.querySelectorAll('.work-item video').forEach(function (v) { vo.observe(v); });
-    var ro = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(function (el) { ro.observe(el); });
-  } else {
-    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
-  }
-</script>
-<script>
-  // ===== Language switcher (EN, FR, ES, IT, AR) =====
-  var I18N = {"en": {"nav_work": "Work", "nav_how": "How it works", "nav_packages": "Packages", "nav_faq": "FAQ", "order_now": "Order now", "hero_eyebrow": "Luxury cinematic production · Delivered ready to publish", "hero_h1": "Your product, presented like a <em>luxury commercial</em>.", "hero_lead": "We turn your product photos into striking cinematic productions that lift your sales: a distinctive concept, professional direction, voiceover, music and finishing, delivered as a vertical video ready to post.", "choose_pkg": "Choose my package", "see_work": "See our work", "trust1": "Cinematic quality, ready to post", "trust2": "Voiceover in your language", "trust3": "Ready for TikTok, Reels, Shorts", "lbl_perfume": "Perfume", "lbl_restaurant": "Restaurant", "work_eyebrow": "Our work", "work_h2": "Ads produced by Apex", "work_sub": "Each production starts from the client’s real photos. Tap a video to turn the sound on.", "cat_perfume": "Beauty · Perfume", "cat_restaurant": "Restaurant · Fine dining", "work_meta": "Concept ad · 9:16 · voiceover, music, titles", "how_h2": "From your photo to a finished production.", "how_sub": "Send your brief once. We handle the creative direction, production and finishing.", "s1_t": "Order", "s1_p": "Choose a package, upload one to three clear photos and tell us your brand, your offer and the voiceover language.", "s2_t": "Creative direction", "s2_p": "We study your photos and shape the story, the script and a sequence of cinematic shots built for your category.", "s3_t": "Production", "s3_p": "Your shots are crafted from your real photos and finished with voiceover, music and elegant on-screen titles.", "s4_t": "Delivery", "s4_p": "Your videos, and your copy pack for larger packages, arrive in a private folder, ready to upload as ads or posts.", "cat_eyebrow": "Made for your business", "cat_h2": "A perfume is not filmed like a restaurant.", "cat_sub": "The concept adapts to what you sell. A product gets macro details and hands, a restaurant gets the kitchen, the fire and the guests.", "chip1": "Beauty and perfume", "chip2": "Fashion and jewellery", "chip3": "Restaurants and cafes", "chip4": "Shops and showrooms", "chip5": "Salons and spas", "chip6": "Packaged products", "chip7": "Local services", "pk_h2": "Choose your launch package.", "pk_sub": "Every video is vertical 9:16, about 30 seconds, with a script, a voiceover in your language, music and on-screen titles.", "tier_start": "Start", "tier_convert": "Convert", "tier_scale": "Scale", "for1": "Test one cinematic ad for one product or business.", "for2": "Two ads with two angles and all the words to run them.", "for3": "A complete ad set for two products or two offers.", "onetime": "one-time", "li_1prod": "<b>1</b> product or business", "li_1ad": "<b>1</b> cinematic video ad", "li_script": "Script and voiceover in your language", "li_music": "Music and on-screen titles", "li_voice": "Female or male voice", "li_2ads": "<b>2</b> video ads with two different angles: desire, then reason to buy now", "li_copy1": "Ad copy pack: 3 primary texts, 5 headlines, 3 calls to action", "li_lp1": "Landing page copy for your offer", "li_every": "Script, voiceover, music and titles in every video", "li_2prod": "Up to <b>2</b> products", "li_4ads": "<b>4</b> video ads, two angles per product", "li_copy2": "Ad copy pack: primary texts, headlines, calls to action", "li_lp2": "Landing page copy", "badge": "Most popular", "btn1": "Choose Single Hook", "btn2": "Choose Conversion Funnel", "btn3": "Choose Multi-Product Scaler", "addon1": "Express 24-hour delivery available at checkout", "addon2": "Production starts after payment is confirmed", "cmp_eyebrow": "Compare", "cmp_h2": "What is inside each package", "r_products": "Products", "r_videos": "Video ads (9:16, about 30 s)", "r_angles": "Different creative angles", "r_script": "Script and voiceover in your language", "r_music": "Music and on-screen titles", "r_copy": "Ad copy pack", "r_lp": "Custom offer page (product store) on a private link", "r_express": "Express 24-hour option", "r_2per": "2 per product", "faq_h2": "Questions before you order", "q1": "What do I need to send?", "a1": "One to three sharp, well-lit photos of your product or place, your brand name, your offer or key message and the voiceover language. For the Multi-Product Scaler, write one product name per line and add photos for each product. The better the photos, the better the ad.", "q2": "Do I need to write a script or describe the video?", "a2": "No. We develop the concept, the shots, the voiceover and the titles from your photos. You only give the business information.", "q3": "How are the videos made?", "a3": "The visuals are generated with AI from your real photos, then edited with a voiceover, music and titles. Some platforms ask advertisers to label AI-generated content; we recommend turning that label on when you post.", "q4": "Will my product look like the real one?", "a4": "The main shots are built from your photos to keep the shape, colours and label of your product. Small details can vary from shot to shot, which is why clear photos matter.", "q5": "What is a creative angle?", "a5": "Two ads for the same product that sell it differently. The first sells the desire and the experience, the second sells the occasion, the benefit or your offer. Testing both shows you which one your audience prefers.", "q6": "Which formats do I receive?", "a6": "MP4 files in vertical 9:16 at 1080 × 1920, the format used by TikTok, Instagram Reels, Stories and YouTube Shorts. Copy packs are delivered as text files.", "final_eyebrow": "Your brand, next", "final_h2": "Ready to see your product in a cinematic ad?", "final_sub": "Start with one video for $89, or launch a full campaign.", "footer_tag": "Cinematic ad productions, delivered ready to publish", "__title": "Apex Digital Agency | Cinematic video ads from your photos", "li_store": "<b>Professional custom offer page (your own product store)</b><ul class=\"subl\"><li>Professional design that showcases your videos and product photos to lift your sales</li><li>Persuasive, ready-to-sell copy</li><li>A direct WhatsApp button or quick order link, so customers order in one tap</li></ul>", "work_store": "See the offer page (store) we built for this client →", "work_store2": "See the product gallery (store) we built for this client →", "f_priv": "Privacy Policy", "f_terms": "Terms of Service", "f_refund": "Refund Policy", "li_store500": "<b>2 separate custom stores (your own landing pages)</b><ul class=\"subl\"><li>One dedicated store for each of your two products, each with its own private link</li><li>Product gallery in each store to showcase your other products</li><li>Direct WhatsApp button or quick order link in each store</li></ul>", "li_vip": "Optional VIP co-marketing: free exposure in our agency’s ad campaigns", "r_stores": "Custom store / landing page", "r_gallery": "Product gallery in the store", "r_vip": "Optional VIP co-marketing (free ad exposure)", "li_logo_free": "Free professional logo design (Logo)", "li_publish": "Smart publishing pack (ad texts and a publishing strategy)", "li_thumb": "Ad thumbnail (Thumbnail)", "li_logo": "Professional logo design for your brand", "r_logo": "Professional logo design", "r_publish": "Smart publishing pack", "r_thumb": "Ad thumbnail"}, "fr": {"nav_work": "Réalisations", "nav_how": "Comment ça marche", "nav_packages": "Offres", "nav_faq": "FAQ", "order_now": "Commander", "hero_eyebrow": "Production cinématographique de luxe · Livrée prête à publier", "hero_h1": "Votre produit, présenté comme une <em>publicité de luxe</em>.", "hero_lead": "Nous transformons les photos de votre produit en une production cinématique saisissante qui stimule vos ventes : un concept distinctif, une réalisation professionnelle, voix off, musique et finitions, livrés en vidéo verticale prête à publier.", "choose_pkg": "Choisir mon offre", "see_work": "Voir nos réalisations", "trust1": "Qualité cinéma, prête à publier", "trust2": "Voix off dans votre langue", "trust3": "Prêt pour TikTok, Reels, Shorts", "lbl_perfume": "Parfum", "lbl_restaurant": "Restaurant", "work_eyebrow": "Nos réalisations", "work_h2": "Publicités réalisées par Apex", "work_sub": "Chaque production part de vraies photos du client. Touchez une vidéo pour activer le son.", "cat_perfume": "Beauté · Parfum", "cat_restaurant": "Restaurant · Gastronomie", "work_meta": "Publicité concept · 9:16 · voix off, musique, titres", "how_h2": "De votre photo à une production aboutie.", "how_sub": "Vous envoyez votre brief une seule fois. Nous gérons la direction créative, la production et les finitions.", "s1_t": "Commande", "s1_p": "Choisissez une offre, envoyez une à trois photos nettes et indiquez votre marque, votre offre et la langue de la voix off.", "s2_t": "Direction créative", "s2_p": "Nous étudions vos photos et construisons l’histoire, le script et une suite de plans cinématiques adaptés à votre secteur.", "s3_t": "Production", "s3_p": "Vos plans sont réalisés à partir de vos vraies photos et finalisés avec voix off, musique et titres élégants.", "s4_t": "Livraison", "s4_p": "Vos vidéos, et votre pack de textes pour les grandes offres, arrivent dans un dossier privé, prêtes à publier en pub ou en post.", "cat_eyebrow": "Pensé pour votre activité", "cat_h2": "On ne filme pas un parfum comme un restaurant.", "cat_sub": "Le concept s’adapte à ce que vous vendez. Un produit a ses détails en macro et des mains, un restaurant sa cuisine, son feu et ses clients.", "chip1": "Beauté et parfum", "chip2": "Mode et bijoux", "chip3": "Restaurants et cafés", "chip4": "Boutiques et showrooms", "chip5": "Salons et spas", "chip6": "Produits emballés", "chip7": "Services locaux", "pk_h2": "Choisissez votre offre de lancement.", "pk_sub": "Chaque vidéo est verticale 9:16, d’environ 30 secondes, avec un script, une voix off dans votre langue, de la musique et des titres.", "tier_start": "Découverte", "tier_convert": "Conversion", "tier_scale": "Croissance", "for1": "Testez une publicité cinématique pour un produit ou une activité.", "for2": "Deux publicités, deux angles et tous les textes pour les diffuser.", "for3": "Un ensemble complet de publicités pour deux produits ou deux offres.", "onetime": "paiement unique", "li_1prod": "<b>1</b> produit ou activité", "li_1ad": "<b>1</b> publicité vidéo cinématique", "li_script": "Script et voix off dans votre langue", "li_music": "Musique et titres à l’écran", "li_voice": "Voix féminine ou masculine", "li_2ads": "<b>2</b> publicités vidéo avec deux angles : le désir, puis la raison d’acheter maintenant", "li_copy1": "Pack de textes : 3 textes principaux, 5 titres, 3 appels à l’action", "li_lp1": "Textes de page d’atterrissage pour votre offre", "li_every": "Script, voix off, musique et titres dans chaque vidéo", "li_2prod": "Jusqu’à <b>2</b> produits", "li_4ads": "<b>4</b> publicités vidéo, deux angles par produit", "li_copy2": "Pack de textes : textes principaux, titres, appels à l’action", "li_lp2": "Textes de page d’atterrissage", "badge": "Le plus choisi", "btn1": "Choisir Single Hook", "btn2": "Choisir Conversion Funnel", "btn3": "Choisir Multi-Product Scaler", "addon1": "Livraison express en 24 h disponible à la commande", "addon2": "La production démarre après confirmation du paiement", "cmp_eyebrow": "Comparer", "cmp_h2": "Ce que contient chaque offre", "r_products": "Produits", "r_videos": "Publicités vidéo (9:16, environ 30 s)", "r_angles": "Angles créatifs différents", "r_script": "Script et voix off dans votre langue", "r_music": "Musique et titres à l’écran", "r_copy": "Pack de textes publicitaires", "r_lp": "Page d’offre personnalisée (boutique produit) avec lien privé", "r_express": "Option express 24 h", "r_2per": "2 par produit", "faq_h2": "Questions avant de commander", "q1": "Que dois-je envoyer ?", "a1": "Une à trois photos nettes et bien éclairées de votre produit ou de votre lieu, le nom de votre marque, votre offre ou message clé et la langue de la voix off. Pour le Multi-Product Scaler, écrivez un nom de produit par ligne et ajoutez des photos pour chaque produit. Meilleures sont les photos, meilleure est la publicité.", "q2": "Dois-je écrire un script ou décrire la vidéo ?", "a2": "Non. Nous développons le concept, les plans, la voix off et les titres à partir de vos photos. Vous donnez seulement les informations sur votre activité.", "q3": "Comment les vidéos sont-elles réalisées ?", "a3": "Les visuels sont générés par IA à partir de vos vraies photos, puis montés avec voix off, musique et titres. Certaines plateformes demandent d’indiquer le contenu généré par IA ; nous recommandons d’activer cette mention lors de la publication.", "q4": "Mon produit ressemblera-t-il au vrai ?", "a4": "Les plans principaux sont construits à partir de vos photos pour garder la forme, les couleurs et l’étiquette de votre produit. De petits détails peuvent varier d’un plan à l’autre, d’où l’importance de photos nettes.", "q5": "Qu’est-ce qu’un angle créatif ?", "a5": "Deux publicités pour le même produit qui le vendent différemment. La première vend le désir et l’expérience, la seconde l’occasion, le bénéfice ou votre offre. Les tester montre laquelle votre audience préfère.", "q6": "Quels formats vais-je recevoir ?", "a6": "Des fichiers MP4 verticaux 9:16 en 1080 × 1920, le format de TikTok, Instagram Reels, Stories et YouTube Shorts. Les packs de textes sont livrés en fichiers texte.", "final_eyebrow": "Votre marque, la prochaine", "final_h2": "Prêt à voir votre produit dans une publicité cinématique ?", "final_sub": "Commencez avec une vidéo à 89 $, ou lancez une campagne complète.", "footer_tag": "Productions publicitaires cinématiques, livrées prêtes à publier", "__title": "Apex Digital Agency | Publicités vidéo cinématiques à partir de vos photos", "li_store": "<b>Page d’offre personnalisée professionnelle (votre boutique produit)</b><ul class=\"subl\"><li>Un design professionnel qui met en valeur vos vidéos et photos produit pour augmenter vos ventes</li><li>Des textes publicitaires persuasifs, prêts à vendre</li><li>Un bouton WhatsApp direct ou un lien de commande rapide : vos clients commandent en un clic</li></ul>", "work_store": "Voir la page d’offre (boutique) créée pour ce client →", "work_store2": "Voir la galerie de produits (boutique) créée pour ce client →", "f_priv": "Politique de confidentialité", "f_terms": "Conditions d’utilisation", "f_refund": "Politique de remboursement", "li_store500": "<b>2 boutiques personnalisées distinctes (vos pages de destination)</b><ul class=\"subl\"><li>Une boutique dédiée pour chacun de vos deux produits, chacune avec son lien privé</li><li>Galerie produits dans chaque boutique pour présenter vos autres produits</li><li>Bouton WhatsApp direct ou lien de commande rapide dans chaque boutique</li></ul>", "li_vip": "Co-marketing VIP optionnel : visibilité gratuite dans les campagnes publicitaires de notre agence", "r_stores": "Boutique / page de destination personnalisée", "r_gallery": "Galerie produits dans la boutique", "r_vip": "Co-marketing VIP optionnel (visibilité publicitaire gratuite)", "li_logo_free": "Création gratuite d’un logo professionnel (Logo)", "li_publish": "Pack de publication intelligent (textes publicitaires et stratégie de diffusion)", "li_thumb": "Miniature de l’annonce (Thumbnail)", "li_logo": "Création d’un logo professionnel pour votre marque", "r_logo": "Création de logo professionnel", "r_publish": "Pack de publication intelligent", "r_thumb": "Miniature de l’annonce"}, "es": {"nav_work": "Trabajos", "nav_how": "Cómo funciona", "nav_packages": "Paquetes", "nav_faq": "Preguntas", "order_now": "Pedir ahora", "hero_eyebrow": "Producción cinematográfica de lujo · Entregada lista para publicar", "hero_h1": "Tu producto, presentado como un <em>anuncio de lujo</em>.", "hero_lead": "Convertimos las fotos de tu producto en una producción cinematográfica impactante que impulsa tus ventas: un concepto distintivo, dirección profesional, voz en off, música y acabado, en un vídeo vertical listo para publicar.", "choose_pkg": "Elegir mi paquete", "see_work": "Ver nuestros trabajos", "trust1": "Calidad de cine, lista para publicar", "trust2": "Voz en off en tu idioma", "trust3": "Listo para TikTok, Reels, Shorts", "lbl_perfume": "Perfume", "lbl_restaurant": "Restaurante", "work_eyebrow": "Nuestros trabajos", "work_h2": "Anuncios producidos por Apex", "work_sub": "Cada producción parte de fotos reales del cliente. Toca un vídeo para activar el sonido.", "cat_perfume": "Belleza · Perfume", "cat_restaurant": "Restaurante · Alta cocina", "work_meta": "Anuncio concepto · 9:16 · voz en off, música, títulos", "how_h2": "De tu foto a una producción terminada.", "how_sub": "Envías tu briefing una sola vez. Nosotros nos ocupamos de la dirección creativa, la producción y el acabado.", "s1_t": "Pedido", "s1_p": "Elige un paquete, sube de una a tres fotos nítidas e indícanos tu marca, tu oferta y el idioma de la voz en off.", "s2_t": "Dirección creativa", "s2_p": "Estudiamos tus fotos y damos forma a la historia, el guion y una secuencia de planos cinematográficos pensada para tu sector.", "s3_t": "Producción", "s3_p": "Tus planos se elaboran a partir de tus fotos reales y se terminan con voz en off, música y títulos elegantes.", "s4_t": "Entrega", "s4_p": "Tus vídeos, y tu pack de textos en los paquetes grandes, llegan a una carpeta privada, listos para subir como anuncios o publicaciones.", "cat_eyebrow": "Hecho para tu negocio", "cat_h2": "Un perfume no se filma como un restaurante.", "cat_sub": "El concepto se adapta a lo que vendes. Un producto tiene detalles en macro y manos; un restaurante, su cocina, el fuego y los clientes.", "chip1": "Belleza y perfume", "chip2": "Moda y joyería", "chip3": "Restaurantes y cafeterías", "chip4": "Tiendas y showrooms", "chip5": "Salones y spas", "chip6": "Productos envasados", "chip7": "Servicios locales", "pk_h2": "Elige tu paquete de lanzamiento.", "pk_sub": "Cada vídeo es vertical 9:16, de unos 30 segundos, con guion, voz en off en tu idioma, música y títulos en pantalla.", "tier_start": "Inicio", "tier_convert": "Conversión", "tier_scale": "Escala", "for1": "Prueba un anuncio cinematográfico para un producto o negocio.", "for2": "Dos anuncios con dos ángulos y todos los textos para lanzarlos.", "for3": "Un set completo de anuncios para dos productos u ofertas.", "onetime": "pago único", "li_1prod": "<b>1</b> producto o negocio", "li_1ad": "<b>1</b> anuncio de vídeo cinematográfico", "li_script": "Guion y voz en off en tu idioma", "li_music": "Música y títulos en pantalla", "li_voice": "Voz femenina o masculina", "li_2ads": "<b>2</b> anuncios de vídeo con dos ángulos: el deseo y luego la razón para comprar ya", "li_copy1": "Pack de textos: 3 textos principales, 5 titulares, 3 llamadas a la acción", "li_lp1": "Textos de landing page para tu oferta", "li_every": "Guion, voz en off, música y títulos en cada vídeo", "li_2prod": "Hasta <b>2</b> productos", "li_4ads": "<b>4</b> anuncios de vídeo, dos ángulos por producto", "li_copy2": "Pack de textos: textos principales, titulares, llamadas a la acción", "li_lp2": "Textos de landing page", "badge": "Más popular", "btn1": "Elegir Single Hook", "btn2": "Elegir Conversion Funnel", "btn3": "Elegir Multi-Product Scaler", "addon1": "Entrega exprés en 24 h disponible al pagar", "addon2": "La producción empieza tras confirmarse el pago", "cmp_eyebrow": "Comparar", "cmp_h2": "Qué incluye cada paquete", "r_products": "Productos", "r_videos": "Anuncios de vídeo (9:16, unos 30 s)", "r_angles": "Ángulos creativos distintos", "r_script": "Guion y voz en off en tu idioma", "r_music": "Música y títulos en pantalla", "r_copy": "Pack de textos publicitarios", "r_lp": "Página de ofertas personalizada (tienda) con enlace privado", "r_express": "Opción exprés 24 h", "r_2per": "2 por producto", "faq_h2": "Preguntas antes de pedir", "q1": "¿Qué tengo que enviar?", "a1": "De una a tres fotos nítidas y bien iluminadas de tu producto o local, el nombre de tu marca, tu oferta o mensaje clave y el idioma de la voz en off. Para el Multi-Product Scaler, escribe un nombre de producto por línea y añade fotos de cada producto. Cuanto mejores las fotos, mejor el anuncio.", "q2": "¿Tengo que escribir un guion o describir el vídeo?", "a2": "No. Nosotros desarrollamos el concepto, los planos, la voz en off y los títulos a partir de tus fotos. Tú solo das la información de tu negocio.", "q3": "¿Cómo se hacen los vídeos?", "a3": "Las imágenes se generan con IA a partir de tus fotos reales y luego se editan con voz en off, música y títulos. Algunas plataformas piden etiquetar el contenido generado con IA; te recomendamos activar esa etiqueta al publicar.", "q4": "¿Mi producto se verá como el real?", "a4": "Los planos principales se construyen a partir de tus fotos para mantener la forma, los colores y la etiqueta de tu producto. Pequeños detalles pueden variar entre planos; por eso importan las fotos nítidas.", "q5": "¿Qué es un ángulo creativo?", "a5": "Dos anuncios del mismo producto que lo venden de forma distinta. El primero vende el deseo y la experiencia; el segundo, la ocasión, el beneficio o tu oferta. Probar ambos te muestra cuál prefiere tu público.", "q6": "¿Qué formatos recibo?", "a6": "Archivos MP4 verticales 9:16 a 1080 × 1920, el formato de TikTok, Instagram Reels, Stories y YouTube Shorts. Los packs de textos se entregan como archivos de texto.", "final_eyebrow": "Tu marca, la siguiente", "final_h2": "¿Listo para ver tu producto en un anuncio cinematográfico?", "final_sub": "Empieza con un vídeo por 89 $, o lanza una campaña completa.", "footer_tag": "Producciones publicitarias cinematográficas, entregadas listas para publicar", "__title": "Apex Digital Agency | Anuncios de vídeo cinematográficos desde tus fotos", "li_store": "<b>Página de ofertas personalizada y profesional (tu tienda de producto)</b><ul class=\"subl\"><li>Diseño profesional que destaca tus vídeos y fotos de producto para aumentar tus ventas</li><li>Textos persuasivos y listos para vender</li><li>Botón directo de WhatsApp o enlace de pedido rápido: tus clientes piden con un toque</li></ul>", "work_store": "Ver la página de ofertas (tienda) creada para este cliente →", "work_store2": "Ver la galería de productos (tienda) creada para este cliente →", "f_priv": "Política de privacidad", "f_terms": "Términos del servicio", "f_refund": "Política de reembolso", "li_store500": "<b>2 tiendas personalizadas independientes (tus páginas de destino)</b><ul class=\"subl\"><li>Una tienda dedicada para cada uno de tus dos productos, cada una con su enlace privado</li><li>Galería de productos en cada tienda para mostrar tus otros productos</li><li>Botón directo de WhatsApp o enlace de pedido rápido en cada tienda</li></ul>", "li_vip": "Co-marketing VIP opcional: exposición gratuita en las campañas publicitarias de nuestra agencia", "r_stores": "Tienda / página de destino personalizada", "r_gallery": "Galería de productos en la tienda", "r_vip": "Co-marketing VIP opcional (exposición publicitaria gratuita)", "li_logo_free": "Diseño gratuito de logotipo profesional (Logo)", "li_publish": "Paquete de publicación inteligente (textos publicitarios y estrategia de publicación)", "li_thumb": "Miniatura del anuncio (Thumbnail)", "li_logo": "Diseño de un logotipo profesional para tu marca", "r_logo": "Diseño de logotipo profesional", "r_publish": "Paquete de publicación inteligente", "r_thumb": "Miniatura del anuncio"}, "it": {"nav_work": "Lavori", "nav_how": "Come funziona", "nav_packages": "Pacchetti", "nav_faq": "FAQ", "order_now": "Ordina ora", "hero_eyebrow": "Produzione cinematografica di lusso · Consegnata pronta da pubblicare", "hero_h1": "Il tuo prodotto, presentato come uno <em>spot di lusso</em>.", "hero_lead": "Trasformiamo le foto del tuo prodotto in una produzione cinematografica di grande impatto che aumenta le vendite: un concept distintivo, regia professionale, voce, musica e rifinitura, in un video verticale pronto da pubblicare.", "choose_pkg": "Scegli il mio pacchetto", "see_work": "Guarda i nostri lavori", "trust1": "Qualità cinema, pronta da pubblicare", "trust2": "Voce fuori campo nella tua lingua", "trust3": "Pronto per TikTok, Reels, Shorts", "lbl_perfume": "Profumo", "lbl_restaurant": "Ristorante", "work_eyebrow": "I nostri lavori", "work_h2": "Spot prodotti da Apex", "work_sub": "Ogni produzione parte da foto reali del cliente. Tocca un video per attivare l’audio.", "cat_perfume": "Bellezza · Profumo", "cat_restaurant": "Ristorante · Alta cucina", "work_meta": "Spot concept · 9:16 · voce, musica, titoli", "how_h2": "Dalla tua foto a una produzione completa.", "how_sub": "Invii il tuo brief una sola volta. Noi ci occupiamo di direzione creativa, produzione e rifinitura.", "s1_t": "Ordine", "s1_p": "Scegli un pacchetto, carica da una a tre foto nitide e indicaci il tuo marchio, la tua offerta e la lingua della voce.", "s2_t": "Direzione creativa", "s2_p": "Studiamo le tue foto e costruiamo la storia, la sceneggiatura e una sequenza di inquadrature cinematografiche pensata per il tuo settore.", "s3_t": "Produzione", "s3_p": "Le tue inquadrature vengono realizzate dalle tue foto reali e rifinite con voce, musica e titoli eleganti.", "s4_t": "Consegna", "s4_p": "I tuoi video, e il pacchetto di testi per le offerte maggiori, arrivano in una cartella privata, pronti da pubblicare come ads o post.", "cat_eyebrow": "Pensato per la tua attività", "cat_h2": "Un profumo non si gira come un ristorante.", "cat_sub": "Il concept si adatta a ciò che vendi. Un prodotto ha dettagli macro e mani, un ristorante la cucina, il fuoco e gli ospiti.", "chip1": "Bellezza e profumi", "chip2": "Moda e gioielli", "chip3": "Ristoranti e bar", "chip4": "Negozi e showroom", "chip5": "Saloni e spa", "chip6": "Prodotti confezionati", "chip7": "Servizi locali", "pk_h2": "Scegli il tuo pacchetto di lancio.", "pk_sub": "Ogni video è verticale 9:16, di circa 30 secondi, con sceneggiatura, voce nella tua lingua, musica e titoli.", "tier_start": "Inizio", "tier_convert": "Conversione", "tier_scale": "Crescita", "for1": "Prova uno spot cinematografico per un prodotto o un’attività.", "for2": "Due spot con due angolazioni e tutti i testi per lanciarli.", "for3": "Un set completo di spot per due prodotti o due offerte.", "onetime": "una tantum", "li_1prod": "<b>1</b> prodotto o attività", "li_1ad": "<b>1</b> spot video cinematografico", "li_script": "Sceneggiatura e voce nella tua lingua", "li_music": "Musica e titoli a schermo", "li_voice": "Voce femminile o maschile", "li_2ads": "<b>2</b> spot video con due angolazioni: il desiderio, poi il motivo per comprare ora", "li_copy1": "Pacchetto testi: 3 testi principali, 5 titoli, 3 call to action", "li_lp1": "Testi della landing page per la tua offerta", "li_every": "Sceneggiatura, voce, musica e titoli in ogni video", "li_2prod": "Fino a <b>2</b> prodotti", "li_4ads": "<b>4</b> spot video, due angolazioni per prodotto", "li_copy2": "Pacchetto testi: testi principali, titoli, call to action", "li_lp2": "Testi della landing page", "badge": "Più scelto", "btn1": "Scegli Single Hook", "btn2": "Scegli Conversion Funnel", "btn3": "Scegli Multi-Product Scaler", "addon1": "Consegna express in 24 ore disponibile al checkout", "addon2": "La produzione inizia dopo la conferma del pagamento", "cmp_eyebrow": "Confronta", "cmp_h2": "Cosa include ogni pacchetto", "r_products": "Prodotti", "r_videos": "Spot video (9:16, circa 30 s)", "r_angles": "Angolazioni creative diverse", "r_script": "Sceneggiatura e voce nella tua lingua", "r_music": "Musica e titoli a schermo", "r_copy": "Pacchetto testi pubblicitari", "r_lp": "Pagina offerte personalizzata (negozio) con link privato", "r_express": "Opzione express 24 ore", "r_2per": "2 per prodotto", "faq_h2": "Domande prima di ordinare", "q1": "Cosa devo inviare?", "a1": "Da una a tre foto nitide e ben illuminate del tuo prodotto o locale, il nome del marchio, la tua offerta o messaggio chiave e la lingua della voce. Per il Multi-Product Scaler, scrivi un nome di prodotto per riga e aggiungi le foto di ogni prodotto. Migliori sono le foto, migliore è lo spot.", "q2": "Devo scrivere una sceneggiatura o descrivere il video?", "a2": "No. Siamo noi a sviluppare il concept, le inquadrature, la voce e i titoli dalle tue foto. Tu fornisci solo le informazioni sull’attività.", "q3": "Come vengono realizzati i video?", "a3": "Le immagini sono generate con l’IA dalle tue foto reali, poi montate con voce, musica e titoli. Alcune piattaforme chiedono di segnalare i contenuti generati con IA; consigliamo di attivare l’etichetta quando pubblichi.", "q4": "Il mio prodotto sembrerà quello vero?", "a4": "Le inquadrature principali sono costruite dalle tue foto per mantenere forma, colori ed etichetta del prodotto. Piccoli dettagli possono variare tra un’inquadratura e l’altra, per questo contano le foto nitide.", "q5": "Cos’è un’angolazione creativa?", "a5": "Due spot per lo stesso prodotto che lo vendono in modo diverso. Il primo vende il desiderio e l’esperienza, il secondo l’occasione, il beneficio o la tua offerta. Provarli entrambi ti mostra quale preferisce il tuo pubblico.", "q6": "Quali formati ricevo?", "a6": "File MP4 verticali 9:16 a 1080 × 1920, il formato di TikTok, Instagram Reels, Stories e YouTube Shorts. I pacchetti di testi sono consegnati come file di testo.", "final_eyebrow": "Il tuo marchio, il prossimo", "final_h2": "Pronto a vedere il tuo prodotto in uno spot cinematografico?", "final_sub": "Inizia con un video a 89 $, oppure lancia una campagna completa.", "footer_tag": "Produzioni pubblicitarie cinematografiche, consegnate pronte da pubblicare", "__title": "Apex Digital Agency | Spot video cinematografici dalle tue foto", "li_store": "<b>Pagina offerte personalizzata e professionale (il negozio del tuo prodotto)</b><ul class=\"subl\"><li>Design professionale che valorizza i tuoi video e le foto del prodotto per aumentare le vendite</li><li>Testi persuasivi e pronti per vendere</li><li>Pulsante WhatsApp diretto o link d’ordine rapido: i clienti ordinano con un tocco</li></ul>", "work_store": "Guarda la pagina offerte (negozio) creata per questo cliente →", "work_store2": "Guarda la galleria prodotti (negozio) creata per questo cliente →", "f_priv": "Informativa sulla privacy", "f_terms": "Termini di servizio", "f_refund": "Politica di rimborso", "li_store500": "<b>2 negozi personalizzati separati (le tue landing page)</b><ul class=\"subl\"><li>Un negozio dedicato per ciascuno dei due prodotti, ognuno con il proprio link privato</li><li>Galleria prodotti in ogni negozio per mostrare gli altri tuoi prodotti</li><li>Pulsante WhatsApp diretto o link d’ordine rapido in ogni negozio</li></ul>", "li_vip": "Co-marketing VIP opzionale: visibilità gratuita nelle campagne pubblicitarie della nostra agenzia", "r_stores": "Negozio / landing page personalizzata", "r_gallery": "Galleria prodotti nel negozio", "r_vip": "Co-marketing VIP opzionale (visibilità pubblicitaria gratuita)", "li_logo_free": "Design gratuito di un logo professionale (Logo)", "li_publish": "Pacchetto di pubblicazione intelligente (testi pubblicitari e strategia di pubblicazione)", "li_thumb": "Miniatura dell’annuncio (Thumbnail)", "li_logo": "Design di un logo professionale per il tuo brand", "r_logo": "Design di logo professionale", "r_publish": "Pacchetto di pubblicazione intelligente", "r_thumb": "Miniatura dell’annuncio"}, "ar": {"nav_work": "أعمالنا", "nav_how": "كيف نعمل", "nav_packages": "الباقات", "nav_faq": "الأسئلة", "order_now": "اطلب الآن", "hero_eyebrow": "إنتاج سينمائي فاخر · يصلك جاهزاً للنشر", "hero_h1": "منتجك، يُقدَّم كأنه <em>إعلان فاخر</em>.", "hero_lead": "نحوّل صور منتجك إلى إنتاج سينمائي مبهر يعزّز مبيعاتك: فكرة مميزة، وإخراج احترافي، وتعليق صوتي وموسيقى ولمسات نهائية، في فيديو عمودي جاهز للنشر.", "choose_pkg": "اختر باقتي", "see_work": "شاهد أعمالنا", "trust1": "جودة سينمائية جاهزة للنشر", "trust2": "تعليق صوتي بلغتك", "trust3": "جاهز لـ TikTok وReels وShorts", "lbl_perfume": "عطر", "lbl_restaurant": "مطعم", "work_eyebrow": "أعمالنا", "work_h2": "إعلانات من إنتاج Apex", "work_sub": "كل إنتاج ينطلق من صور حقيقية للزبون. اضغط على الفيديو لتشغيل الصوت.", "cat_perfume": "تجميل · عطور", "cat_restaurant": "مطعم · مطبخ راقٍ", "work_meta": "إعلان تجريبي · 9:16 · تعليق صوتي، موسيقى، عناوين", "how_h2": "من صورتك إلى إنتاج سينمائي متكامل.", "how_sub": "ترسل طلبك مرة واحدة، ونتولى نحن الإخراج الإبداعي والإنتاج واللمسات النهائية.", "s1_t": "الطلب", "s1_p": "اختر باقة، ارفع من صورة إلى ثلاث صور واضحة، وأخبرنا باسم علامتك وعرضك ولغة التعليق الصوتي.", "s2_t": "الإخراج الإبداعي", "s2_p": "ندرس صورك ونصوغ القصة والنص وتسلسلاً من اللقطات السينمائية يناسب مجالك.", "s3_t": "الإنتاج", "s3_p": "تُصنع اللقطات انطلاقاً من صورك الحقيقية، وتُنجَز بتعليق صوتي وموسيقى وعناوين أنيقة على الشاشة.", "s4_t": "التسليم", "s4_p": "تصلك فيديوهاتك، ونصوصك الإعلانية في الباقات الكبرى، في مجلد خاص، جاهزة للنشر كإعلانات أو منشورات.", "cat_eyebrow": "مصمَّم لنشاطك", "cat_h2": "العطر لا يُصوَّر كما يُصوَّر المطعم.", "cat_sub": "الفكرة تتكيّف مع ما تبيعه: المنتج يُصوَّر بتفاصيل مقرّبة ولمسات اليد، والمطعم بمطبخه ونيرانه وزبائنه.", "chip1": "التجميل والعطور", "chip2": "الموضة والمجوهرات", "chip3": "المطاعم والمقاهي", "chip4": "المتاجر وصالات العرض", "chip5": "الصالونات والسبا", "chip6": "المنتجات المعلّبة", "chip7": "الخدمات المحلية", "pk_h2": "اختر باقة انطلاقك.", "pk_sub": "كل فيديو عمودي 9:16، مدته نحو 30 ثانية، بنص وتعليق صوتي بلغتك وموسيقى وعناوين على الشاشة.", "tier_start": "البداية", "tier_convert": "التحويل", "tier_scale": "التوسّع", "for1": "جرّب إعلاناً سينمائياً واحداً لمنتج أو نشاط واحد.", "for2": "إعلانان بزاويتين مختلفتين وكل النصوص اللازمة لتشغيلهما.", "for3": "مجموعة إعلانات كاملة لمنتجين أو عرضين.", "onetime": "دفعة واحدة", "li_1prod": "<b>1</b> منتج أو نشاط", "li_1ad": "<b>1</b> إعلان فيديو سينمائي", "li_script": "نص وتعليق صوتي بلغتك", "li_music": "موسيقى وعناوين على الشاشة", "li_voice": "صوت نسائي أو رجالي", "li_2ads": "<b>2</b> إعلانا فيديو بزاويتين: الرغبة، ثم سبب الشراء الآن", "li_copy1": "حزمة نصوص إعلانية: 3 نصوص رئيسية، 5 عناوين، 3 دعوات للشراء", "li_lp1": "نصوص صفحة هبوط لعرضك", "li_every": "نص وتعليق صوتي وموسيقى وعناوين في كل فيديو", "li_2prod": "حتى <b>2</b> منتجين", "li_4ads": "<b>4</b> إعلانات فيديو، زاويتان لكل منتج", "li_copy2": "حزمة نصوص إعلانية: نصوص رئيسية، عناوين، دعوات للشراء", "li_lp2": "نصوص صفحة الهبوط", "badge": "الأكثر طلباً", "btn1": "اختر Single Hook", "btn2": "اختر Conversion Funnel", "btn3": "اختر Multi-Product Scaler", "addon1": "تسليم سريع خلال 24 ساعة متاح عند الطلب", "addon2": "يبدأ الإنتاج بعد تأكيد الدفع", "cmp_eyebrow": "مقارنة", "cmp_h2": "ماذا تتضمن كل باقة", "r_products": "المنتجات", "r_videos": "إعلانات فيديو (9:16، نحو 30 ثانية)", "r_angles": "زوايا إبداعية مختلفة", "r_script": "نص وتعليق صوتي بلغتك", "r_music": "موسيقى وعناوين على الشاشة", "r_copy": "حزمة النصوص الإعلانية", "r_lp": "صفحة عروض مخصصة (متجر لمنتجك) برابط خاص", "r_express": "خيار التسليم السريع 24 ساعة", "r_2per": "2 لكل منتج", "faq_h2": "أسئلة قبل الطلب", "q1": "ماذا أرسل؟", "a1": "من صورة إلى ثلاث صور واضحة وجيدة الإضاءة لمنتجك أو محلّك، واسم علامتك، وعرضك أو رسالتك الأساسية، ولغة التعليق الصوتي. في باقة Multi-Product Scaler اكتب اسم كل منتج في سطر وأضف صور كل منتج. كلما كانت الصور أفضل، كان الإعلان أفضل.", "q2": "هل عليّ كتابة نص أو وصف الفيديو؟", "a2": "لا. نحن نبتكر الفكرة واللقطات والتعليق الصوتي والعناوين انطلاقاً من صورك، وأنت تعطي فقط معلومات نشاطك.", "q3": "كيف تُصنع الفيديوهات؟", "a3": "تُولَّد المشاهد بالذكاء الاصطناعي من صورك الحقيقية، ثم تُركَّب مع تعليق صوتي وموسيقى وعناوين. بعض المنصات تطلب الإشارة إلى المحتوى المولَّد بالذكاء الاصطناعي، وننصح بتفعيل هذه الإشارة عند النشر.", "q4": "هل سيبدو منتجي مثل المنتج الحقيقي؟", "a4": "اللقطات الرئيسية تُبنى من صورك للحفاظ على شكل منتجك وألوانه وملصقه. قد تختلف تفاصيل صغيرة من لقطة لأخرى، ولهذا تهمّ الصور الواضحة.", "q5": "ما هي الزاوية الإبداعية؟", "a5": "إعلانان للمنتج نفسه يبيعانه بطريقتين مختلفتين: الأول يبيع الرغبة والتجربة، والثاني يبيع المناسبة أو الفائدة أو عرضك. تجربة الاثنين تُظهر لك أيّهما يفضّله جمهورك.", "q6": "ما الصيغ التي أستلمها؟", "a6": "ملفات MP4 عمودية 9:16 بدقة 1080 × 1920، وهي صيغة TikTok وInstagram Reels وStories وYouTube Shorts. حزم النصوص تُسلَّم كملفات نصية.", "final_eyebrow": "علامتك، هي التالية", "final_h2": "مستعد لرؤية منتجك في إعلان سينمائي؟", "final_sub": "ابدأ بفيديو واحد بـ 89 دولاراً، أو أطلق حملة كاملة.", "footer_tag": "إنتاجات إعلانية سينمائية، تصلك جاهزة للنشر", "__title": "Apex Digital Agency | إعلانات فيديو سينمائية من صورك", "li_store": "<b>صفحة عروض مخصصة احترافية (متجر خاص بمنتجك)</b><ul class=\"subl\"><li>تصميم احترافي يعرض فيديوهاتك وصور منتجك بشكل جذاب ومدروس لرفع نسبة المبيعات</li><li>نصوص إعلانية مقنعة وجاهزة للبيع</li><li>زر تواصل مباشر عبر WhatsApp أو رابط طلب سريع، ليطلب عملاؤك المنتج بضغطة زر</li></ul>", "work_store": "شاهد صفحة العروض (المتجر) التي صممناها لهذا العميل ←", "work_store2": "شاهد معرض المنتجات (المتجر) الذي صممناه لهذا العميل ←", "f_priv": "سياسة الخصوصية", "f_terms": "شروط الاستخدام", "f_refund": "سياسة الاسترداد", "li_store500": "<b>متجران مخصصان منفصلان (صفحتا هبوط خاصتان بك)</b><ul class=\"subl\"><li>متجر مستقل لكل واحد من منتجيك، برابط خاص لكل متجر</li><li>معرض منتجات داخل كل متجر لعرض منتجاتك الأخرى</li><li>زر WhatsApp مباشر أو رابط طلب سريع في كل متجر</li></ul>", "li_vip": "تسويق مشترك VIP اختياري: ظهور مجاني في الحملات الإعلانية لوكالتنا", "r_stores": "متجر / صفحة هبوط مخصصة", "r_gallery": "معرض منتجات داخل المتجر", "r_vip": "تسويق مشترك VIP اختياري (ظهور إعلاني مجاني)", "li_logo_free": "تصميم شعار احترافي مجاني (Logo)", "li_publish": "حزمة النشر الذكي (نصوص إعلانية واستراتيجية نشر)", "li_thumb": "صورة مصغرة للإعلان (Thumbnail)", "li_logo": "تصميم شعار احترافي لعلامتك التجارية", "r_logo": "تصميم شعار احترافي", "r_publish": "حزمة النشر الذكي", "r_thumb": "صورة مصغرة للإعلان"}};
-  function setLang(l){
-    if(!I18N[l]) l='en';
-    var t=I18N[l];
-    document.documentElement.lang=l;
-    document.documentElement.dir=(l==='ar')?'rtl':'ltr';
-    document.querySelectorAll('[data-i18n]').forEach(function(el){ var k=el.getAttribute('data-i18n'); if(t[k]!=null) el.innerHTML=t[k]; });
-    document.title=t.__title;
-    var sel=document.getElementById('lang'); if(sel) sel.value=l;
-    try{ localStorage.setItem('apex_lang',l); }catch(e){}
-  }
-  (function(){
-    var l=null;
-    try{ l=new URLSearchParams(location.search).get('lang') || localStorage.getItem('apex_lang'); }catch(e){}
-    if(!l){ var n=(navigator.language||'en').slice(0,2).toLowerCase(); l=I18N[n]?n:'en'; }
-    setLang(l);
-    var sel=document.getElementById('lang'); if(sel) sel.addEventListener('change',function(){ setLang(sel.value); });
-  })();
+  document.getElementById("ckClose").addEventListener("click", closeCk);
+  ck.addEventListener("click", function (e) { if (e.target === ck) closeCk(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeCk(); });
+  document.getElementById("yr").textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
