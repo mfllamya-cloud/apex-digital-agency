@@ -101,6 +101,20 @@
   .ck { background: var(--coal); border: 1px solid var(--gold); border-radius: 4px; width: 100%; max-width: 30rem; padding: 1.8rem; position: relative; }
   .ck ol { margin: 1rem 0 0; padding-left: 1.2rem; color: var(--mist); font-size: .88rem; line-height: 1.7; }
   .ck .x { position: absolute; top: .7rem; right: .7rem; background: transparent; border: 1px solid var(--line); color: var(--bone); width: 2rem; height: 2rem; border-radius: 99px; cursor: pointer; }
+
+  /* portfolio (restored) */
+  .pf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 300px)); gap: 1.75rem; justify-content: center; }
+  .pf-item { margin: 0; }
+  .pf-frame { position: relative; aspect-ratio: 9/16; border-radius: 4px; overflow: hidden; background: #000; border: 1px solid var(--line); user-select: none; -webkit-user-select: none; }
+  .pf-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pf-wm { position: absolute; inset: auto 0 46% 0; text-align: center; color: rgba(255,255,255,.18); letter-spacing: .3em; font-size: 11px; pointer-events: none; }
+  .pf-sound { position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: rgba(10,12,15,.6); color: #fff; cursor: pointer; font-size: 16px; display: grid; place-items: center; }
+  .pf-item figcaption { padding: 1rem .25rem 0; }
+  .pf-cat { font-family: var(--font-mono); color: var(--gold); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; }
+  .pf-name { font-family: var(--font-display, inherit); font-size: 1.35rem; margin-top: .25rem; }
+  .pf-meta { color: var(--mist); font-size: .88rem; }
+  .pf-link { display: inline-flex; margin-top: .75rem; padding: .6rem 1rem; border-radius: 999px; border: 1px solid rgba(212,175,106,.45); color: var(--gold); font-size: .85rem; font-weight: 600; text-decoration: none; transition: background .2s; }
+  .pf-link:hover { background: rgba(212,175,106,.12); }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .caret, .scarcity-dot { animation: none; }
@@ -118,6 +132,7 @@
     </a>
     <nav class="hidden md:flex items-center gap-8 text-sm" aria-label="Primary">
       <a href="#how" class="nav-link">How it works</a>
+      <a href="#work" class="nav-link">Our work</a>
       <a href="#pricing" class="nav-link">Pricing</a>
       <a href="#policy" class="nav-link">Policy</a>
     </nav>
@@ -229,6 +244,45 @@
             <span style="color: var(--gold)">&#9679;</span> Example only. Change a price here and it goes live on your store.
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2b. PORTFOLIO / OUR WORK (restored). Videos: site/videos/*.mp4. To add a project, copy one <figure class="pf-item"> block. -->
+  <section id="work" class="hairline">
+    <div class="wrap py-20 sm:py-28">
+      <div class="text-center mb-12">
+        <p class="eyebrow">Our work</p>
+        <h2 class="display text-3xl sm:text-4xl mt-3">Ads produced by Apex</h2>
+        <p class="mist mt-3 max-w-xl mx-auto">Each production starts from the client&rsquo;s real photos. Tap a video to turn the sound on.</p>
+      </div>
+      <div class="pf-grid">
+        <figure class="pf-item">
+          <div class="pf-frame" oncontextmenu="return false">
+            <video src="/videos/perfume.mp4" poster="https://lh3.googleusercontent.com/d/18MfjlJ0rPZZQ_FRWhYU613qg5WBlBUj_=w1080" muted loop playsinline preload="metadata" disablePictureInPicture controlsList="nodownload"></video>
+            <span class="pf-wm">APEX DIGITAL AGENCY</span>
+            <button class="pf-sound" type="button" aria-label="Turn sound on">&#128263;</button>
+          </div>
+          <figcaption>
+            <div class="pf-cat">Beauty &middot; Perfume</div>
+            <div class="pf-name display">Maison Alaric</div>
+            <div class="pf-meta">Concept ad &middot; 9:16 &middot; voiceover, music, titles</div>
+            <a class="pf-link" href="/p/demo-maison-alaric/" target="_blank" rel="noopener">See the product gallery (store) we built for this client &rarr;</a>
+          </figcaption>
+        </figure>
+        <figure class="pf-item">
+          <div class="pf-frame" oncontextmenu="return false">
+            <video src="/videos/restaurant.mp4" poster="https://lh3.googleusercontent.com/d/1BGMteIH4lVP78Kaa9BmtQHgv3aX2w13A=w1080" muted loop playsinline preload="metadata" disablePictureInPicture controlsList="nodownload"></video>
+            <span class="pf-wm">APEX DIGITAL AGENCY</span>
+            <button class="pf-sound" type="button" aria-label="Turn sound on">&#128263;</button>
+          </div>
+          <figcaption>
+            <div class="pf-cat">Restaurant &middot; Fine dining</div>
+            <div class="pf-name display">Maison Aurelle</div>
+            <div class="pf-meta">Concept ad &middot; 9:16 &middot; voiceover, music, titles</div>
+            <a class="pf-link" href="/p/demo-maison-aurelle/" target="_blank" rel="noopener">See the offer page (store) we built for this client &rarr;</a>
+          </figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -408,6 +462,33 @@
   ck.addEventListener("click", function (e) { if (e.target === ck) closeCk(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeCk(); });
   document.getElementById("yr").textContent = new Date().getFullYear();
+</script>
+<script>
+  // Portfolio: sound toggle (one video with sound at a time) and play only while visible
+  (function () {
+    var frames = document.querySelectorAll('.pf-frame');
+    frames.forEach(function (frame) {
+      var v = frame.querySelector('video'), b = frame.querySelector('.pf-sound');
+      function toggle() {
+        var on = v.muted;
+        document.querySelectorAll('.pf-frame video').forEach(function (o) {
+          if (o !== v) { o.muted = true; var ob = o.parentNode.querySelector('.pf-sound'); if (ob) ob.innerHTML = '&#128263;'; }
+        });
+        v.muted = !on; if (on) v.currentTime = 0;
+        v.play().catch(function () {});
+        b.innerHTML = on ? '&#128266;' : '&#128263;';
+        b.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
+      }
+      b.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+      v.addEventListener('click', toggle);
+    });
+    if ('IntersectionObserver' in window) {
+      var vo = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) e.target.play().catch(function () {}); else e.target.pause(); });
+      }, { threshold: 0.4 });
+      document.querySelectorAll('.pf-frame video').forEach(function (v) { vo.observe(v); });
+    }
+  })();
 </script>
 </body>
 </html>
