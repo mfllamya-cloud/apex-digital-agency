@@ -36,26 +36,30 @@
   .count{background:var(--gold);color:var(--gold-ink);font-family:var(--mono);font-size:.7rem;min-width:1.35rem;height:1.35rem;border-radius:99px;display:grid;place-items:center;padding-inline:.3rem}
   .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
   .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(50rem 24rem at 80% -10%,rgba(212,175,106,.16),transparent 60%)}
-  .hero .wrap{position:relative;padding-block:4.5rem 4rem;display:grid;gap:2.5rem;align-items:center}
-  @media(min-width:900px){.hero .wrap{grid-template-columns:1.15fr .85fr;padding-block:6rem 5rem}}
-  .hero h1{font-size:clamp(2.5rem,6.2vw,4.8rem);line-height:1.03;margin:.8rem 0 1.2rem;font-weight:600}
+  .hero .wrap{position:relative;padding-block:2rem 1.8rem;display:grid;gap:1.6rem;align-items:center}
+  @media(min-width:900px){.hero .wrap{grid-template-columns:1.15fr .85fr;padding-block:1.8rem 1.6rem;gap:2.5rem}}
+  .hero h1{font-size:clamp(2rem,4.6vw,3.4rem);line-height:1.03;margin:.8rem 0 1.2rem;font-weight:600}
   .gold{color:var(--gold);font-style:italic;font-weight:500}
   .lead{color:var(--mist);max-width:36rem;line-height:1.7}
   .btn{display:inline-block;background:linear-gradient(180deg,#e3c27f,var(--gold));color:var(--gold-ink);border:0;font-weight:600;padding:.9rem 1.6rem;border-radius:2px;text-decoration:none;transition:transform .2s}
   .btn:hover{transform:translateY(-2px)}
   .btn-line{background:transparent;color:var(--bone);border:1px solid var(--line)} .btn-line:hover{border-color:var(--gold);color:var(--gold)}
   .hero-art{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--slate);max-width:100%}
-  .hero-art{position:relative;aspect-ratio:9/16;max-height:36rem;margin-inline:auto}
+  .hero-art{position:relative;aspect-ratio:4/5;max-height:16rem;margin-inline:auto;width:100%}
+  @media(min-width:900px){.hero-art{max-height:19rem;width:auto}}
+  .hero-art video{object-position:center 20%}
+  @media(max-width:899px){.hero .lead{display:none}.hero-art{order:-1}.hero .btn{padding:.7rem 1rem}}
   @media(min-width:900px){.hero-art{margin-inline:0 0;justify-self:end}}
   .hero-art img,.hero-art video{width:100%;height:100%;object-fit:cover;display:block}
   .snd{position:absolute;right:.7rem;bottom:.7rem;background:rgba(10,12,15,.7);border:1px solid var(--gold);color:var(--bone);font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .7rem;border-radius:2px}
-  .cats{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));margin-block:3rem 1rem}
-  .cat{position:relative;aspect-ratio:4/3;border:1px solid var(--line);border-radius:3px;overflow:hidden;text-align:left;padding:0;background:var(--slate);transition:border-color .2s}
+  .cats{display:none;gap:.7rem;grid-template-columns:repeat(2,1fr);margin-block:1.4rem .4rem}
+  @media(min-width:760px){.cats{grid-template-columns:repeat(4,1fr);gap:1rem}}
+  .cat{position:relative;aspect-ratio:auto;height:4.6rem;border:1px solid var(--line);border-radius:3px;overflow:hidden;text-align:left;padding:0;background:var(--slate);transition:border-color .2s}
   .cat:hover{border-color:var(--gold)}
   .cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;transition:transform .5s}
   .cat:hover img{transform:scale(1.05)}
-  .cat span{position:absolute;left:0;right:0;bottom:0;padding:1.6rem 1rem .9rem;background:linear-gradient(0deg,rgba(10,12,15,.92),transparent)}
-  .cat b{display:block;font-family:var(--display);font-size:1.25rem;font-weight:600}
+  .cat span{position:absolute;left:0;right:0;bottom:0;padding:1rem .9rem .55rem;background:linear-gradient(0deg,rgba(10,12,15,.92),transparent)}
+  .cat b{display:block;font-family:var(--display);font-size:1.05rem;font-weight:600}
   .cat small{color:var(--mist);font-family:var(--mono);font-size:.7rem;letter-spacing:.1em}
   .tools{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:1rem;margin:3rem 0 1.4rem}
   .tools h2{font-size:2.1rem;margin:.4rem 0 0;font-weight:600}
@@ -127,10 +131,10 @@
       <p class="eyebrow">The Autumn Collection</p>
       <h1 class="display">A house of objects, built to be <span class="gold">inherited.</span></h1>
       <p class="lead">Watches, leather goods, bags and silks, made in small runs and sold without a middleman. Browse by category, open any piece for detail, and fill the cart as full as you like.</p>
-      <p style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem"><a class="btn" href="#shop">Shop all pieces</a><a class="btn btn-line" href="#cats">Browse categories</a></p>
+      <p style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem"><a class="btn" href="#shop">Shop all pieces</a><a class="btn btn-line" href="#chips">Browse categories</a></p>
     </div>
     <div class="hero-art" id="heroArt">
-      <video id="heroVideo" src="/p/review-lumiere-t5w0/hero.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Brand film"></video>
+      <video id="heroVideo" src="https://videos.pexels.com/video-files/34555114/14647360_1440_2560_50fps.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Brand film"></video>
       <button type="button" class="snd" id="snd" aria-label="Turn sound on">Sound off</button>
       <img id="heroImg" alt="Featured piece from the Noir and Gilt collection" hidden>
     </div>
