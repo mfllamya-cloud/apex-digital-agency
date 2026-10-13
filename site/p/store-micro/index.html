@@ -203,8 +203,11 @@ products=DEMO;render();drawCart();
 if(SHEET_CSV_URL)loadSheet(SHEET_CSV_URL);
 function loadSheet(url){fetch(url).then(function(r){return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;if(typeof cat!=='undefined')cat='All';render()}}).catch(function(){})}
 function applyConfig(c){
-  if(c.brand){document.title=c.brand;var lg=document.querySelector('.logo');if(lg)lg.textContent=c.brand;var d=document.querySelector('.demo');if(d)d.remove();var f=document.querySelector('footer span');if(f)f.innerHTML='&copy; '+esc(c.brand)}
-  if(c.sheetCsvUrl)loadSheet(c.sheetCsvUrl);
+  if(c.brand){document.title=c.brand;var lg=document.querySelector('.logo');if(lg)lg.textContent=c.brand;var d=document.querySelector('.demo');if(d)d.remove();var f=document.querySelector('footer span');if(f)f.innerHTML='&copy; '+esc(c.brand);var rb=document.querySelector('meta[name=robots]');if(rb)rb.remove()}
+  var nt=document.querySelector('.note');
+  if(c.checkoutUrl){$('checkout').onclick=function(){location.href=c.checkoutUrl};if(nt)nt.textContent='Secure checkout.'}
+  else if(c.brand){$('checkout').onclick=function(){toast('Checkout is being connected. Please contact the store to order.')};if(nt)nt.textContent='Checkout opens soon.'}
+  if(c.sheetCsvUrl){products=[];render();loadSheet(c.sheetCsvUrl)}
 }
 fetch('config.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(c){if(c)applyConfig(c)}).catch(function(){});
 
