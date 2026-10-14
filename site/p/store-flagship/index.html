@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Noir &amp; Gilt | Flagship Store Demo</title>
+<title>LUMIÈRE | Luxury Women's Clothing · Flagship Store Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -48,6 +48,7 @@
   .hero-art{position:relative;aspect-ratio:4/5;max-height:16rem;margin-inline:auto;width:100%}
   @media(min-width:900px){.hero-art{max-height:19rem;width:auto}}
   .hero-art video{object-position:center 20%}
+  .hero-ph{position:absolute;inset:0}
   @media(max-width:899px){.hero .lead{display:none}.hero-art{order:-1}.hero .btn{padding:.7rem 1rem}}
   @media(min-width:900px){.hero-art{margin-inline:0 0;justify-self:end}}
   .hero-art img,.hero-art video{width:100%;height:100%;object-fit:cover;display:block}
@@ -70,7 +71,7 @@
   .grid{display:grid;gap:1.2rem;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr))}
   .card{background:var(--slate);border:1px solid var(--line);border-radius:3px;display:flex;flex-direction:column;min-width:0;transition:border-color .2s}
   .card:hover{border-color:rgba(212,175,106,.6)}
-  .card .ph{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--coal);border:0;padding:0;display:block;width:100%}
+  .card .ph{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--coal);border:0;padding:0;display:block;width:100%}
   .card .ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
   .card:hover .ph img{transform:scale(1.04)}
   .tag{position:absolute;top:.6rem;left:.6rem;background:var(--coal);border:1px solid var(--line);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .5rem;color:var(--gold)}
@@ -107,7 +108,8 @@
   body.quick .modal{display:grid}
   .m-box{background:var(--coal);border:1px solid var(--gold);border-radius:3px;max-width:48rem;width:100%;display:grid;gap:0;position:relative}
   @media(min-width:700px){.m-box{grid-template-columns:1fr 1fr}}
-  .m-box img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+  .m-box img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+  .m-imgs{display:grid;gap:2px;align-content:start}.m-imgs img.d{aspect-ratio:16/9}
   .m-in{padding:1.6rem;display:flex;flex-direction:column;gap:.6rem}
   .m-in h3{margin:0;font-family:var(--display);font-size:1.7rem;font-weight:600} .m-in p{color:var(--mist);line-height:1.65;margin:.2rem 0 .6rem}
   .x{position:absolute;top:.6rem;right:.6rem;background:var(--coal);border:1px solid var(--line);width:2rem;height:2rem;border-radius:99px;font-size:1.1rem;z-index:2}
@@ -119,7 +121,7 @@
 <body>
 <div class="demo">Apex Studio Pro &middot; Flagship Brand Store demo &middot; no payment is taken</div>
 <header class="bar"><div class="wrap bar-in">
-  <a class="logo" href="#top">Noir <i>&amp;</i> Gilt</a>
+  <a class="logo" href="#top">LUMI<i>È</i>RE</a>
   <nav class="nav" id="nav" aria-label="Categories"></nav>
   <input class="search" id="q" type="search" placeholder="Search" aria-label="Search products">
   <button class="cart-btn" id="openCart" aria-label="Open cart">Cart <span class="count" id="count">0</span></button>
@@ -128,15 +130,17 @@
 <main id="top">
   <section class="hero"><div class="wrap">
     <div>
-      <p class="eyebrow">The Autumn Collection</p>
-      <h1 class="display">A house of objects, built to be <span class="gold">inherited.</span></h1>
-      <p class="lead">Watches, leather goods, bags and silks, made in small runs and sold without a middleman. Browse by category, open any piece for detail, and fill the cart as full as you like.</p>
-      <p style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem"><a class="btn" href="#shop">Shop all pieces</a><a class="btn btn-line" href="#chips">Browse categories</a></p>
+      <p class="eyebrow">Haute Couture &middot; Women</p>
+      <h1 class="display">Dressed in <span class="gold">light.</span></h1>
+      <p class="lead">Sculpted dresses, tailored sets and refined essentials, designed in small runs and sold direct. Browse the collection, open any piece for detail, and fill the bag as full as you like.</p>
+      <p style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem"><a class="btn" href="#shop">Shop the collection</a><a class="btn btn-line" href="#chips">Browse categories</a></p>
     </div>
     <div class="hero-art" id="heroArt">
-      <video id="heroVideo" src="https://videos.pexels.com/video-files/34555114/14647360_1440_2560_50fps.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Brand film"></video>
-      <button type="button" class="snd" id="snd" aria-label="Turn sound on">Sound off</button>
-      <img id="heroImg" alt="Featured piece from the Noir and Gilt collection" hidden>
+      <div class="hero-ph" id="heroPh" role="img" aria-label="LUMIÈRE campaign image">
+        <svg viewBox="0 0 400 500" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="hpg" cx="35%" cy="18%" r="85%"><stop offset="0" stop-color="#d4af6a" stop-opacity=".2"/><stop offset="1" stop-color="#d4af6a" stop-opacity="0"/></radialGradient></defs><rect width="400" height="500" fill="#0c0e12"/><rect width="400" height="500" fill="url(#hpg)"/><g fill="none" stroke="#d4af6a" stroke-width="1" opacity=".5"><rect x="22" y="22" width="356" height="456"/><path d="M200 150L248 246H152Z"/><path d="M200 188l22 44h-44z" fill="#d4af6a" stroke="none" opacity=".75"/></g><text x="200" y="330" text-anchor="middle" font-family="Georgia,serif" font-size="30" letter-spacing="9" fill="#f3f4f6">LUMIÈRE</text><text x="200" y="358" text-anchor="middle" font-family="monospace" font-size="10" letter-spacing="4" fill="#d4af6a">HAUTE COUTURE · WOMEN</text></svg>
+      </div>
+      <video id="heroVideo" hidden muted loop playsinline preload="none" aria-label="Brand film"></video>
+      <button type="button" class="snd" id="snd" aria-label="Turn sound on" hidden>Sound off</button>
     </div>
   </div></section>
 
@@ -157,11 +161,11 @@
     <div><b>Free delivery</b><span>On orders over $150</span></div>
     <div><b>30-day returns</b><span>Unworn, in original packaging</span></div>
     <div><b>Gift-ready</b><span>Boxed and wrapped on request</span></div>
-    <div><b>Your own domain</b><span>noirandgilt.com, included for year one</span></div>
+    <div><b>Your own domain</b><span>yourbrand.com, included for year one</span></div>
   </div></div>
 </main>
 
-<footer><div class="wrap"><span>&copy; Noir &amp; Gilt. A demo store by Apex Studio Pro.</span><span>Unlimited products &middot; managed from one Google Sheet</span></div></footer>
+<footer><div class="wrap"><span>&copy; LUMIÈRE. A demo store by Apex Studio Pro.</span><span>Unlimited products &middot; managed from one Google Sheet</span></div></footer>
 
 <div class="shade" id="shade"></div>
 <aside class="drawer" id="drawer" aria-label="Shopping cart" aria-hidden="true">
@@ -185,27 +189,9 @@
 var SHEET_CSV_URL = "";
 var FREE_SHIP = 150;
 
-function art(kind, hue){
-  var bg='<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl('+hue+',18%,17%)"/><stop offset="1" stop-color="hsl('+(hue+20)+',22%,9%)"/></linearGradient></defs><rect width="400" height="400" fill="url(#g)"/>';
-  var gold='#d4af6a',s='fill="none" stroke="'+gold+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"',shape='';
-  if(kind==='watch'){var t='';for(var i=0;i<12;i++){var a=i*Math.PI/6;t+='<line x1="'+(200+Math.sin(a)*92)+'" y1="'+(200-Math.cos(a)*92)+'" x2="'+(200+Math.sin(a)*(i%3?100:106))+'" y2="'+(200-Math.cos(a)*(i%3?100:106))+'" '+s+'/>';}
-    shape='<path d="M165 70h70l8 55h-86zM157 275h86l-8 55h-70z" '+s+'/><circle cx="200" cy="200" r="86" '+s+'/><circle cx="200" cy="200" r="76" '+s+' opacity=".4"/>'+t+'<path d="M200 200V150M200 200l34 18" '+s+'/><circle cx="200" cy="200" r="4" fill="'+gold+'"/>';}
-  else if(kind==='wallet'){shape='<rect x="95" y="135" width="210" height="140" rx="12" '+s+'/><path d="M95 168h210" '+s+'/><rect x="250" y="200" width="55" height="38" rx="8" '+s+'/><circle cx="268" cy="219" r="4" fill="'+gold+'"/><path d="M110 150h180" '+s+' stroke-dasharray="3 6" opacity=".5"/>';}
-  else if(kind==='scarf'){shape='<path d="M120 90c40 30 120-20 160 10v150c-40-30-120 20-160-10z" '+s+'/><path d="M120 120c40 30 120-20 160 10M120 150c40 30 120-20 160 10M120 180c40 30 120-20 160 10M120 210c40 30 120-20 160 10" '+s+' opacity=".45"/><path d="M135 240v34M155 244v34M175 246v34M195 246v34M215 244v34M235 240v34M255 236v34" '+s+' opacity=".6"/>';}
-  else if(kind==='bag'){shape='<path d="M140 150h120l28 130H112z" '+s+'/><path d="M165 150c0-40 15-60 35-60s35 20 35 60" '+s+'/><path d="M150 178h100" '+s+' opacity=".5"/><circle cx="200" cy="205" r="7" fill="'+gold+'"/>';}
-  else if(kind==='belt'){shape='<path d="M60 215c0-20 10-30 30-30h220c20 0 30 10 30 30s-10 30-30 30H90c-20 0-30-10-30-30z" '+s+'/><rect x="168" y="190" width="64" height="50" rx="6" '+s+'/><path d="M200 200v30M185 215h30" '+s+'/><g '+s+' opacity=".5"><circle cx="262" cy="215" r="3"/><circle cx="282" cy="215" r="3"/><circle cx="302" cy="215" r="3"/></g>';}
-  else{shape='<circle cx="200" cy="200" r="70" '+s+'/><circle cx="200" cy="200" r="46" '+s+' opacity=".5"/>';}
-  return 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">'+bg+shape+'</svg>');
-}
-var RAW=[
- ["Watches","watch",215,[["Obsidian Chronograph",420,"Brushed steel case, sapphire glass, 40 mm."],["Meridian Dress Watch",340,"Slim 36 mm case on a black leather strap."],["Eclipse Automatic",690,"Self-winding movement with an exhibition back."],["Gilt Field Watch",280,"Matte dial, luminous hands, 38 mm."],["Aurelian Skeleton",910,"Open-worked dial in a rose-gilt case."],["Nocturne Moonphase",780,"Moonphase complication on a midnight dial."]]],
- ["Leather Goods","wallet",30,[["Gilt Bar Wallet",95,"Full-grain leather with hand-stitched edges."],["Midnight Card Holder",60,"Four-slot holder, slim enough for a pocket."],["Heritage Belt",85,"Single-piece cut with a brushed gold buckle."],["Passport Folio",110,"Vegetable-tanned leather with a card pocket."],["Travel Wallet",140,"Zip-around with twelve card slots."],["Valet Tray",75,"Moulded leather tray for keys and watch."]]],
- ["Bags","bag",15,[["Atelier Tote",260,"Structured carry-all in pebbled leather."],["Courier Satchel",310,"Everyday bag with a padded sleeve and brass hardware."],["Weekender",480,"Hand-finished holdall for two nights away."],["Evening Clutch",190,"Suede-lined clutch with a gilt clasp."],["Backpack No. 3",340,"Roll-top leather backpack, laptop sleeve inside."],["Camera Bag",295,"Padded inserts, leather trim, waxed canvas."]]],
- ["Silks &amp; Scarves","scarf",265,[["Noir Silk Scarf",130,"Heavy twill silk, rolled edges, 90 x 90 cm."],["Gilded Pocket Square",55,"Hand-rolled silk in a quiet gold weave."],["Midnight Stole",210,"Wide silk-wool stole with a soft drape."],["Ink Foulard",95,"Printed silk foulard in deep blues."],["Bone Twill Scarf",120,"Pale twill silk with a hand-rolled hem."],["Ember Bandana",65,"Lightweight silk square in warm tones."]]]
-];
-var DEMO=[];RAW.forEach(function(c,ci){c[3].forEach(function(p,i){DEMO.push({name:p[0],price:p[1],desc:p[2],category:c[0].replace('&amp;','&'),image:art(c[1],c[2]+i*9),stock:i===4&&ci===2?0:25,isNew:i===0})})});
-/* interleave so "Featured" is not grouped by category */
-DEMO=DEMO.map(function(p,i){return{p:p,k:(i%6)*4+Math.floor(i/6)}}).sort(function(a,b){return a.k-b.k}).map(function(x){return x.p});
+var DEMO=[{"name": "La Robe Sculpture Rouge", "price": 2000.0, "desc": "Haute-couture red dress with exclusive architectural lines.", "category": "Dresses", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791619699/k7mlujpjjesfofpllw9d.jpg", "stock": 25, "isNew": true, "image2": "https://res.cloudinary.com/z4wubaot/image/upload/v1791619883/hkrpgpg3bnxrolcv70py.jpg"}, {"name": "Ensemble Corset Lumière Noir", "price": 470.0, "desc": "Black satin corset with a structured tailored trouser.", "category": "Sets & Tailoring", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620189/m7jxiag7avxlgps1ekbh.jpg", "stock": 25, "isNew": true}, {"name": "Robe Cascade Rose Poudré", "price": 1500.0, "desc": "Cascading dress in powder pink.", "category": "Dresses", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620205/v2ow64ireoy4jrscrxmf.jpg", "stock": 25, "isNew": true}, {"name": "Ensemble Midnight Chic", "price": 300.0, "desc": "Elegant black corset with high-waisted camel trousers.", "category": "Sets & Tailoring", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620454/mq0lvocpfs57mfu9hi0x.jpg", "stock": 25, "isNew": false}, {"name": "Top Fluide Blanc Lumière", "price": 140.0, "desc": "Elegant blouse with clean lines for a sophisticated look.", "category": "Tops", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620615/bjkx8caevigzpntck97x.jpg", "stock": 25, "isNew": false}, {"name": "Robe Volants en Denim", "price": 320.0, "desc": "Flowing denim midi dress with romantic ruffles and a belt.", "category": "Dresses", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620625/wkbrrjlbl6wzhyo5nq8s.jpg", "stock": 25, "isNew": false}, {"name": "Ensemble Tailleur Urbain", "price": 400.0, "desc": "Structured jacket and high-waisted trouser in a contemporary cut.", "category": "Sets & Tailoring", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620634/oj8jjnpsof0yjigt5bzh.jpg", "stock": 25, "isNew": false}, {"name": "T-Shirt Signature Marionnette", "price": 80.0, "desc": "Premium cotton T-shirt with an exclusive design on the back.", "category": "Tops", "image": "https://res.cloudinary.com/z4wubaot/image/upload/v1791620640/iz6m7jeao9by5kjw7wfn.jpg", "stock": 25, "isNew": false}];
+/* Fallback artwork when a Sheet row has no image */
+function art(){return "data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><rect width="400" height="500" fill="#1f2228"/><path d="M200 120l60 40-20 30v200h-80V190l-20-30z" fill="none" stroke="#d4af6a" stroke-width="2.2" stroke-linejoin="round"/></svg>')}
 
 var products=[],cart=[],cat='All',query='',sortBy='feat';
 var $=function(id){return document.getElementById(id)};
@@ -226,7 +212,6 @@ function cats(){var m={};products.forEach(function(p){(m[p.category]=m[p.categor
 function setCat(c){cat=c;query='';$('q').value='';render();document.getElementById('shop').scrollIntoView({behavior:'smooth'})}
 function render(){
   var m=cats(),names=Object.keys(m);
-  $('heroImg').src=products[0]?products[0].image:'';
   $('nav').innerHTML='<button data-c="All" class="'+(cat==='All'?'on':'')+'">All</button>'+names.map(function(n){return '<button data-c="'+esc(n)+'" class="'+(cat===n?'on':'')+'">'+esc(n)+'</button>'}).join('');
   $('chips').innerHTML=['All'].concat(names).map(function(n){return '<button class="chip'+(cat===n?' on':'')+'" data-c="'+esc(n)+'">'+esc(n)+'</button>'}).join('');
   $('cats').innerHTML=names.map(function(n){return '<button class="cat" data-c="'+esc(n)+'"><img src="'+m[n][0].image+'" alt="" loading="lazy"><span><b>'+esc(n)+'</b><small>'+m[n].length+' PIECES</small></span></button>'}).join('');
@@ -247,7 +232,7 @@ function drawCart(){
 }
 function add(i){var p=products[i],l=cart.find(function(x){return x.p===p});if(l)l.qty++;else cart.push({p:p,qty:1});drawCart();toast(p.name+' added');}
 function quick(i){var p=products[i],out=p.stock<=0;
-  $('mbox').innerHTML='<button class="x" data-x aria-label="Close">&times;</button><img src="'+p.image+'" alt="'+esc(p.name)+'"><div class="m-in"><span class="eyebrow">'+esc(p.category)+'</span><h3>'+esc(p.name)+'</h3><span class="price" style="font-size:1.2rem">'+money(p.price)+'</span><p>'+esc(p.desc)+'</p><button class="btn" style="border:0" data-a="'+i+'"'+(out?' disabled style="opacity:.5;border:0"':'')+'>'+(out?'Sold out':'Add to cart')+'</button></div>';
+  $('mbox').innerHTML='<button class="x" data-x aria-label="Close">&times;</button><div class="m-imgs"><img src="'+p.image+'" alt="'+esc(p.name)+'">'+(p.image2?'<img class="d" src="'+p.image2+'" alt="'+esc(p.name)+', detail" loading="lazy">':'')+'</div><div class="m-in"><span class="eyebrow">'+esc(p.category)+'</span><h3>'+esc(p.name)+'</h3><span class="price" style="font-size:1.2rem">'+money(p.price)+'</span><p>'+esc(p.desc)+'</p><button class="btn" style="border:0" data-a="'+i+'"'+(out?' disabled style="opacity:.5;border:0"':'')+'>'+(out?'Sold out':'Add to cart')+'</button></div>';
   document.body.classList.add('quick')}
 function closeAll(){document.body.classList.remove('cart','quick');$('drawer').setAttribute('aria-hidden','true')}
 document.addEventListener('click',function(e){var t=e.target,b;
@@ -266,7 +251,6 @@ $('sort').onchange=function(){sortBy=this.value;render()};
 $('checkout').onclick=function(){toast('Demo mode: in a live store this opens secure payment.')};
 
 var hv=$('heroVideo');
-hv.addEventListener('error',function(){hv.hidden=true;$('snd').hidden=true;$('heroImg').hidden=false});
 $('snd').onclick=function(){hv.muted=!hv.muted;this.textContent=hv.muted?'Sound off':'Sound on';if(!hv.muted)hv.play().catch(function(){})};
 products=DEMO;render();drawCart();
 if(SHEET_CSV_URL)loadSheet(SHEET_CSV_URL);
@@ -276,7 +260,7 @@ function applyConfig(c){
   var nt=document.querySelector('.note');
   if(c.checkoutUrl){$('checkout').onclick=function(){location.href=c.checkoutUrl};if(nt)nt.textContent='Secure checkout.'}
   else if(c.brand){$('checkout').onclick=function(){toast('Checkout is being connected. Please contact the store to order.')};if(nt)nt.textContent='Checkout opens soon.'}
-  if(c.heroVideo){hv.src=c.heroVideo}else{hv.hidden=true;$('snd').hidden=true;$('heroImg').hidden=false}
+  if(c.heroVideo){hv.src=c.heroVideo;hv.preload='metadata';hv.hidden=false;$('snd').hidden=false;$('heroPh').hidden=true;hv.play().catch(function(){})}
   if(c.sheetCsvUrl){products=[];render();loadSheet(c.sheetCsvUrl)}
 }
 fetch('config.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(c){if(c)applyConfig(c)}).catch(function(){});
