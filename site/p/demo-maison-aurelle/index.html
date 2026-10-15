@@ -133,6 +133,32 @@
   html[data-theme][data-palette=ember]{--bg:#130a06;--bg2:#1e120b;--line:#3b2518;--text:#fbf1e4;--muted:#c8ad95;--hbg:rgba(19,10,6,.84)}
   html[data-theme][data-palette=ember] body{background:radial-gradient(1000px 560px at 85% -10%,rgba(242,166,90,.17),transparent 60%),radial-gradient(800px 520px at 0% 45%,rgba(170,60,25,.15),transparent 60%),var(--bg)}
   html[data-theme][data-palette=ember] h1,html[data-theme][data-palette=ember] h2{letter-spacing:.005em}
+
+/* ---- Micro-Store ---- */
+#store .sx-lead{max-width:34rem;margin:.8rem auto 0;color:var(--muted)}
+.sx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:18px;margin-top:40px}
+.sx-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 18px 40px -30px rgba(60,40,10,.18);display:flex;flex-direction:column}
+.sx-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.sx-b{padding:18px 20px 22px;display:flex;flex-direction:column;gap:6px;flex:1}
+.sx-b h3{font-size:22px}
+.sx-b p{margin:0;color:var(--muted);font-size:14px;flex:1}
+.sx-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.sx-price{font-family:var(--serif);font-size:22px;color:var(--accent)}
+.sx-step{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:999px}
+.sx-step button{width:36px;height:36px;background:none;border:0;border-radius:50%;color:var(--text);font-size:18px;cursor:pointer}
+.sx-step button:hover{color:var(--accent)}
+.sx-step span{min-width:26px;text-align:center;font-size:15px}
+.sx-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin-top:28px;padding:18px 22px;background:var(--bg2);border:1.5px solid var(--line);border-radius:22px}
+.sx-sum span{display:block;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.sx-sum b{font-family:var(--serif);font-weight:400;font-size:32px;line-height:1.1}
+.sx-sum i{font-style:normal;color:var(--muted);font-size:14px;margin-inline-start:10px}
+#sxOrder:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+#sxDlg{background:var(--bg2);color:var(--text);border:1.5px solid var(--accent);border-radius:22px;max-width:420px;width:calc(100% - 32px);padding:28px}
+#sxDlg::backdrop{background:rgba(20,16,10,.6)}
+#sxDlg h3{font-size:26px;margin-bottom:12px}
+#sxDlg ul{list-style:none;margin:0 0 14px;padding:0;border-top:1px solid var(--line)}
+#sxDlg li{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+#sxDlg p{margin:0 0 18px;color:var(--muted);font-size:14px}
 </style>
 <link rel="stylesheet" href="/p/_lib/lp.css">
 </head>
@@ -234,25 +260,15 @@
   </div>
 </section>
 
-<section id="menu">
-  <div class="wrap">
-    <div class="reveal center"><p class="eyebrow">Sample menu</p><h2>Tonight at the table</h2></div>
-    <div class="menu" id="menuList" data-items="Truffle velouté :: Silky wild mushroom soup finished with black truffle and a drop of aged cream | Seared scallops :: Golden scallops on cauliflower purée with brown butter and toasted hazelnuts | Slow-braised short rib :: Twelve-hour beef in red wine jus, served with smoked potato mousseline | Catch of the day :: Line-caught fish with saffron beurre blanc and seasonal greens | Chef’s tasting menu :: Five courses chosen by the chef for the whole table, perfect for celebrations | Dark chocolate soufflé :: Baked to order and served warm with vanilla bean ice cream"></div>
-    <div class="order reveal" id="order">
-      <div><h3 data-t="o_title"></h3><p class="lead" data-t="o_lead"></p></div>
-      <form id="orderForm">
-        <label><span data-t="o_name"></span><input name="n" required autocomplete="name"></label>
-        <label><span data-t="o_phone"></span><input name="ph" type="tel" autocomplete="tel"></label>
-        <label class="full"><span data-t="o_items"></span><select name="it" id="orderItem"></select></label>
-        <label><span data-t="o_qty"></span><input name="q" type="number" min="1" value="1"></label>
-        <label><span data-t="o_when"></span><input name="w"></label>
-        <label class="full"><span data-t="o_note"></span><textarea name="nt"></textarea></label>
-        <div class="full"><button class="btn" type="submit" data-t="o_send"></button></div>
-        <p class="hint full" data-t="o_hint"></p>
-      </form>
-    </div>
-  </div>
+<section id="store">
+<div class="wrap">
+<div class="reveal center"><p class="eyebrow">Order online</p><h2>Chef’s Signature Boxes</h2><p class="sx-lead">Three tasting boxes from our kitchen, ready for your table. Choose your quantity and see your total instantly.</p></div>
+<div class="sx-grid" id="sxGrid"></div>
+<div class="sx-bar reveal"><div class="sx-sum"><span data-t="total">Total</span><b id="sxTotal">$0</b><i id="sxCount"></i></div><button class="btn" id="sxOrder" type="button" disabled data-t="order">Order now</button></div>
+<p class="note center" data-t="demo">Demo mode: no payment is taken.</p>
+</div>
 </section>
+<dialog id="sxDlg"><h3 data-t="sum">Your order</h3><ul id="sxList"></ul><p data-t="dm"></p><button class="btn" id="sxClose" type="button" data-t="close">Continue browsing</button></dialog>
 
 <section>
   <div class="wrap">
@@ -317,40 +333,6 @@
     var sec=document.getElementById('film');
     setTimeout(function(){ if(!box.querySelector('.vid:not(.hide)')) sec.classList.add('hide'); }, 6000);
   })();
-  // menu / offer list + quick order (opens WhatsApp, email or the order link with the order written out)
-  (function(){
-    var L={en:{o_title:'Quick order',o_lead:'Pick what you want, send it in one tap. We answer you directly.',o_name:'Your name',o_phone:'Phone (optional)',o_items:'Your choice',o_qty:'Quantity',o_when:'Date or city',o_note:'Note (optional)',o_send:'Send my order',o_hint:'Your order opens in WhatsApp, ready to send.',hello:'Hello, I would like to order:',name:'Name',phone:'Phone',qty:'Quantity',when:'Date / city',note:'Note',pick:'Choose'},
-      fr:{o_title:'Commande rapide',o_lead:'Choisissez, envoyez en un geste. Nous vous répondons directement.',o_name:'Votre nom',o_phone:'Téléphone (facultatif)',o_items:'Votre choix',o_qty:'Quantité',o_when:'Date ou ville',o_note:'Note (facultatif)',o_send:'Envoyer ma commande',o_hint:'Votre commande s’ouvre dans WhatsApp, prête à envoyer.',hello:'Bonjour, je souhaite commander :',name:'Nom',phone:'Téléphone',qty:'Quantité',when:'Date / ville',note:'Note',pick:'Choisir'},
-      es:{o_title:'Pedido rápido',o_lead:'Elige lo que quieres y envíalo con un toque. Te respondemos directamente.',o_name:'Tu nombre',o_phone:'Teléfono (opcional)',o_items:'Tu elección',o_qty:'Cantidad',o_when:'Fecha o ciudad',o_note:'Nota (opcional)',o_send:'Enviar mi pedido',o_hint:'Tu pedido se abre en WhatsApp, listo para enviar.',hello:'Hola, quiero pedir:',name:'Nombre',phone:'Teléfono',qty:'Cantidad',when:'Fecha / ciudad',note:'Nota',pick:'Elegir'},
-      it:{o_title:'Ordine rapido',o_lead:'Scegli e invia con un tocco. Ti rispondiamo direttamente.',o_name:'Il tuo nome',o_phone:'Telefono (facoltativo)',o_items:'La tua scelta',o_qty:'Quantità',o_when:'Data o città',o_note:'Nota (facoltativa)',o_send:'Invia il mio ordine',o_hint:'Il tuo ordine si apre in WhatsApp, pronto da inviare.',hello:'Buongiorno, vorrei ordinare:',name:'Nome',phone:'Telefono',qty:'Quantità',when:'Data / città',note:'Nota',pick:'Scegli'},
-      ar:{o_title:'اطلب بسرعة',o_lead:'اختر ما يعجبك وأرسل طلبك بضغطة واحدة، ونرد عليك مباشرة.',o_name:'الاسم',o_phone:'الهاتف (اختياري)',o_items:'اختيارك',o_qty:'الكمية',o_when:'التاريخ أو المدينة',o_note:'ملاحظة (اختياري)',o_send:'أرسل طلبي',o_hint:'سيفتح طلبك في واتساب جاهزاً للإرسال.',hello:'مرحباً، أريد أن أطلب:',name:'الاسم',phone:'الهاتف',qty:'الكمية',when:'التاريخ / المدينة',note:'ملاحظة',pick:'اختيار'} };
-    var t=L[(document.documentElement.lang||'en').slice(0,2)]||L.en;
-    document.querySelectorAll('[data-t]').forEach(function(e){ e.textContent=t[e.getAttribute('data-t')]||''; });
-    var box=document.getElementById('menuList'), sel=document.getElementById('orderItem');
-    var items=(box.getAttribute('data-items')||'').split('|').map(function(r){ var a=r.split('::'); return {n:(a[0]||'').trim(), d:(a.slice(1).join(' ')||'').trim()}; }).filter(function(i){ return i.n; });
-    var p1=document.querySelector('.product h3'); if(!items.length && p1 && p1.textContent.trim()) items=[{n:p1.textContent.trim(),d:''}];
-    if(!items.length){ document.getElementById('menu').classList.add('hide'); }
-    items.forEach(function(i){
-      var c=document.createElement('div'); c.className='mi reveal';
-      var w=document.createElement('div'); var h=document.createElement('h3'); h.textContent=i.n; var p=document.createElement('p'); p.textContent=i.d; w.appendChild(h); if(i.d) w.appendChild(p);
-      var b=document.createElement('button'); b.type='button'; b.textContent='+'; b.setAttribute('aria-label',t.pick+' '+i.n);
-      b.onclick=function(){ sel.value=i.n; document.querySelectorAll('.mi button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); document.getElementById('order').scrollIntoView({behavior:'smooth',block:'center'}); };
-      c.appendChild(w); c.appendChild(b); box.appendChild(c);
-      var o=document.createElement('option'); o.textContent=i.n; sel.appendChild(o);
-    });
-    var url=document.querySelector('header .btn').getAttribute('href')||'';
-    document.getElementById('orderForm').addEventListener('submit',function(ev){
-      ev.preventDefault(); var f=ev.target;
-      var lines=[t.hello,'• '+f.it.value+' × '+(f.q.value||1),t.name+': '+f.n.value];
-      if(f.ph.value) lines.push(t.phone+': '+f.ph.value); if(f.w.value) lines.push(t.when+': '+f.w.value); if(f.nt.value) lines.push(t.note+': '+f.nt.value);
-      var msg=lines.join('\n'), go;
-      if(/wa\.me|whatsapp/i.test(url)){ go=url.split('?')[0]+'?text='+encodeURIComponent(msg); }
-      else if(/^mailto:/i.test(url)){ go=url.split('?')[0]+'?subject='+encodeURIComponent(document.title)+'&body='+encodeURIComponent(msg); }
-      else if(/^https?:/i.test(url) && url.indexOf(location.host)<0){ go=url; }
-      else { go='https://wa.me/?text='+encodeURIComponent(msg); }
-      window.open(go,'_blank','noopener');
-    });
-  })();
   if('IntersectionObserver' in window){ var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });},{threshold:.12}); document.querySelectorAll('.reveal').forEach(function(el){ro.observe(el);}); } else { document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');}); }
 </script>
 
@@ -384,7 +366,64 @@
 <div class="lp-sprog"></div>
 <div class="lp-sticky"><img src="photo1.jpg" alt="" onerror="this.style.display='none'"><div><b>Maison Aurelle</b><span>Private Dining Room · Reserve tonight</span></div><a class="btn" href="https://wa.me/">Reserve now</a></div>
 <div class="lp-toast" role="status" aria-live="polite">عمل تجريبي لأغراض العرض فقط / Demo only, for preview purposes</div>
+<script>
+/* Micro-Store: one product list drives the grid, the live total and the order dialog. */
+(function(){
+  var TXT={
+    en:{total:"Total",order:"Order now",demo:"Demo mode: no payment is taken.",sum:"Your order",close:"Continue browsing",dm:"This is a demonstration. In a live store, this button opens the secure payment page with your selection.",item:"item",items:"items",dec:"Decrease",inc:"Increase"},
+    fr:{total:"Total",order:"Commander",demo:"Mode démo : aucun paiement n’est prélevé.",sum:"Votre commande",close:"Continuer",dm:"Ceci est une démonstration. Dans une boutique réelle, ce bouton ouvre la page de paiement sécurisée avec votre sélection.",item:"article",items:"articles",dec:"Diminuer",inc:"Augmenter"},
+    es:{total:"Total",order:"Pedir ahora",demo:"Modo demo: no se cobra nada.",sum:"Tu pedido",close:"Seguir viendo",dm:"Esto es una demostración. En una tienda real, este botón abre la página de pago seguro con tu selección.",item:"artículo",items:"artículos",dec:"Disminuir",inc:"Aumentar"},
+    it:{total:"Totale",order:"Ordina ora",demo:"Modalità demo: nessun pagamento viene addebitato.",sum:"Il tuo ordine",close:"Continua",dm:"Questa è una dimostrazione. In un negozio reale, questo pulsante apre la pagina di pagamento sicura con la tua selezione.",item:"articolo",items:"articoli",dec:"Diminuisci",inc:"Aumenta"},
+    ar:{total:"المجموع",order:"اطلب الآن",demo:"وضع تجريبي: لا يتم خصم أي مبلغ.",sum:"طلبك",close:"متابعة التصفح",dm:"هذا عرض تجريبي. في المتجر الحقيقي يفتح هذا الزر صفحة الدفع الآمنة مع اختياراتك.",item:"منتج",items:"منتجات",dec:"إنقاص",inc:"زيادة"}
+  };
+  var t=TXT[(document.documentElement.lang||"en").slice(0,2)]||TXT.en;
+  var MAX=10, checkoutUrl="";
+  var products=[{"name":"The Chef’s Table Box","desc":"Five courses from the chef’s tasting menu, prepared for two guests.","image":"chef-table.jpg","price":145},{"name":"The Celebration Box","desc":"Seven courses with dessert and a pairing guide, for four guests.","image":"celebration.jpg","price":220},{"name":"The Custom Menu Box","desc":"A menu composed with our chef around your occasion, for six guests.","image":"custom-menu.jpg","price":320}];
+  var qty=[];
+  var $=function(id){return document.getElementById(id)};
+  var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+  var money=function(n){return "$"+(n%1?n.toFixed(2):n)};
+  document.querySelectorAll("#store [data-t], #sxDlg [data-t]").forEach(function(e){e.textContent=t[e.getAttribute("data-t")]});
+  function draw(){
+    products=products.slice(0,MAX);
+    $("sxGrid").innerHTML=products.map(function(p,i){
+      return '<article class="sx-card"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy"><div class="sx-b"><h3>'+esc(p.name)+'</h3><p>'+esc(p.desc)+'</p><div class="sx-row"><span class="sx-price">'+money(p.price)+'</span><span class="sx-step"><button type="button" data-d="'+i+'" aria-label="'+t.dec+'">&minus;</button><span>'+(qty[i]||0)+'</span><button type="button" data-u="'+i+'" aria-label="'+t.inc+'">+</button></span></div></div></article>';
+    }).join("");
+    sum();
+  }
+  function sum(){
+    var n=0,total=0;products.forEach(function(p,i){n+=qty[i]||0;total+=(qty[i]||0)*p.price});
+    $("sxTotal").textContent=money(total);
+    $("sxCount").textContent=n?n+" "+(n>1?t.items:t.item):"";
+    $("sxOrder").disabled=!n;
+  }
+  function step(i,by){qty[i]=Math.max(0,Math.min(9,(qty[i]||0)+by));var c=$("sxGrid").children[i];c.querySelector(".sx-step span").textContent=qty[i];sum()}
+  $("sxGrid").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;if(b.dataset.u!==undefined)step(+b.dataset.u,1);if(b.dataset.d!==undefined)step(+b.dataset.d,-1)});
+  $("sxOrder").addEventListener("click",function(){
+    if(checkoutUrl){location.href=checkoutUrl;return}
+    var total=0;
+    $("sxList").innerHTML=products.map(function(p,i){if(!qty[i])return"";total+=qty[i]*p.price;return"<li><span>"+qty[i]+" × "+esc(p.name)+"</span><span>"+money(qty[i]*p.price)+"</span></li>"}).join("")+"<li><b>"+t.total+"</b><b>"+money(total)+"</b></li>";
+    var dlg=$("sxDlg");if(dlg.showModal)dlg.showModal();
+  });
+  $("sxClose").addEventListener("click",function(){$("sxDlg").close()});
+  draw();
+  /* Optional Google Sheets CSV (first 10 visible rows) and payment link, read from config.json when present. */
+  function csv(s){var r=[],w=[],c="",q=false;for(var i=0;i<s.length;i++){var h=s[i];if(q){if(h==='"'&&s[i+1]==='"'){c+='"';i++}else if(h==='"')q=false;else c+=h}else if(h==='"')q=true;else if(h===","){w.push(c);c=""}else if(h==="\n"){w.push(c);r.push(w);w=[];c=""}else if(h!=="\r")c+=h}if(c||w.length){w.push(c);r.push(w)}return r}
+  fetch("config.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(c){
+    if(!c)return;
+    if(c.checkoutUrlEnc){try{c.checkoutUrl=decodeURIComponent(c.checkoutUrlEnc)}catch(e){}}
+    if(/^https:\/\//i.test(c.checkoutUrl||""))checkoutUrl=c.checkoutUrl;
+    if(!/^https:\/\//i.test(c.sheetCsvUrl||""))return;
+    return fetch(c.sheetCsvUrl,{cache:"no-store"}).then(function(r){return r.text()}).then(function(s){
+      var rows=csv(s.replace(/^\uFEFF/,"")),head=rows.shift().map(function(x){return x.trim().toLowerCase()});
+      var list=rows.map(function(r){var o={};head.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o})
+        .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"}).slice(0,MAX)
+        .map(function(o,i){return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",image:o.image||(products[i]&&products[i].image)||""}});
+      if(list.length){products=list;qty=[];draw()}
+    });
+  }).catch(function(){});
+})();
+</script>
 <script src="/p/_lib/lp.js" defer></script>
-<script src="store-addon.js" defer></script>
 </body>
 </html>
