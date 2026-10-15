@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0c0f">
+<title>Aura Noir | Flagship Store Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0b0c0f;--coal:#101216;--slate:#181b21;--line:#262a32;--gold:#d4af6a;--gold-hi:#e7c887;--gold-ink:#1a1306;--bone:#f4f1ea;--mist:#a3a6ad;
+  --display:"Cormorant Garamond","Cormorant",Georgia,"Times New Roman",serif;--body:"Jost","Helvetica Neue",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --navh:64px;--ease:cubic-bezier(.22,.8,.24,1);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);font-weight:400;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.lock{overflow:hidden}
+a{color:inherit}button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+img{max-width:100%}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:84rem;margin-inline:auto;padding-inline:1.1rem}
+@media(min-width:700px){.wrap{padding-inline:2rem}}
+.eyebrow{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:500}
+
+/* ---------- Transparent navbar ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:60;height:var(--navh);display:flex;align-items:center;
+  background:linear-gradient(180deg,rgba(11,12,15,.55),rgba(11,12,15,0));border-bottom:1px solid transparent;
+  transition:background .45s var(--ease),border-color .45s var(--ease),backdrop-filter .45s var(--ease),height .45s var(--ease)}
+.nav.solid{background:rgba(11,12,15,.84);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-color:var(--line);--navh:58px}
+.nav .wrap{display:flex;align-items:center;gap:1.2rem;width:100%}
+.brand{font-family:var(--display);font-size:1.55rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw}
+.links{display:none;gap:2rem;margin-left:auto;font-size:.76rem;letter-spacing:.22em;text-transform:uppercase}
+@media(min-width:800px){.links{display:flex}}
+.links a{text-decoration:none;color:var(--bone);opacity:.82;position:relative;padding:.3rem 0;transition:opacity .25s}
+.links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.links a:hover{opacity:1}.links a:hover::after{transform:scaleX(1)}
+.cart-btn{margin-left:auto;display:flex;align-items:center;gap:.65rem;background:transparent;border:1px solid rgba(244,241,234,.35);padding:.55rem .95rem;border-radius:999px;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;transition:border-color .3s,background .3s}
+@media(min-width:800px){.cart-btn{margin-left:2rem}}
+.cart-btn:hover{border-color:var(--gold);background:rgba(212,175,106,.08)}
+.count{background:var(--gold);color:var(--gold-ink);font-weight:600;font-size:.7rem;min-width:1.4rem;height:1.4rem;border-radius:99px;display:grid;place-items:center;padding-inline:.3rem;letter-spacing:0}
+.count.bump{animation:bump .5s var(--ease)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+
+/* ---------- Full-screen cinematic hero ---------- */
+.hero{position:relative;min-height:100svh;display:grid;align-items:end;overflow:hidden;isolation:isolate;background:#07080a}
+.hero-media{position:absolute;inset:0;z-index:-2}
+.hero-media video{width:100%;height:100%;object-fit:cover;display:block}
+.hero-ph{position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 70% 10%,#2a2113 0%,#12100c 45%,#07080a 100%)}
+.hero-ph .glow{position:absolute;width:70vmax;height:70vmax;border-radius:50%;left:55%;top:-20%;background:radial-gradient(circle,rgba(212,175,106,.28),rgba(212,175,106,0) 62%);animation:drift 16s ease-in-out infinite alternate}
+.hero-ph .glow.b{left:-25%;top:35%;width:60vmax;height:60vmax;background:radial-gradient(circle,rgba(150,110,50,.2),rgba(150,110,50,0) 62%);animation-duration:22s;animation-direction:alternate-reverse}
+.hero-ph svg{position:absolute;right:-6%;top:50%;height:92%;width:auto;transform:translateY(-50%);opacity:.5;animation:kb 26s ease-in-out infinite alternate}
+.hero-ph .sweep{position:absolute;inset:-20% -60%;background:linear-gradient(105deg,transparent 42%,rgba(255,236,190,.09) 50%,transparent 58%);animation:sweep 9s ease-in-out infinite}
+@keyframes drift{from{transform:translate3d(-4%,-3%,0) scale(1)}to{transform:translate3d(6%,5%,0) scale(1.18)}}
+@keyframes kb{from{transform:translateY(-50%) scale(1)}to{transform:translateY(-52%) scale(1.07)}}
+@keyframes sweep{0%,18%{transform:translateX(-30%)}70%,100%{transform:translateX(40%)}}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,8,10,.55) 0%,rgba(7,8,10,.12) 38%,rgba(7,8,10,.82) 100%),linear-gradient(90deg,rgba(7,8,10,.55),rgba(7,8,10,0) 60%)}
+.hero-in{padding-block:calc(var(--navh) + 3rem) 5.2rem;max-width:84rem;margin-inline:auto;width:100%;padding-inline:1.1rem}
+@media(min-width:700px){.hero-in{padding-inline:2rem}}
+.hero h1{font-family:var(--display);font-weight:500;font-size:clamp(3rem,10.5vw,8.4rem);line-height:.92;letter-spacing:-.01em;margin:1rem 0 1.4rem;text-wrap:balance;max-width:14ch}
+.hero h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
+.hero h1 .w>span{display:inline-block;transform:translateY(105%);animation:rise 1.1s var(--ease) forwards}
+@keyframes rise{to{transform:none}}
+.hero p.sub{max-width:34rem;color:#cfd0d3;font-weight:300;font-size:clamp(1rem,1.6vw,1.2rem);line-height:1.7;margin:0 0 2.2rem}
+.fade{opacity:0;transform:translateY(14px);animation:fadeup 1s var(--ease) forwards}
+@keyframes fadeup{to{opacity:1;transform:none}}
+.btn{display:inline-flex;align-items:center;gap:.8rem;background:var(--gold);color:var(--gold-ink);border:0;text-decoration:none;font-weight:500;font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;padding:1.1rem 2rem;border-radius:999px;transition:background .3s,transform .4s var(--ease),box-shadow .4s}
+.btn:hover{background:var(--gold-hi);transform:translateY(-2px);box-shadow:0 12px 34px -10px rgba(212,175,106,.55)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.scroll-cue{position:absolute;left:50%;bottom:1.4rem;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:rgba(244,241,234,.7);text-decoration:none}
+.scroll-cue i{display:block;width:1px;height:34px;background:linear-gradient(var(--gold),transparent);transform-origin:top;animation:cue 2.2s ease-in-out infinite}
+@keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+.snd{position:absolute;right:1.1rem;bottom:1.3rem;background:rgba(7,8,10,.55);border:1px solid rgba(244,241,234,.4);color:var(--bone);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;padding:.55rem .9rem;border-radius:999px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+@media(min-width:700px){.snd{right:2rem}}
+
+/* ---------- Shop: smart categories ---------- */
+.shop{padding-block:4.5rem 5rem}
+.shop-head{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:flex-end;justify-content:space-between;margin-bottom:2rem}
+.shop-head h2{font-family:var(--display);font-weight:500;font-size:clamp(2rem,4.4vw,3.4rem);line-height:1;margin:.5rem 0 0}
+.shop-head .meta{color:var(--mist);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+.filters{position:sticky;top:var(--navh);z-index:40;margin-inline:calc(50% - 50vw);padding:.85rem max(1.1rem,calc(50vw - 42rem + 2rem));background:rgba(11,12,15,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-block:1px solid var(--line);display:flex;gap:.8rem;align-items:center}
+.chips{display:flex;gap:.55rem;overflow-x:auto;scrollbar-width:none;flex:1;padding:.2rem 0;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;background:transparent;border:1px solid var(--line);border-radius:999px;padding:.55rem 1.05rem;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);transition:all .3s var(--ease);white-space:nowrap}
+.chip small{opacity:.6;margin-left:.45rem;letter-spacing:0}
+.chip:hover{color:var(--bone);border-color:rgba(212,175,106,.6)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);font-weight:500}
+.tools{display:none;gap:.6rem}
+@media(min-width:760px){.tools{display:flex}}
+.field{background:var(--coal);border:1px solid var(--line);border-radius:999px;padding:.55rem 1rem;font-size:.8rem;min-width:0}
+.field:focus{border-color:var(--gold);outline:0}
+.field.q{width:12rem}
+select.field{padding-right:.6rem}
+.grid{display:grid;gap:1.6rem 1.1rem;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2.2rem}
+@media(min-width:760px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:2.4rem 1.6rem}}
+@media(min-width:1100px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.card{min-width:0;opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.card.in{opacity:1;transform:none}
+.ph{position:relative;display:block;width:100%;padding:0;border:0;background:var(--slate);aspect-ratio:4/5;overflow:hidden;border-radius:2px}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.1s var(--ease),filter .6s}
+.card:hover .ph img{transform:scale(1.06)}
+.tag{position:absolute;left:.7rem;top:.7rem;background:rgba(11,12,15,.82);border:1px solid var(--line);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:.32rem .6rem;border-radius:99px}
+.quick-add{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;background:rgba(244,241,234,.95);color:#111;border:0;border-radius:99px;padding:.8rem;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;transform:translateY(130%);opacity:0;transition:transform .5s var(--ease),opacity .4s}
+.card:hover .quick-add,.quick-add:focus-visible{transform:none;opacity:1}
+@media(hover:none){.quick-add{transform:none;opacity:1;padding:.6rem;font-size:.62rem}}
+.quick-add:hover{background:var(--gold)}
+.info{padding-top:.9rem}
+.info small{display:block;color:var(--mist);font-size:.66rem;letter-spacing:.24em;text-transform:uppercase}
+.info h3{font-family:var(--display);font-weight:500;font-size:1.3rem;line-height:1.15;margin:.3rem 0 .4rem}
+.price{font-size:.92rem;color:var(--gold);letter-spacing:.06em}
+.empty{grid-column:1/-1;text-align:center;color:var(--mist);padding:4rem 1rem;font-family:var(--display);font-size:1.5rem}
+.more{display:flex;justify-content:center;margin-top:3.2rem}
+.btn-line{background:transparent;color:var(--bone);border:1px solid rgba(244,241,234,.35)}
+.btn-line:hover{background:transparent;border-color:var(--gold);color:var(--gold);box-shadow:none}
+
+footer{border-top:1px solid var(--line);padding-block:2.6rem;color:var(--mist);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase}
+footer .wrap{display:flex;flex-wrap:wrap;gap:.8rem 2rem;justify-content:space-between;align-items:center}
+footer b{font-family:var(--display);font-size:1.3rem;font-weight:500;letter-spacing:.14em;color:var(--bone)}
+
+/* ---------- Slide-out cart ---------- */
+.shade{position:fixed;inset:0;background:rgba(5,6,8,.66);opacity:0;pointer-events:none;transition:opacity .45s var(--ease);z-index:80;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(27rem,100%);background:var(--coal);border-left:1px solid var(--line);z-index:90;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .6s var(--ease);visibility:hidden}
+body.cart .shade,body.quick .shade{opacity:1;pointer-events:auto}
+body.cart .drawer{transform:none;visibility:visible}
+.d-head{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.4rem;border-bottom:1px solid var(--line)}
+.d-head h2{font-family:var(--display);font-weight:500;font-size:1.7rem;margin:0}
+.x{background:none;border:1px solid var(--line);border-radius:50%;width:2.4rem;height:2.4rem;display:grid;place-items:center;font-size:1.3rem;line-height:1;transition:border-color .3s}
+.x:hover{border-color:var(--gold)}
+.lines{flex:1;overflow:auto;padding:.4rem 1.4rem}
+.line{display:grid;grid-template-columns:4.6rem 1fr auto;gap:1rem;padding:1.1rem 0;border-bottom:1px solid var(--line);animation:fadeup .5s var(--ease) both}
+.line img{width:4.6rem;aspect-ratio:4/5;object-fit:cover;border-radius:2px;background:var(--slate)}
+.line h4{font-family:var(--display);font-weight:500;font-size:1.12rem;line-height:1.15;margin:0 0 .3rem}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:99px;margin-top:.6rem}
+.qty button{background:none;border:0;width:2rem;height:2rem;font-size:1.05rem}
+.qty span{min-width:1.5rem;text-align:center;font-size:.85rem}
+.rm{background:none;border:0;color:var(--mist);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;margin-left:.8rem}
+.rm:hover{color:var(--gold)}
+.line .lt{font-size:.9rem;color:var(--bone)}
+.d-empty{text-align:center;color:var(--mist);padding:4rem 1rem;font-family:var(--display);font-size:1.45rem}
+.d-foot{padding:1.3rem 1.4rem calc(1.4rem + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--ink)}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.4rem}
+.tot span{color:var(--mist);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase}
+.tot b{font-family:var(--display);font-weight:500;font-size:2rem}
+.note{color:var(--mist);font-size:.74rem;margin:0 0 1.1rem}
+.d-foot .btn{width:100%;justify-content:center;border:0}
+
+/* ---------- Quick view ---------- */
+.modal{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:1rem}
+body.quick .modal{display:flex}
+.mbox{position:relative;background:var(--coal);border:1px solid var(--line);border-radius:3px;width:min(56rem,100%);max-height:92vh;overflow:auto;display:grid;animation:fadeup .5s var(--ease) both}
+@media(min-width:760px){.mbox{grid-template-columns:1fr 1fr}}
+.mbox .mi{background:var(--slate)}.mbox .mi img{width:100%;height:100%;object-fit:cover;display:block;max-height:70vh}
+.mbox .mt{padding:2rem 1.8rem;display:flex;flex-direction:column;gap:.9rem;justify-content:center}
+.mbox h3{font-family:var(--display);font-weight:500;font-size:2.3rem;line-height:1.05;margin:0}
+.mbox p{color:#c7c9cd;line-height:1.75;font-weight:300;margin:0}
+.mbox .x{position:absolute;right:.8rem;top:.8rem;background:rgba(11,12,15,.7)}
+
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translate(-50%,2rem);background:var(--slate);border:1px solid var(--gold);padding:.75rem 1.2rem;border-radius:99px;font-size:.8rem;letter-spacing:.06em;opacity:0;pointer-events:none;transition:all .45s var(--ease);z-index:120;max-width:calc(100% - 2rem);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.demo-pill{position:fixed;left:1rem;bottom:1rem;z-index:70;background:rgba(11,12,15,.85);border:1px solid var(--gold);color:var(--gold);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:.5rem .85rem;border-radius:99px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none}
+dialog#co{background:var(--coal);color:var(--bone);border:1px solid var(--gold);border-radius:3px;max-width:26rem;width:calc(100% - 2rem);padding:2rem}
+dialog#co::backdrop{background:rgba(5,6,8,.75)}
+dialog#co h3{font-family:var(--display);font-weight:500;font-size:2rem;margin:.4rem 0 .6rem}
+dialog#co p{color:var(--mist);line-height:1.7;margin:0 0 1.4rem}
+dialog#co .btn{border:0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.card{opacity:1;transform:none}.hero h1 .w>span{transform:none}.fade{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" id="brand" href="#top">Aura Noir</a>
+    <nav class="links" aria-label="Main"><a href="#shop">Collection</a></nav>
+    <button class="cart-btn" id="openCart" aria-label="Open cart">Cart <span class="count" id="count">0</span></button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-media">
+      <div class="hero-ph" id="heroPh" aria-hidden="true"><div class="glow"></div><div class="glow b"></div>
+        <svg viewBox="0 0 400 520" fill="none" stroke="#d4af6a" stroke-width=".8"><circle cx="200" cy="260" r="150" opacity=".55"/><circle cx="200" cy="260" r="118" opacity=".4"/><circle cx="200" cy="260" r="86" opacity=".3"/><path d="M200 110v300M50 260h300" opacity=".25"/><path d="M200 150l46 110-46 110-46-110z" opacity=".55"/></svg>
+        <div class="sweep"></div></div>
+      <video id="heroVideo" hidden muted loop playsinline preload="none" aria-label="Brand film"></video>
+    </div>
+    <div class="hero-in">
+      <span class="eyebrow fade" id="tagline" style="animation-delay:.2s">Maison de luxe &middot; Paris</span>
+      <h1 id="heroTitle" aria-label="Aura Noir"></h1>
+      <p class="sub fade" id="sub" style="animation-delay:.9s">Handbags, timepieces, fragrance and jewelry, finished by hand in small editions. A fictional house created to demonstrate the Apex Flagship Store.</p>
+      <a class="btn fade" href="#shop" style="animation-delay:1.1s">Explore the collection <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <a class="scroll-cue" href="#shop" aria-label="Scroll to collection"><span>Scroll</span><i></i></a>
+    <button class="snd" id="snd" hidden>Sound off</button>
+  </section>
+
+  <section class="shop" id="shop">
+    <div class="wrap">
+      <div class="shop-head">
+        <div><span class="eyebrow">The collection</span><h2 id="shopTitle">All pieces</h2></div>
+        <div class="meta" id="shopCount">&nbsp;</div>
+      </div>
+    </div>
+    <div class="wrap" style="padding-inline:0;max-width:none">
+      <div class="filters" id="filters">
+        <div class="chips" id="chips" role="tablist" aria-label="Categories"></div>
+        <div class="tools">
+          <input class="field q" id="q" type="search" placeholder="Search" aria-label="Search products">
+          <select class="field" id="sort" aria-label="Sort"><option value="feat">Featured</option><option value="lo">Price: low to high</option><option value="hi">Price: high to low</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="grid" id="grid" aria-live="polite"></div>
+      <div class="more"><button class="btn btn-line" id="more" hidden>Load more</button></div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><b id="fbrand">Aura Noir</b><span id="fnote">Aura Noir is a fictional brand &middot; Demo only</span></div></footer>
+
+<div class="shade" id="shade"></div>
+<aside class="drawer" id="drawer" aria-label="Shopping cart" aria-hidden="true">
+  <div class="d-head"><h2>Your cart</h2><button class="x" id="closeCart" aria-label="Close cart">&times;</button></div>
+  <div class="lines" id="lines"></div>
+  <div class="d-foot">
+    <div class="tot"><span>Subtotal</span><b id="sub2">$0</b></div>
+    <p class="note" id="note">Shipping and taxes are calculated at checkout.</p>
+    <button class="btn" id="checkout">Proceed to checkout</button>
+  </div>
+</aside>
+<div class="modal" id="modal" aria-hidden="true"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="demo-pill">Demo store &middot; Apex Studio Pro</div>
+<dialog id="co"><span class="eyebrow">Demo mode</span><h3>Checkout is disabled</h3><p>This is a demonstration of the Flagship Store. In a live store, this button sends the customer to your secure payment page with their cart.</p><button class="btn" id="coClose">Continue browsing</button></dialog>
+
+<script>
+(function(){
+"use strict";
+var DEMO_MODE=true;
+var CFG={brand:"Aura Noir",currency:"USD",checkoutUrl:""};
+var products=[{"name": "Nuit Tote", "price": 1850, "desc": "Hand-stitched calfskin tote with a suede-lined interior and brushed gold hardware.", "category": "Handbags", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2838%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M120%20190h160l18%20190H102z%22/%3E%3Cpath%20d%3D%22M158%20190v-26a42%2042%200%200184%200v26%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 4}, {"name": "Eclipse Clutch", "price": 980, "desc": "Structured evening clutch in matte black leather, finished with a magnetic gold clasp.", "category": "Handbags", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2841%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M120%20190h160l18%20190H102z%22/%3E%3Cpath%20d%3D%22M158%20190v-26a42%2042%200%200184%200v26%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 8}, {"name": "Obsidian Satchel", "price": 2400, "desc": "Our signature satchel in grained leather, cut from a single hide.", "category": "Handbags", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2844%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M120%20190h160l18%20190H102z%22/%3E%3Cpath%20d%3D%22M158%20190v-26a42%2042%200%200184%200v26%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 2}, {"name": "Velvet Pochette", "price": 640, "desc": "Soft-structured pochette with a detachable chain strap.", "category": "Handbags", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2847%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M120%20190h160l18%20190H102z%22/%3E%3Cpath%20d%3D%22M158%20190v-26a42%2042%200%200184%200v26%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 12}, {"name": "Aura Automatic 38", "price": 4200, "desc": "Self-winding movement behind sapphire crystal, on a black alligator-grain strap.", "category": "Timepieces", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2842%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2272%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2256%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20250v-38M200%20250l28%2016M170%20178l8-52h44l8%2052M170%20322l8%2052h44l8-52%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 3}, {"name": "Midnight Chronograph", "price": 5600, "desc": "Brushed black steel case, gold-tone sub-dials, 100 m water resistance.", "category": "Timepieces", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2830%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2272%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2256%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20250v-38M200%20250l28%2016M170%20178l8-52h44l8%2052M170%20322l8%2052h44l8-52%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 5}, {"name": "Lune Dress Watch", "price": 3100, "desc": "Ultra-thin dress watch with a moonphase aperture at six o'clock.", "category": "Timepieces", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2833%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2272%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2256%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20250v-38M200%20250l28%2016M170%20178l8-52h44l8%2052M170%20322l8%2052h44l8-52%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 0}, {"name": "Onyx Skeleton", "price": 7900, "desc": "Open-worked dial exposing the hand-finished movement.", "category": "Timepieces", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2836%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2272%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2256%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20250v-38M200%20250l28%2016M170%20178l8-52h44l8%2052M170%20322l8%2052h44l8-52%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 2}, {"name": "Noir No. 1", "price": 320, "desc": "Black oud, smoked vanilla and bergamot. Eau de parfum, 100 ml.", "category": "Fragrance", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2854%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%22148%22%20y%3D%22214%22%20width%3D%22104%22%20height%3D%22150%22%20rx%3D%226%22/%3E%3Crect%20x%3D%22176%22%20y%3D%22176%22%20width%3D%2248%22%20height%3D%2238%22/%3E%3Crect%20x%3D%22186%22%20y%3D%22150%22%20width%3D%2228%22%20height%3D%2226%22/%3E%3Cpath%20d%3D%22M148%20290h104%22%20opacity%3D%22.5%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 20}, {"name": "Ambre Nocturne", "price": 290, "desc": "Warm amber, tonka and dark rose. Eau de parfum, 100 ml.", "category": "Fragrance", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2857%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%22148%22%20y%3D%22214%22%20width%3D%22104%22%20height%3D%22150%22%20rx%3D%226%22/%3E%3Crect%20x%3D%22176%22%20y%3D%22176%22%20width%3D%2248%22%20height%3D%2238%22/%3E%3Crect%20x%3D%22186%22%20y%3D%22150%22%20width%3D%2228%22%20height%3D%2226%22/%3E%3Cpath%20d%3D%22M148%20290h104%22%20opacity%3D%22.5%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 15}, {"name": "Sel Doré", "price": 260, "desc": "Sea salt, golden woods and white musk. Eau de parfum, 50 ml.", "category": "Fragrance", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2845%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%22148%22%20y%3D%22214%22%20width%3D%22104%22%20height%3D%22150%22%20rx%3D%226%22/%3E%3Crect%20x%3D%22176%22%20y%3D%22176%22%20width%3D%2248%22%20height%3D%2238%22/%3E%3Crect%20x%3D%22186%22%20y%3D%22150%22%20width%3D%2228%22%20height%3D%2226%22/%3E%3Cpath%20d%3D%22M148%20290h104%22%20opacity%3D%22.5%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 18}, {"name": "Cuir Fumé", "price": 340, "desc": "Smoked leather, cedar and saffron. Eau de parfum, 100 ml.", "category": "Fragrance", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2848%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%22148%22%20y%3D%22214%22%20width%3D%22104%22%20height%3D%22150%22%20rx%3D%226%22/%3E%3Crect%20x%3D%22176%22%20y%3D%22176%22%20width%3D%2248%22%20height%3D%2238%22/%3E%3Crect%20x%3D%22186%22%20y%3D%22150%22%20width%3D%2228%22%20height%3D%2226%22/%3E%3Cpath%20d%3D%22M148%20290h104%22%20opacity%3D%22.5%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 9}, {"name": "Halo Ring", "price": 1450, "desc": "18k gold band set with a brilliant-cut diamond.", "category": "Jewelry", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2842%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2262%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2248%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20228l-26-34%2026-30%2026%2030z%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 6}, {"name": "Éclat Solitaire", "price": 2900, "desc": "Hand-polished 18k gold with a 0.5 ct centre stone.", "category": "Jewelry", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2845%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2262%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2248%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20228l-26-34%2026-30%2026%2030z%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 3}, {"name": "Ligne Noire Ring", "price": 860, "desc": "Blackened gold band with a fine gold edge.", "category": "Jewelry", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2848%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2262%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2248%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20228l-26-34%2026-30%2026%2030z%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 10}, {"name": "Orbit Signet", "price": 1100, "desc": "Engravable signet ring in solid 18k gold.", "category": "Jewelry", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2836%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2262%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22290%22%20r%3D%2248%22%20opacity%3D%22.5%22/%3E%3Cpath%20d%3D%22M200%20228l-26-34%2026-30%2026%2030z%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 7}, {"name": "Noir Cashmere Coat", "price": 2650, "desc": "Double-faced cashmere, fully lined, with horn buttons.", "category": "Outerwear", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2843%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M150%20150l50%2020%2050-20%2056%2040-24%20190h-164l-24-190z%22/%3E%3Cpath%20d%3D%22M200%20170v210M176%20230h-10M234%20230h10%22%20opacity%3D%22.6%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 4}, {"name": "Atelier Overcoat", "price": 1980, "desc": "Tailored virgin wool overcoat with a concealed placket.", "category": "Outerwear", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2846%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M150%20150l50%2020%2050-20%2056%2040-24%20190h-164l-24-190z%22/%3E%3Cpath%20d%3D%22M200%20170v210M176%20230h-10M234%20230h10%22%20opacity%3D%22.6%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 6}, {"name": "Soir Trench", "price": 2200, "desc": "Water-repellent gabardine trench with a gold-tone buckle.", "category": "Outerwear", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2849%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M150%20150l50%2020%2050-20%2056%2040-24%20190h-164l-24-190z%22/%3E%3Cpath%20d%3D%22M200%20170v210M176%20230h-10M234%20230h10%22%20opacity%3D%22.6%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 0}, {"name": "Aurore Cape", "price": 1750, "desc": "Sculpted wool-blend cape that falls to the knee.", "category": "Outerwear", "image": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20500%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2230%25%22%20cy%3D%2215%25%22%20r%3D%2295%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22hsl%2852%2C38%25%2C26%25%29%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a0b0e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width%3D%22400%22%20height%3D%22500%22%20fill%3D%22url%28%23g%29%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M150%20150l50%2020%2050-20%2056%2040-24%20190h-164l-24-190z%22/%3E%3Cpath%20d%3D%22M200%20170v210M176%20230h-10M234%20230h10%22%20opacity%3D%22.6%22/%3E%3C/g%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22460%22%20fill%3D%22none%22%20stroke%3D%22%23d4af6a%22%20stroke-opacity%3D%22.35%22/%3E%3C/svg%3E", "stock": 5}];
+var PAGE=24,shown=PAGE,cat="All",query="",sortBy="feat",cart=[];
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function money(n){try{return new Intl.NumberFormat("en-US",{style:"currency",currency:CFG.currency,maximumFractionDigits:(n%1?2:0)}).format(n)}catch(e){return "$"+n}}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("show")},2400)}
+
+/* ---- art fallback for rows without an image ---- */
+function art(i,label){var h=(i*47)%60;return "data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><radialGradient id="g" cx="35%" cy="20%" r="90%"><stop offset="0" stop-color="hsl('+(38+h/3)+',45%,24%)"/><stop offset="1" stop-color="#0c0d10"/></radialGradient></defs><rect width="400" height="500" fill="url(#g)"/><g fill="none" stroke="#d4af6a" stroke-width="1.4" opacity=".7"><rect x="26" y="26" width="348" height="448"/><circle cx="200" cy="230" r="62"/><path d="M200 168v124M138 230h124" opacity=".4"/></g></svg>')}
+
+/* ---- Google Sheets CSV engine: any number of rows ---- */
+function parseCSV(t){var rows=[],r=[],c="",q=false;for(var i=0;i<t.length;i++){var ch=t[i];
+  if(q){if(ch=='"'&&t[i+1]=='"'){c+='"';i++}else if(ch=='"')q=false;else c+=ch}
+  else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"){r.push(c);rows.push(r);r=[];c=""}else if(ch!="\r")c+=ch}
+  if(c||r.length){r.push(c);rows.push(r)}return rows}
+function fromSheet(csv){csv=csv.replace(/^﻿/,"");var rows=parseCSV(csv);if(!rows.length)return[];var h=rows.shift().map(function(x){return x.trim().toLowerCase()});
+  return rows.map(function(r){var o={};h.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o})
+   .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"})
+   .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st}})}
+function loadSheet(url){fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat="All";shown=PAGE;render()}else{render()}}).catch(function(){render()})}
+
+/* ---- render ---- */
+function categories(){var m={},names=[];products.forEach(function(p){if(!m[p.category]){m[p.category]=0;names.push(p.category)}m[p.category]++});return{m:m,names:names}}
+function visible(){var list=products.map(function(p,i){return{p:p,i:i}}).filter(function(x){return(cat==="All"||x.p.category===cat)&&(!query||(x.p.name+" "+x.p.desc+" "+x.p.category).toLowerCase().indexOf(query)>-1)});
+  if(sortBy==="lo")list.sort(function(a,b){return a.p.price-b.p.price});if(sortBy==="hi")list.sort(function(a,b){return b.p.price-a.p.price});return list}
+var io=("IntersectionObserver" in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{rootMargin:"0px 0px -6% 0px",threshold:.05}):null;
+function render(){
+  var c=categories();
+  $("chips").innerHTML=(c.names.length>1?['<button class="chip'+(cat==="All"?" on":"")+'" data-c="All" role="tab">All<small>'+products.length+'</small></button>'].concat(c.names.map(function(n){return '<button class="chip'+(cat===n?" on":"")+'" data-c="'+esc(n)+'" role="tab">'+esc(n)+'<small>'+c.m[n]+'</small></button>'})):[]).join("");
+  var list=visible();
+  $("shopTitle").textContent=cat==="All"?"All pieces":cat;
+  $("shopCount").textContent=products.length?(list.length+(list.length===1?" piece":" pieces")):"";
+  var page=list.slice(0,shown);
+  $("grid").innerHTML=page.length?page.map(function(x,k){var p=x.p,out=p.stock<=0,low=p.stock>0&&p.stock<=3;
+    return '<article class="card" style="transition-delay:'+((k%4)*70)+'ms"><div class="ph"><button class="ph" style="position:absolute;inset:0;aspect-ratio:auto" data-q="'+x.i+'" aria-label="View '+esc(p.name)+'"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+art(x.i).replace(/'/g,"%27")+'\'">'+(out?'<span class="tag">Sold out</span>':low?'<span class="tag">Only '+p.stock+' left</span>':'')+'</button>'+(out?'':'<button class="quick-add" data-a="'+x.i+'">Add to cart</button>')+'</div><div class="info"><small>'+esc(p.category)+'</small><h3>'+esc(p.name)+'</h3><span class="price">'+money(p.price)+'</span></div></article>'}).join(""):'<p class="empty">'+(products.length?"No pieces match your search.":"The collection is being prepared.")+'</p>';
+  var cards=$("grid").querySelectorAll(".card");
+  for(var i=0;i<cards.length;i++){if(io)io.observe(cards[i]);else cards[i].classList.add("in")}
+  $("more").hidden=list.length<=shown;
+}
+
+/* ---- cart ---- */
+function items(){return cart.reduce(function(s,l){return s+l.qty},0)}
+function save(){try{sessionStorage.setItem("cart:"+location.pathname,JSON.stringify(cart.map(function(l){return{n:l.p.name,q:l.qty}})))}catch(e){}}
+function restore(){try{var s=JSON.parse(sessionStorage.getItem("cart:"+location.pathname)||"[]");s.forEach(function(x){var p=products.filter(function(p){return p.name===x.n})[0];if(p&&p.stock>0)cart.push({p:p,qty:Math.min(x.q,p.stock)})})}catch(e){}}
+function drawCart(bump){
+  var n=items(),sub=cart.reduce(function(s,l){return s+l.p.price*l.qty},0);
+  $("count").textContent=n;$("sub2").textContent=money(sub);
+  if(bump){$("count").classList.remove("bump");void $("count").offsetWidth;$("count").classList.add("bump")}
+  $("lines").innerHTML=cart.length?cart.map(function(l,i){return '<div class="line"><img src="'+esc(l.p.image)+'" alt=""><div><h4>'+esc(l.p.name)+'</h4><span class="price">'+money(l.p.price)+'</span><br><span class="qty"><button data-d="'+i+'" aria-label="Decrease">&minus;</button><span>'+l.qty+'</span><button data-u="'+i+'" aria-label="Increase">+</button></span><button class="rm" data-rm="'+i+'">Remove</button></div><span class="lt">'+money(l.p.price*l.qty)+'</span></div>'}).join(""):'<p class="d-empty">Your cart is empty.</p>';
+  $("checkout").disabled=!cart.length;save();
+}
+function add(i){var p=products[i];if(!p||p.stock<=0)return;var l=cart.filter(function(x){return x.p===p})[0];if(l){if(l.qty>=p.stock){toast("Only "+p.stock+" available");return}l.qty++}else cart.push({p:p,qty:1});drawCart(true);toast(p.name+" added to cart")}
+function openCart(){document.body.classList.remove("quick");document.body.classList.add("cart","lock");$("drawer").setAttribute("aria-hidden","false");$("modal").setAttribute("aria-hidden","true")}
+function closeAll(){document.body.classList.remove("cart","quick","lock");$("drawer").setAttribute("aria-hidden","true");$("modal").setAttribute("aria-hidden","true")}
+function quick(i){var p=products[i],out=p.stock<=0;
+  $("mbox").innerHTML='<button class="x" data-x aria-label="Close">&times;</button><div class="mi"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'"></div><div class="mt"><span class="eyebrow">'+esc(p.category)+'</span><h3>'+esc(p.name)+'</h3><span class="price" style="font-size:1.2rem">'+money(p.price)+'</span><p>'+esc(p.desc||"")+'</p><button class="btn" data-a="'+i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Add to cart")+'</button></div>';
+  document.body.classList.add("quick","lock");$("modal").setAttribute("aria-hidden","false")}
+document.addEventListener("click",function(e){var t=e.target,b;
+  if(b=t.closest("[data-c]")){cat=b.getAttribute("data-c");shown=PAGE;render();var f=$("filters").getBoundingClientRect();if(f.top<0||$("grid").getBoundingClientRect().top<0){$("shop").scrollIntoView({behavior:"smooth"})}return}
+  if(b=t.closest("[data-q]")){quick(+b.getAttribute("data-q"));return}
+  if(b=t.closest("[data-a]")){if(!b.disabled){add(+b.getAttribute("data-a"));if(document.body.classList.contains("quick"))openCart()}return}
+  if(b=t.closest("[data-u]")){var l=cart[+b.getAttribute("data-u")];if(l.qty<l.p.stock)l.qty++;drawCart();return}
+  if(b=t.closest("[data-d]")){var k=+b.getAttribute("data-d");if(--cart[k].qty<1)cart.splice(k,1);drawCart();return}
+  if(b=t.closest("[data-rm]")){cart.splice(+b.getAttribute("data-rm"),1);drawCart();return}
+  if(t.closest("[data-x]")||t===$("modal"))closeAll()});
+$("openCart").onclick=openCart;$("closeCart").onclick=$("shade").onclick=closeAll;
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAll()});
+$("q").oninput=function(){query=this.value.trim().toLowerCase();shown=PAGE;render()};
+$("sort").onchange=function(){sortBy=this.value;render()};
+$("more").onclick=function(){shown+=PAGE;render()};
+$("checkout").onclick=function(){
+  if(!cart.length)return;
+  if(DEMO_MODE){var d=$("co");if(d&&d.showModal){d.showModal()}else{toast("Demo store: checkout is disabled.")}return}
+  if(CFG.checkoutUrl){location.href=CFG.checkoutUrl}else{toast("Checkout is being connected. Please contact the store to order.")}};
+if($("coClose"))$("coClose").onclick=function(){$("co").close()};
+
+/* ---- nav, hero ---- */
+var nav=$("nav");function onScroll(){nav.classList.toggle("solid",window.scrollY>40)}
+window.addEventListener("scroll",onScroll,{passive:true});onScroll();
+function setBrand(b){CFG.brand=b;document.title=b+(DEMO_MODE?" | Flagship Store Demo":"");$("brand").textContent=b;$("fbrand").textContent=b;
+  var h=$("heroTitle");h.setAttribute("aria-label",b);
+  h.innerHTML=b.split(/\s+/).map(function(w,i){return '<span class="w" aria-hidden="true"><span style="animation-delay:'+(.35+i*.14)+'s">'+esc(w)+'</span></span>'}).join(" ")}
+var hv=$("heroVideo");
+$("snd").onclick=function(){hv.muted=!hv.muted;this.textContent=hv.muted?"Sound off":"Sound on";if(!hv.muted)hv.play().catch(function(){})};
+function applyConfig(c){
+  if(c.brandEnc){try{c.brand=decodeURIComponent(String(c.brandEnc).replace(/\+/g," "))}catch(e){}}
+  if(c.checkoutUrlEnc){try{c.checkoutUrl=decodeURIComponent(c.checkoutUrlEnc)}catch(e){}}
+  if(c.checkoutUrl&&!/^https:\/\//i.test(c.checkoutUrl))c.checkoutUrl="";
+  if(c.currency&&/^[A-Za-z]{3}$/.test(c.currency))CFG.currency=c.currency.toUpperCase();
+  if(c.brand)setBrand(String(c.brand));
+  if(c.tagline)$("tagline").textContent=c.tagline;
+  if(c.subtitle)$("sub").textContent=c.subtitle;
+  if(c.checkoutUrl){CFG.checkoutUrl=c.checkoutUrl;$("note").textContent="Secure checkout. Shipping and taxes are calculated at the next step."}
+  if(c.heroVideo&&/^https?:\/\/|^\//i.test(c.heroVideo)){hv.src=c.heroVideo;hv.preload="metadata";hv.hidden=false;$("snd").hidden=false;hv.addEventListener("playing",function(){$("heroPh").style.display="none"});hv.play().catch(function(){})}
+  if(c.heroPoster&&/^https?:\/\/|^\//i.test(c.heroPoster)){hv.poster=c.heroPoster}
+  if(c.sheetCsvUrl&&/^https:\/\//i.test(c.sheetCsvUrl)){products=[];render();loadSheet(c.sheetCsvUrl)}
+  drawCart();
+}
+setBrand(CFG.brand);
+render();restore();drawCart();
+if(!DEMO_MODE||true){fetch("config.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(c){if(c)applyConfig(c)}).catch(function(){})}
+})();
+</script>
+</body>
+<!-- apex-studio-pro flagship v3 -->
+</html>
