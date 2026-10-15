@@ -114,6 +114,25 @@ select.field{padding-right:.6rem}
 .btn-line{background:transparent;color:var(--bone);border:1px solid rgba(244,241,234,.35)}
 .btn-line:hover{background:transparent;border-color:var(--gold);color:var(--gold);box-shadow:none}
 
+/* ---------- Lookbook: second cinematic film + Shop the Look ---------- */
+.look{padding-block:5rem;border-top:1px solid var(--line);background:linear-gradient(180deg,var(--ink),#0e1013)}
+.look-grid{display:grid;gap:2rem;margin-top:2rem;align-items:stretch}
+@media(min-width:900px){.look-grid{grid-template-columns:1.25fr 1fr;gap:3rem}}
+.look-film{position:relative;aspect-ratio:4/5;background:#07080a;overflow:hidden;border-radius:2px;border:1px solid var(--line)}
+@media(min-width:900px){.look-film{aspect-ratio:auto;min-height:34rem}}
+.look-film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.look-film .hero-ph{border-radius:0}
+.look-film .lbl{position:absolute;left:1rem;bottom:1rem;font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(244,241,234,.8);z-index:2}
+.look-list{display:flex;flex-direction:column;gap:1rem;justify-content:center}
+.look-list h3{font-family:var(--display);font-weight:500;font-size:clamp(1.6rem,3vw,2.3rem);margin:0 0 .4rem}
+.look-item{display:grid;grid-template-columns:5.2rem 1fr auto;gap:1rem;align-items:center;padding:.9rem;border:1px solid var(--line);border-radius:3px;background:var(--coal);transition:border-color .3s,transform .5s var(--ease)}
+.look-item:hover{border-color:rgba(212,175,106,.6);transform:translateX(4px)}
+.look-item img{width:5.2rem;aspect-ratio:4/5;object-fit:cover;border-radius:2px;background:var(--slate)}
+.look-item h4{font-family:var(--display);font-weight:500;font-size:1.2rem;line-height:1.15;margin:0 0 .25rem}
+.look-item small{display:block;color:var(--mist);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:.2rem}
+.look-item .add{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:.6rem 1rem;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;transition:background .3s,color .3s;white-space:nowrap}
+.look-item .add:hover{background:var(--gold);color:var(--gold-ink)}
+.look-item .add[disabled]{opacity:.4;pointer-events:none}
 footer{border-top:1px solid var(--line);padding-block:2.6rem;color:var(--mist);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase}
 footer .wrap{display:flex;flex-wrap:wrap;gap:.8rem 2rem;justify-content:space-between;align-items:center}
 footer b{font-family:var(--display);font-size:1.3rem;font-weight:500;letter-spacing:.14em;color:var(--bone)}
@@ -171,7 +190,7 @@ dialog#co .btn{border:0}
 <header class="nav" id="nav">
   <div class="wrap">
     <a class="brand" id="brand" href="#top">Your Brand</a>
-    <nav class="links" aria-label="Main"><a href="#shop">Collection</a></nav>
+    <nav class="links" aria-label="Main"><a href="#shop">Collection</a><a href="#look" id="lookLink" hidden>Lookbook</a></nav>
     <button class="cart-btn" id="openCart" aria-label="Open cart">Cart <span class="count" id="count">0</span></button>
   </div>
 </header>
@@ -217,6 +236,12 @@ dialog#co .btn{border:0}
   </section>
 </main>
 
+<section class="look" id="look" hidden aria-label="Lookbook"><div class="wrap">
+  <span class="eyebrow">The lookbook</span><h2 style="font-family:var(--display);font-weight:500;font-size:clamp(2rem,4.4vw,3.4rem);line-height:1;margin:.5rem 0 0" id="lookTitle">Shop the look</h2>
+  <div class="look-grid">
+    <div class="look-film"><div class="hero-ph" id="lookPh" aria-hidden="true"><div class="glow"></div><div class="glow b"></div><div class="sweep"></div></div><video id="lookVideo" hidden muted loop playsinline preload="none" aria-label="Collection lookbook film"></video><span class="lbl">Collection film</span></div>
+    <div class="look-list"><h3>Pieces from the film</h3><div id="lookItems"></div></div>
+  </div></div></section>
 <footer><div class="wrap"><b id="fbrand">Your Brand</b><span id="fnote">&copy; Your Brand</span></div></footer>
 
 <div class="shade" id="shade"></div>
@@ -253,11 +278,13 @@ function parseCSV(t){var rows=[],r=[],c="",q=false;for(var i=0;i<t.length;i++){v
   if(q){if(ch=='"'&&t[i+1]=='"'){c+='"';i++}else if(ch=='"')q=false;else c+=ch}
   else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"){r.push(c);rows.push(r);r=[];c=""}else if(ch!="\r")c+=ch}
   if(c||r.length){r.push(c);rows.push(r)}return rows}
-function fromSheet(csv){csv=csv.replace(/^﻿/,"");var rows=parseCSV(csv);if(!rows.length)return[];var h=rows.shift().map(function(x){return x.trim().toLowerCase()});
-  return rows.map(function(r){var o={};h.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o})
+function fromSheet(csv){csv=csv.replace(/^\uFEFF/,"");var rows=parseCSV(csv);if(!rows.length)return[];var h=rows.shift().map(function(x){return x.trim().toLowerCase()});
+  var all=rows.map(function(r){var o={};h.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o}),set={};
+  var list=all.filter(function(o){var k=(o.name||"").toLowerCase().replace(/[^a-z]/g,"");if(k==="herovideo"||k==="lookbookvideo"||k==="lookbookposter"||k==="heroposter"){set[k]=o.image||o.desc||o.price;return false}return true})
    .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"})
-   .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st}})}
-function loadSheet(url){fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat="All";shown=PAGE;render()}else{render()}}).catch(function(){render()})}
+   .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st,look:/^(1|y|yes|true|x)$/i.test(o.look||"")}});
+  list.settings=set;return list}
+function loadSheet(url){fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat="All";shown=PAGE;render();applyMedia(s.settings||{})}else{render()}}).catch(function(){render()})}
 
 /* ---- render ---- */
 function categories(){var m={},names=[];products.forEach(function(p){if(!m[p.category]){m[p.category]=0;names.push(p.category)}m[p.category]++});return{m:m,names:names}}
@@ -276,7 +303,22 @@ function render(){
   var cards=$("grid").querySelectorAll(".card");
   for(var i=0;i<cards.length;i++){if(io)io.observe(cards[i]);else cards[i].classList.add("in")}
   $("more").hidden=list.length<=shown;
+  renderLook();
 }
+
+/* ---- lookbook: second film + Shop the Look ---- */
+var lv=$("lookVideo");
+function playFilm(v,ph,url,loop){if(!url||!/^https?:\/\/|^\//i.test(url))return;if(v.getAttribute("src")===url)return;v.src=url;v.preload="metadata";v.hidden=false;v.addEventListener("playing",function(){if(ph)ph.style.display="none"});
+  if("IntersectionObserver" in window){new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)v.play().catch(function(){});else v.pause()})},{threshold:.25}).observe(v)}else v.play().catch(function(){})}
+function applyMedia(m){
+  if(m.herovideo&&!hv.getAttribute("src")){hv.src=m.herovideo;hv.preload="metadata";hv.hidden=false;$("snd").hidden=false;hv.addEventListener("playing",function(){$("heroPh").style.display="none"});hv.play().catch(function(){})}
+  if(m.lookbookvideo)playFilm(lv,$("lookPh"),m.lookbookvideo);
+}
+function renderLook(){
+  var picks=products.map(function(p,i){return{p:p,i:i}}).filter(function(x){return x.p.look});
+  if(!picks.length)picks=products.map(function(p,i){return{p:p,i:i}}).slice(0,4);
+  var sec=$("look");sec.hidden=!picks.length;$("lookLink").hidden=!picks.length;
+  $("lookItems").innerHTML=picks.slice(0,6).map(function(x){var p=x.p,out=p.stock<=0;return '<div class="look-item"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy"><div><small>'+esc(p.category)+'</small><h4>'+esc(p.name)+'</h4><span class="price">'+money(p.price)+'</span></div><button class="add" data-a="'+x.i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Add")+'</button></div>'}).join("")}
 
 /* ---- cart ---- */
 function items(){return cart.reduce(function(s,l){return s+l.qty},0)}
@@ -333,6 +375,9 @@ function applyConfig(c){
   if(c.checkoutUrl){CFG.checkoutUrl=c.checkoutUrl;$("note").textContent="Secure checkout. Shipping and taxes are calculated at the next step."}
   if(c.heroVideo&&/^https?:\/\/|^\//i.test(c.heroVideo)){hv.src=c.heroVideo;hv.preload="metadata";hv.hidden=false;$("snd").hidden=false;hv.addEventListener("playing",function(){$("heroPh").style.display="none"});hv.play().catch(function(){})}
   if(c.heroPoster&&/^https?:\/\/|^\//i.test(c.heroPoster)){hv.poster=c.heroPoster}
+  if(c.lookbookVideo)playFilm(lv,$("lookPh"),c.lookbookVideo);
+  if(c.lookbookPoster&&/^https?:\/\/|^\//i.test(c.lookbookPoster))lv.poster=c.lookbookPoster;
+  if(c.lookbookTitle)$("lookTitle").textContent=c.lookbookTitle;
   if(c.sheetCsvUrl&&/^https:\/\//i.test(c.sheetCsvUrl)){products=[];render();loadSheet(c.sheetCsvUrl)}
   drawCart();
 }
