@@ -263,15 +263,8 @@
   </div>
 </section>
 
-<section id="store">
-<div class="wrap">
-<div class="reveal center"><p class="eyebrow">Order online</p><h2>Chef’s Signature Boxes</h2><p class="sx-lead">Three tasting boxes from our kitchen, ready for your table. Choose your quantity and see your total instantly.</p></div>
-<div class="sx-grid" id="sxGrid"></div>
-<div class="sx-bar reveal"><div class="sx-sum"><span data-t="total">Total</span><b id="sxTotal">$0</b><i id="sxCount"></i></div><button class="btn" id="sxOrder" type="button" disabled data-t="order">Order now</button></div>
-<p class="note center" data-t="demo">Demo mode: no payment is taken.</p>
-</div>
-</section>
-<dialog id="sxDlg"><h3 data-t="sum">Your order</h3><ul id="sxList"></ul><p data-t="dm"></p><button class="btn" id="sxClose" type="button" data-t="close">Continue browsing</button></dialog>
+<section id="store"></section>
+
 
 <section>
   <div class="wrap">
@@ -369,64 +362,9 @@
 <div class="lp-sprog"></div>
 <div class="lp-sticky"><img src="photo1.jpg" alt="" onerror="this.style.display='none'"><div><b>Maison Aurelle</b><span>Private Dining Room · Reserve tonight</span></div><a class="btn" href="https://wa.me/">Reserve now</a></div>
 <div class="lp-toast" role="status" aria-live="polite">عمل تجريبي لأغراض العرض فقط / Demo only, for preview purposes</div>
-<script>
-/* Micro-Store: one product list drives the grid, the live total and the order dialog. */
-(function(){
-  var TXT={
-    en:{total:"Total",order:"Order now",demo:"Demo mode: no payment is taken.",sum:"Your order",close:"Continue browsing",dm:"This is a demonstration. In a live store, this button opens the secure payment page with your selection.",item:"item",items:"items",dec:"Decrease",inc:"Increase"},
-    fr:{total:"Total",order:"Commander",demo:"Mode démo : aucun paiement n’est prélevé.",sum:"Votre commande",close:"Continuer",dm:"Ceci est une démonstration. Dans une boutique réelle, ce bouton ouvre la page de paiement sécurisée avec votre sélection.",item:"article",items:"articles",dec:"Diminuer",inc:"Augmenter"},
-    es:{total:"Total",order:"Pedir ahora",demo:"Modo demo: no se cobra nada.",sum:"Tu pedido",close:"Seguir viendo",dm:"Esto es una demostración. En una tienda real, este botón abre la página de pago seguro con tu selección.",item:"artículo",items:"artículos",dec:"Disminuir",inc:"Aumentar"},
-    it:{total:"Totale",order:"Ordina ora",demo:"Modalità demo: nessun pagamento viene addebitato.",sum:"Il tuo ordine",close:"Continua",dm:"Questa è una dimostrazione. In un negozio reale, questo pulsante apre la pagina di pagamento sicura con la tua selezione.",item:"articolo",items:"articoli",dec:"Diminuisci",inc:"Aumenta"},
-    ar:{total:"المجموع",order:"اطلب الآن",demo:"وضع تجريبي: لا يتم خصم أي مبلغ.",sum:"طلبك",close:"متابعة التصفح",dm:"هذا عرض تجريبي. في المتجر الحقيقي يفتح هذا الزر صفحة الدفع الآمنة مع اختياراتك.",item:"منتج",items:"منتجات",dec:"إنقاص",inc:"زيادة"}
-  };
-  var t=TXT[(document.documentElement.lang||"en").slice(0,2)]||TXT.en;
-  var MAX=10, checkoutUrl="";
-  var products=[{"name":"The Chef’s Table Box","desc":"Five courses from the chef’s tasting menu, prepared for two guests.","image":"chef-table.jpg","price":145},{"name":"The Celebration Box","desc":"Seven courses with dessert and a pairing guide, for four guests.","image":"celebration.jpg","price":220},{"name":"The Custom Menu Box","desc":"A menu composed with our chef around your occasion, for six guests.","image":"custom-menu.jpg","price":320}];
-  var qty=[];
-  var $=function(id){return document.getElementById(id)};
-  var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
-  var money=function(n){return "$"+(n%1?n.toFixed(2):n)};
-  document.querySelectorAll("#store [data-t], #sxDlg [data-t]").forEach(function(e){e.textContent=t[e.getAttribute("data-t")]});
-  function draw(){
-    products=products.slice(0,MAX);
-    $("sxGrid").innerHTML=products.map(function(p,i){
-      return '<article class="sx-card"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy"><div class="sx-b"><h3>'+esc(p.name)+'</h3><p>'+esc(p.desc)+'</p><div class="sx-row"><span class="sx-price">'+money(p.price)+'</span><span class="sx-step"><button type="button" data-d="'+i+'" aria-label="'+t.dec+'">&minus;</button><span>'+(qty[i]||0)+'</span><button type="button" data-u="'+i+'" aria-label="'+t.inc+'">+</button></span></div></div></article>';
-    }).join("");
-    sum();
-  }
-  function sum(){
-    var n=0,total=0;products.forEach(function(p,i){n+=qty[i]||0;total+=(qty[i]||0)*p.price});
-    $("sxTotal").textContent=money(total);
-    $("sxCount").textContent=n?n+" "+(n>1?t.items:t.item):"";
-    $("sxOrder").disabled=!n;
-  }
-  function step(i,by){qty[i]=Math.max(0,Math.min(9,(qty[i]||0)+by));var c=$("sxGrid").children[i];c.querySelector(".sx-step span").textContent=qty[i];sum()}
-  $("sxGrid").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;if(b.dataset.u!==undefined)step(+b.dataset.u,1);if(b.dataset.d!==undefined)step(+b.dataset.d,-1)});
-  $("sxOrder").addEventListener("click",function(){
-    if(checkoutUrl){location.href=checkoutUrl;return}
-    var total=0;
-    $("sxList").innerHTML=products.map(function(p,i){if(!qty[i])return"";total+=qty[i]*p.price;return"<li><span>"+qty[i]+" × "+esc(p.name)+"</span><span>"+money(qty[i]*p.price)+"</span></li>"}).join("")+"<li><b>"+t.total+"</b><b>"+money(total)+"</b></li>";
-    var dlg=$("sxDlg");if(dlg.showModal)dlg.showModal();
-  });
-  $("sxClose").addEventListener("click",function(){$("sxDlg").close()});
-  draw();
-  /* Optional Google Sheets CSV (first 10 visible rows) and payment link, read from config.json when present. */
-  function csv(s){var r=[],w=[],c="",q=false;for(var i=0;i<s.length;i++){var h=s[i];if(q){if(h==='"'&&s[i+1]==='"'){c+='"';i++}else if(h==='"')q=false;else c+=h}else if(h==='"')q=true;else if(h===","){w.push(c);c=""}else if(h==="\n"){w.push(c);r.push(w);w=[];c=""}else if(h!=="\r")c+=h}if(c||w.length){w.push(c);r.push(w)}return r}
-  fetch("config.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(c){
-    if(!c)return;
-    if(c.checkoutUrlEnc){try{c.checkoutUrl=decodeURIComponent(c.checkoutUrlEnc)}catch(e){}}
-    if(/^https:\/\//i.test(c.checkoutUrl||""))checkoutUrl=c.checkoutUrl;
-    if(!/^https:\/\//i.test(c.sheetCsvUrl||""))return;
-    return fetch(c.sheetCsvUrl,{cache:"no-store"}).then(function(r){return r.text()}).then(function(s){
-      var rows=csv(s.replace(/^\uFEFF/,"")),head=rows.shift().map(function(x){return x.trim().toLowerCase()});
-      var list=rows.map(function(r){var o={};head.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o})
-        .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"}).slice(0,MAX)
-        .map(function(o,i){return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",image:o.image||(products[i]&&products[i].image)||""}});
-      if(list.length){products=list;qty=[];draw()}
-    });
-  }).catch(function(){});
-})();
-</script>
+
+<script type="application/json" id="uxData">{"title":"Chef’s Signature Boxes","lead":"Three tasting boxes from our kitchen, ready for your table. Choose your pairing and add it to your bag.","freeShip":0,"max":10,"soundMatch":"restaurant","announce":{"en":["Complimentary delivery in the city","Chef-prepared, packed by hand","Order 48 hours ahead"],"fr":["Livraison offerte en ville","Préparé par le chef, emballé à la main","Commandez 48 h à l’avance"],"es":["Entrega gratuita en la ciudad","Preparado por el chef, envasado a mano","Pide con 48 h de antelación"],"it":["Consegna gratuita in città","Preparato dallo chef, confezionato a mano","Ordina 48 ore prima"],"ar":["توصيل مجاني داخل المدينة","من إعداد الشيف وتغليف يدوي","اطلب قبل 48 ساعة"]},"eyebrow":{"en":"Order online"},"currency":"USD","demo":true,"products":[{"name":"The Chef’s Table Box","desc":"Five courses from the chef’s tasting menu, prepared for two guests.","image":"chef-table.jpg","price":145,"badge":"","sizes":"Classic:145|+ Wine pairing:205|+ Dessert board:180"},{"name":"The Celebration Box","desc":"Seven courses with dessert and a pairing guide, for four guests.","image":"celebration.jpg","price":220,"badge":"Bestseller","sizes":"Classic:220|+ Wine pairing:280|+ Dessert board:255"},{"name":"The Custom Menu Box","desc":"A menu composed with our chef around your occasion, for six guests.","image":"custom-menu.jpg","price":320,"badge":"","sizes":"Classic:320|+ Wine pairing:380|+ Dessert board:355"}]}</script>
+<script src="/p/_lib/store-ux.js" defer></script>
 <script src="/p/_lib/lp.js" defer></script>
 </body>
 </html>
