@@ -48,10 +48,13 @@ function labels(){var t=L();if($("uxBagT"))$("uxBagT").textContent=t.bag;if($("u
 /* sound button on the film */
 var sb=[];
 function paint(b){var v=b._v,on=!v.muted&&v.volume>0,t=L().snd;b.classList.toggle("live",on);b.textContent=on?t[1]:t[0]}
-function attach(v){if(v._ux||!D.soundMatch||!new RegExp(D.soundMatch).test(v.currentSrc||v.src||v.getAttribute("data-src")||""))return;v._ux=1;var host=v.parentElement;if(!host)return;if(getComputedStyle(host).position==="static")host.style.position="relative";
-  var b=document.createElement("button");b.type="button";b.className="ux-snd";b._v=v;
-  b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(v.muted||v.volume===0){v.muted=false;v.volume=1;var p=v.play();if(p&&p.catch)p.catch(function(){})}else v.muted=true;paint(b)});
-  v.addEventListener("volumechange",function(){paint(b)});document.body.appendChild(b);sb.push(b);paint(b);if("IntersectionObserver" in window)new IntersectionObserver(function(es){es.forEach(function(e){b.classList.toggle("vis",e.isIntersecting)})},{threshold:.35}).observe(v);else b.classList.add("vis")}
+function attach(v){if(v._ux||!D.soundMatch||!new RegExp(D.soundMatch).test(v.currentSrc||v.src||v.getAttribute("data-src")||""))return;v._ux=1;
+  var vis=function(el,x){var on=x.isIntersecting;el._on=on;var any=el._b._vs.some(function(q){return q._on});el._b.classList.toggle("vis",any)};
+  var ex=sb[0];if(ex){ex._vs.push(v);v._b=ex;v.muted=ex._v.muted;v.addEventListener("volumechange",function(){paint(ex)});if("IntersectionObserver" in window)new IntersectionObserver(function(es){es.forEach(function(e){vis(v,e)})},{threshold:.35}).observe(v);return}
+  var b=document.createElement("button");b.type="button";b.className="ux-snd";b._v=v;b._vs=[v];v._b=b;
+  b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();var on=b._v.muted||b._v.volume===0;b._vs.forEach(function(q){if(on){q.muted=false;q.volume=1;var p=q.play();if(p&&p.catch)p.catch(function(){})}else q.muted=true});paint(b)});
+  v.addEventListener("volumechange",function(){paint(b)});document.body.appendChild(b);sb.push(b);paint(b);
+  if("IntersectionObserver" in window)new IntersectionObserver(function(es){es.forEach(function(e){vis(v,e)})},{threshold:.35}).observe(v);else b.classList.add("vis")}
 function snd(){sb.forEach(paint)}
 function scan(){var vs=document.querySelectorAll("video");for(var i=0;i<vs.length;i++)attach(vs[i])}
 /* build */
