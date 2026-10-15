@@ -1,17 +1,18 @@
 <!doctype html>
-<html lang="en" data-theme="noir" data-mode="flagship">
+<html lang="en" data-theme="noir-gold" data-mode="flagship">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0b0b0d">
 <title>Aura Noir | Women’s Flagship Store Demo</title>
-<meta name="description" content="Women’s haute couture: two collections and a selection of objects, finished by hand in small editions. A fictional house created to demonstrate the Apex Flagship Store.">
+<meta name="description" content="Haute couture, tailoring, timepieces and leather goods from a Paris house. A fictional brand created to demonstrate the Apex Flagship Store.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0b0d;--bg2:#121215;--ink:#f4efe6;--mist:#a29c90;--line:rgba(255,255,255,.1);--gold:#cfa968;--gold2:#e6c88f;--on-gold:#14110b;--glass:rgba(11,11,13,.62);--serif:"Cormorant Garamond","Times New Roman",serif;--sans:Jost,system-ui,-apple-system,"Segoe UI",sans-serif;--ease:cubic-bezier(.2,.7,.1,1)}
-[data-theme=ivory]{--bg:#f6f1e8;--bg2:#ece5d8;--ink:#1c1a17;--mist:#6f675b;--line:rgba(28,26,23,.14);--gold:#8c6a2f;--gold2:#a8843f;--on-gold:#fffaf0;--glass:rgba(246,241,232,.72)}
+[data-theme=parisian-ivory],[data-theme=ivory]{--bg:#f6f1e8;--bg2:#ece5d8;--ink:#1c1a17;--mist:#6f675b;--line:rgba(28,26,23,.14);--gold:#8c6a2f;--gold2:#a8843f;--on-gold:#fffaf0;--glass:rgba(246,241,232,.72)}
+[data-theme=warm-espresso]{--bg:#1a110c;--bg2:#241812;--ink:#f3e8dc;--mist:#b3a08e;--line:rgba(243,232,220,.15);--gold:#c9915a;--gold2:#e0aa75;--on-gold:#1a110c;--glass:rgba(26,17,12,.7)}
 [data-theme=obsidian]{--bg:#070707;--bg2:#101010;--ink:#f1f1f1;--mist:#8d8d8d;--line:rgba(255,255,255,.12);--gold:#e8e8e8;--gold2:#ffffff;--on-gold:#0a0a0a;--glass:rgba(7,7,7,.66)}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -23,6 +24,13 @@ a{color:inherit;text-decoration:none}
 .wrap{width:min(78rem,100% - 2.4rem);margin-inline:auto}
 .eyebrow{font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
 h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.05}
+/* theme bar */
+.themebar{display:flex;gap:.5rem;justify-content:center;align-items:center;flex-wrap:wrap;padding:.7rem 1rem;background:var(--bg2);border-bottom:1px solid var(--line);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mist);position:relative;z-index:61}
+.themebar[hidden]{display:none}
+.themebar button{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .9rem;border:1px solid var(--line);border-radius:99px;font-size:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--ink);transition:.3s}
+.themebar button:hover{border-color:var(--gold)}.themebar button.on{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.themebar .sw{width:.8rem;height:.8rem;border-radius:50%;border:2px solid #999;display:inline-block}
+.sw-noir-gold{background:#0b0b0d;border-color:#cfa968!important}.sw-parisian-ivory{background:#f6f1e8;border-color:#8c6a2f!important}.sw-warm-espresso{background:#1a110c;border-color:#c9915a!important}
 /* announcement */
 .ann{position:relative;z-index:60;background:var(--gold);color:var(--on-gold);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;text-align:center;height:2.3rem;overflow:hidden}
 .ann span{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:translateY(60%);transition:.7s var(--ease);padding-inline:2.4rem;white-space:nowrap}
@@ -30,15 +38,16 @@ h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.05}
 .ann button{position:absolute;right:.6rem;top:0;height:100%;width:2rem;font-size:1rem;opacity:.7;z-index:2}
 /* header */
 .hd{position:sticky;top:0;z-index:50;background:var(--glass);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border-bottom:1px solid var(--line)}
-.hd .in{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:4.2rem}
+.hd .in{display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"menu brand bag" "nav nav nav";align-items:center;row-gap:0;min-height:4.2rem}
+.hd .menu{grid-area:menu}.hd .brand{grid-area:brand;padding-block:1rem .4rem}.hd .bag{grid-area:bag}.hd nav{grid-area:nav;justify-content:center;flex-wrap:wrap;gap:.4rem 1.7rem;padding:.2rem 0 .85rem;border-top:0}
 .hd nav{display:flex;gap:1.8rem;font-size:.68rem;letter-spacing:.24em;text-transform:uppercase}
-.hd nav a{opacity:.8;transition:.3s}.hd nav a:hover{opacity:1;color:var(--gold)}
+.hd nav a{opacity:.8;transition:.3s;white-space:nowrap}.hd nav a:hover{opacity:1;color:var(--gold)}
 .brand{font-family:var(--serif);font-size:clamp(1.15rem,2.4vw,1.6rem);letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-align:center;white-space:nowrap}
 .bag{justify-self:end;font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;display:inline-flex;gap:.45rem;align-items:center;padding:.5rem .2rem}
 .bag:hover{color:var(--gold)}.bag b{font-weight:400;color:var(--gold)}
 .menu{display:none;justify-self:start;font-size:.68rem;letter-spacing:.24em;text-transform:uppercase}
-@media(max-width:760px){.hd nav{display:none}.menu{display:block}.hd .in{height:3.6rem}}
-.mnav{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;font-family:var(--serif);font-size:2rem}
+@media(max-width:1060px){.hd nav{display:none}.menu{display:block}.hd .in{min-height:3.6rem;grid-template-areas:"menu brand bag"}.hd .brand{padding-block:0}}
+.mnav{overflow:auto;position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;font-family:var(--serif);font-size:2rem}
 .mnav.open{display:flex}.mnav button{position:absolute;top:1.2rem;right:1.4rem;font-size:2rem}
 /* hero */
 .hero{position:relative;min-height:min(46rem,calc(100svh - 6.5rem));display:grid;align-items:end;overflow:hidden;isolation:isolate}
@@ -60,7 +69,7 @@ h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.05}
 @media(max-width:640px){.snd{left:1.2rem;right:auto;bottom:1.1rem}.hero .txt{padding-bottom:5rem}}
 /* usp */
 .usp{border-block:1px solid var(--line);background:var(--bg2)}
-.usp .in{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.usp .in{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));text-align:center}
 .usp div{padding:1.4rem .8rem;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist)}
 .usp div+div{border-left:1px solid var(--line)}.usp b{display:block;color:var(--ink);font-weight:400;margin-bottom:.15rem}
 @media(max-width:640px){.usp .in{grid-template-columns:1fr}.usp div+div{border-left:0;border-top:1px solid var(--line)}}
@@ -71,19 +80,50 @@ h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.05}
 .shead .meta{display:flex;gap:1rem;align-items:center;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist)}
 .shead select{background:transparent;border:1px solid var(--line);color:var(--ink);padding:.6rem .8rem;font:inherit;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
 .shead select option{background:var(--bg2);color:var(--ink)}
-.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2.2rem}
-.chip{padding:.62rem 1.1rem;border:1px solid var(--line);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mist);transition:.3s}
+.chips{display:flex;gap:.4rem;margin-bottom:2.4rem;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);padding-bottom:.9rem}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none}
+.cdiv{text-align:center;margin:4.2rem auto 2.4rem;max-width:44rem}.catsec:first-child .cdiv{margin-top:1rem}
+.cdiv h2{font-size:clamp(2.2rem,5vw,3.6rem);margin:.6rem 0 .5rem;letter-spacing:.02em}.cdiv p{color:var(--mist);font-family:var(--serif);font-style:italic;font-size:1.2rem}
+.cdiv::after{content:"";display:block;width:3rem;height:1px;background:var(--gold);margin:1.4rem auto 0}
+.chip{padding:.62rem 1.1rem;white-space:nowrap;border:1px solid var(--line);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mist);transition:.3s}
 .chip small{opacity:.55;margin-left:.4rem}.chip:hover{color:var(--ink);border-color:var(--ink)}.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2.2rem 1.2rem}
-@media(max-width:1020px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr);gap:1.6rem .7rem}}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2.2rem 1.2rem}
+@media(max-width:1020px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.6rem .7rem}}
 .card{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
 .card.in{opacity:1;transform:none}
-.card .ph{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:var(--bg2);display:block;width:100%;cursor:pointer}
+.card .ph{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid color-mix(in srgb,var(--gold) 38%,transparent);background:var(--bg2);display:block;width:100%;cursor:pointer}
 [data-theme=ivory] .card .ph{border-color:var(--line)}
 .card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.1,1)}
 .card:hover .ph img{transform:scale(1.05)}
-.tag{position:absolute;top:.7rem;left:.7rem;z-index:2;padding:.32rem .6rem;background:rgba(11,11,13,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:var(--gold2);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid rgba(207,169,104,.35)}
+.card .ph::after{content:"";position:absolute;inset:.55rem;border:1px solid var(--gold);opacity:0;transition:opacity .6s;pointer-events:none;z-index:1}
+.card:hover .ph::after{opacity:.55}
+@media(min-width:1021px){.grid:not(.few) .card:nth-child(even){margin-top:2.6rem}}
+.notes{font-size:.7rem;line-height:1.5;color:var(--mist);letter-spacing:.04em;display:flex;flex-wrap:wrap;gap:.1rem .5rem;align-items:baseline}
+.notes b{font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;font-size:.58rem}.notes i{font-style:normal;opacity:.5}
+.detail{font-family:var(--serif);font-style:italic;font-size:.9rem;color:var(--mist);line-height:1.45}
+.tag.solo{position:static;display:inline-block;align-self:flex-start;background:none;color:var(--gold);border-color:var(--gold)}
+.feat{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);background:var(--bg2);margin-bottom:3.4rem;overflow:hidden}
+.feat[hidden]{display:none}
+.feat .fi{position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer}
+.feat .fi img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}.feat:hover .fi img{transform:scale(1.04)}
+.feat .ft{padding:clamp(1.6rem,4.5vw,4rem);display:flex;flex-direction:column;justify-content:center;gap:1rem}
+.feat .seas{display:flex;align-items:center;gap:.9rem;font-size:.64rem;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+.feat .seas::before{content:"";width:2.6rem;height:1px;background:var(--gold)}
+.feat h3{font-size:clamp(2.2rem,4.4vw,3.8rem);line-height:1.02}
+.feat p{color:var(--mist);font-size:1.02rem;max-width:30rem}
+.feat .big{font-family:var(--serif);font-size:1.6rem}
+.feat .acts{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.6rem}
+@media(max-width:820px){.feat{grid-template-columns:1fr}}
+.hs{position:absolute;z-index:5;width:2.3rem;height:2.3rem;border-radius:50%;background:var(--gold);color:var(--on-gold);transform:translate(-50%,-50%);display:grid;place-items:center;font-size:1.3rem;font-weight:500;line-height:1;opacity:0;pointer-events:none;transition:opacity .5s;animation:hsp 2s infinite}
+.hs.on{opacity:1;pointer-events:auto}
+@keyframes hsp{0%{box-shadow:0 0 0 0 rgba(207,169,104,.7)}70%{box-shadow:0 0 0 16px rgba(207,169,104,0)}100%{box-shadow:0 0 0 0 rgba(207,169,104,0)}}
+.hpop{position:absolute;z-index:6;background:var(--bg);color:var(--ink);border:1px solid var(--gold);padding:.9rem 1rem;min-width:12rem;max-width:80%;display:grid;gap:.3rem;transform:translate(-50%,calc(-100% - 1.5rem))}
+.hpop[hidden]{display:none}.hpop h4{font-size:1.15rem}.hpop button{margin-top:.4rem;padding:.6rem;background:var(--gold);color:var(--on-gold);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase}
+.lsegs{display:flex;gap:.4rem;max-width:30rem;margin:.8rem auto 0}.lsegs button{flex:1;height:.9rem;position:relative}.lsegs button::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;background:var(--line);transition:.4s}.lsegs button.on::after{background:var(--gold)}
+.litem.cur{background:color-mix(in srgb,var(--gold) 10%,transparent);outline:1px solid var(--gold);outline-offset:-1px}
+.lcta{margin-top:1.4rem;width:100%;font-size:.66rem}
+.lfilm .lki{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .6s}top:.7rem;left:.7rem;z-index:2;padding:.32rem .6rem;background:rgba(11,11,13,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:var(--gold2);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid rgba(207,169,104,.35)}
 .tag.so{color:#ddd;border-color:rgba(255,255,255,.3)}
 .qa{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;z-index:2;padding:.9rem;background:rgba(244,239,230,.94);color:#14110b;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;font-weight:500;text-align:center;transform:translateY(130%);transition:transform .5s var(--ease);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .card:hover .qa,.card:focus-within .qa{transform:none}
@@ -131,7 +171,7 @@ body.quick .mbox{transform:none}
 .mbox p{color:var(--mist)}
 .opt label{font-size:.62rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mist);display:block;margin-bottom:.6rem}
 .sizes{display:flex;gap:.5rem;flex-wrap:wrap}
-.sz{min-width:3.2rem;padding:.7rem .9rem;border:1px solid var(--line);font-size:.72rem;letter-spacing:.12em;transition:.25s}
+.sz{min-width:3.2rem;max-width:100%;text-align:left;line-height:1.35;padding:.7rem .9rem;border:1px solid var(--line);font-size:.72rem;letter-spacing:.12em;transition:.25s}
 .sz:hover{border-color:var(--ink)}.sz.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .mdet{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);border-top:1px solid var(--line);padding-top:1rem;display:grid;gap:.3rem}
 /* drawer */
@@ -157,7 +197,8 @@ body.cart .drawer{transform:none}
 .df .btn{width:100%}
 .toast{position:fixed;left:50%;top:5.2rem;z-index:120;opacity:0;pointer-events:none;transform:translate(-50%,-200%);background:var(--ink);color:var(--bg);padding:.85rem 1.4rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;transition:.5s var(--ease)}
 .toast.show{transform:translate(-50%,0);opacity:1}
-.demo-pill{position:fixed;left:1rem;bottom:1rem;z-index:40;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;padding:.55rem .8rem;border:1px solid var(--gold);color:var(--gold);background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.demo-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:.8rem;white-space:nowrap;z-index:40;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;padding:.55rem .8rem;border:1px solid var(--gold);color:var(--gold);background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+@media(max-width:900px){.demo-pill{display:none}}
 dialog#co{background:var(--bg);color:var(--ink);border:1px solid var(--gold);padding:2rem;max-width:26rem;width:calc(100% - 2rem)}
 dialog#co::backdrop{background:rgba(0,0,0,.7)}dialog#co h3{font-size:1.8rem;margin:.5rem 0}dialog#co p{color:var(--mist);margin-bottom:1.2rem}
 [data-mode=micro] .look,[data-mode=micro] [href="#look"],[data-mode=micro] .shead .meta{display:none!important}
@@ -166,9 +207,10 @@ dialog#co::backdrop{background:rgba(0,0,0,.7)}dialog#co h3{font-size:1.8rem;marg
 </head>
 <body>
 <div class="ann" id="ann" role="region" aria-label="Announcements"><div id="annIn"></div><button id="annX" aria-label="Close">&times;</button></div>
+<div class="themebar" id="themebar" hidden></div>
 <header class="hd"><div class="wrap in">
   <button class="menu" id="menu">Menu</button>
-  <nav aria-label="Primary"><a href="#shop">Collection</a><a href="#look" id="lookLink">Lookbook</a><a href="#story">Maison</a></nav>
+  <nav aria-label="Primary" id="nav"><a href="#shop">Collections</a><a href="#look" id="lookLink">Lookbook</a><a href="#story">Maison</a></nav>
   <a class="brand" id="brand" href="#top">Aura Noir</a>
   <button class="bag" id="openCart" aria-label="Open bag">Bag (<b id="count">0</b>)</button>
 </div></header>
@@ -180,7 +222,7 @@ dialog#co::backdrop{background:rgba(0,0,0,.7)}dialog#co h3{font-size:1.8rem;marg
   <div class="wrap"><div class="txt">
     <span class="eyebrow" id="tagline">Maison de couture · Paris</span>
     <h1 id="heroTitle">Aura Noir</h1>
-    <p id="sub">Women’s haute couture: two collections and a selection of objects, finished by hand in small editions. A fictional house created to demonstrate the Apex Flagship Store.</p>
+    <p id="sub">Haute couture, tailoring, timepieces and leather goods from a Paris house. A fictional brand created to demonstrate the Apex Flagship Store.</p>
     <div class="cta"><a class="btn" href="#shop">Explore the collection</a><a class="btn ghost" href="#story">The Maison</a></div>
   </div></div>
   <button class="snd" id="snd" hidden aria-label="Enable sound"><span id="sndI">&#128266;</span><span id="sndT">Enable Sound / Activer le son</span></button>
@@ -189,12 +231,13 @@ dialog#co::backdrop{background:rgba(0,0,0,.7)}dialog#co h3{font-size:1.8rem;marg
 <section class="shop" id="shop"><div class="wrap">
   <div class="shead"><div><span class="eyebrow">The collection</span><h2 id="shopTitle">All pieces</h2></div>
     <div class="meta"><span id="shopCount"></span><label><select id="sort" aria-label="Sort"><option value="feat">Featured</option><option value="lo">Price: low to high</option><option value="hi">Price: high to low</option></select></label></div></div>
+  <div class="feat" id="feat" hidden></div>
   <div class="chips" id="chips" role="tablist"></div>
   <div class="grid" id="grid"></div>
   <div class="more" id="more" hidden><button class="btn ghost" id="moreBtn" style="color:var(--ink);border-color:var(--line)">View more</button></div>
 </div></section>
 <section class="look" id="look" hidden><div class="wrap lgrid">
-  <div class="lfilm"><video id="lookVideo" hidden muted loop playsinline preload="none" aria-label="Lookbook film"></video><span class="lbl">The film</span></div>
+  <div><div class="lfilm"><img class="lki" id="lookImg" alt=""><video id="lookVideo" hidden muted loop playsinline preload="none" aria-label="Lookbook film" style="position:absolute;inset:0;z-index:1"></video><div id="hsLayer" style="position:absolute;inset:0;z-index:2"></div><span class="lbl" style="z-index:3">The film</span></div><div class="lsegs" id="lsegs"></div></div>
   <div><span class="eyebrow">Shop the look</span><h2 id="lookTitle">The Edit</h2><div id="lookItems"></div></div>
 </div></section>
 <section class="story" id="story"><div class="wrap"><span class="eyebrow">The Maison</span><h2>Made slowly. Worn for years.</h2><p id="storyP">Each piece is finished by hand in small editions, with materials chosen to age beautifully.</p></div></section>
@@ -215,16 +258,26 @@ dialog#co::backdrop{background:rgba(0,0,0,.7)}dialog#co h3{font-size:1.8rem;marg
 (function(){
 "use strict";
 var DEMO_MODE=true,MODE="flagship";
-var CFG={brand:"Aura Noir",currency:"USD",checkoutUrl:"",whatsapp:"",freeShip:1500,sizeKind:"apparel",announce:"Complimentary express delivery|Signature luxury packaging|Complimentary alterations on every couture piece"};
-var products=[{"name": "Noir Cashmere Coat", "price": 2650, "desc": "Women's long double-faced cashmere coat, cut close at the waist, with horn buttons.", "category": "Outerwear", "image": "img/noir-cashmere-coat.jpg", "stock": 4, "look": false, "badge": "Bestseller", "sizes": ""}, {"name": "Atelier Wrap Coat", "price": 1980, "desc": "Women's wool wrap coat with a tie belt and a fluid, feminine drape.", "category": "Outerwear", "image": "img/atelier-wrap-coat.jpg", "stock": 6, "look": false, "badge": "", "sizes": ""}, {"name": "Soir Trench", "price": 2200, "desc": "Women's belted gabardine trench with a gold-tone buckle.", "category": "Outerwear", "image": "img/soir-trench.jpg", "stock": 0, "look": false, "badge": "", "sizes": ""}, {"name": "Aurore Cape", "price": 1750, "desc": "Sculpted ivory wool-blend cape that falls to the knee.", "category": "Outerwear", "image": "img/aurore-cape.jpg", "stock": 5, "look": false, "badge": "", "sizes": ""}, {"name": "Cuir Moto Jacket", "price": 3100, "desc": "Women's fitted lambskin biker jacket with gold zips, in the spirit of Paris rock chic.", "category": "Outerwear", "image": "img/cuir-moto-jacket.jpg", "stock": 3, "look": false, "badge": "Bestseller", "sizes": ""}, {"name": "Obsidian Blazer", "price": 1890, "desc": "Women's sharp-shouldered wool blazer, nipped at the waist, with satin-faced lapels.", "category": "Tailoring", "image": "img/obsidian-blazer.jpg", "stock": 6, "look": false, "badge": "", "sizes": ""}, {"name": "Le Smoking Jacket", "price": 2300, "desc": "Women's peak-lapel tuxedo jacket, cut close to the body from a single bolt of wool.", "category": "Tailoring", "image": "img/le-smoking-jacket.jpg", "stock": 3, "look": false, "badge": "", "sizes": ""}, {"name": "Nuit Silk Gown", "price": 3400, "desc": "Floor-length black silk crepe gown with a draped open back.", "category": "Evening & Silk", "image": "img/nuit-silk-gown.jpg", "stock": 3, "look": true, "badge": "Runway piece", "sizes": ""}, {"name": "Éclipse Dress", "price": 2100, "desc": "Bias-cut satin midi dress with a fine gold seam detail.", "category": "Evening & Silk", "image": "img/eclipse-dress.jpg", "stock": 5, "look": true, "badge": "Runway piece", "sizes": ""}, {"name": "Minuit Slip", "price": 1450, "desc": "Liquid satin slip dress in jet black.", "category": "Evening & Silk", "image": "img/minuit-slip.jpg", "stock": 9, "look": true, "badge": "", "sizes": ""}, {"name": "Velours Column Dress", "price": 2750, "desc": "Stretch velvet column dress with a square neckline.", "category": "Evening & Silk", "image": "img/velours-column-dress.jpg", "stock": 2, "look": false, "badge": "", "sizes": ""}, {"name": "Soie Ivoire Set", "price": 1320, "desc": "Women's pure silk bow blouse and matching bias skirt, sold as a set.", "category": "Evening & Silk", "image": "img/soie-ivoire-set.jpg", "stock": 8, "look": true, "badge": "", "sizes": ""}, {"name": "Noir Leather Tote", "price": 2400, "desc": "Structured calf leather handbag with a suede lining.", "category": "Bags", "image": "img/noir-tote.jpg", "stock": 7, "look": false, "badge": "", "sizes": "One size"}, {"name": "Aura Top-Handle Bag", "price": 1950, "desc": "Compact top-handle bag in grained leather.", "category": "Bags", "image": "img/aura-top-handle.jpg", "stock": 5, "look": false, "badge": "", "sizes": "One size"}, {"name": "Minuit Pump", "price": 980, "desc": "Women's pointed stiletto pump in polished calf leather.", "category": "Footwear", "image": "img/minuit-pump.jpg", "stock": 10, "look": false, "badge": "", "sizes": "36|37|38|39|40|41"}, {"name": "Soir Ankle Boot", "price": 1150, "desc": "Women's pointed ankle boot with a sculpted heel.", "category": "Footwear", "image": "img/soir-ankle-boot.jpg", "stock": 8, "look": false, "badge": "", "sizes": "36|37|38|39|40|41"}, {"name": "Éclipse Sunglasses", "price": 420, "desc": "Oversized women's acetate sunglasses with gold temples.", "category": "Eyewear", "image": "img/eclipse-sunglasses.jpg", "stock": 16, "look": false, "badge": "", "sizes": "One size"}, {"name": "Aura Gold Cuff", "price": 540, "desc": "Sculpted gold-tone cuff, polished by hand.", "category": "Accessories", "image": "img/aura-cuff.jpg", "stock": 14, "look": false, "badge": "", "sizes": "One size"}, {"name": "Or Hoop Earrings", "price": 460, "desc": "Chunky polished gold-tone hoop earrings.", "category": "Accessories", "image": "img/or-hoop-earrings.jpg", "stock": 15, "look": false, "badge": "", "sizes": "One size"}, {"name": "Denim Ruffle Gown", "price": 1680, "desc": "Women's indigo denim gown with a sculpted ruffle bodice, tie waist and tiered flounce skirt.", "category": "Evening & Silk", "image": "img/robe-denim-volants.jpg", "stock": 5, "look": false, "badge": "", "sizes": ""}, {"name": "Rouge Sculpture Gown", "price": 4200, "desc": "Women's red sculptural couture gown with a pleated organza bodice and cascading train.", "category": "Evening & Silk", "image": "img/robe-sculpture-rouge.jpg", "stock": 3, "look": false, "badge": "Runway piece", "sizes": ""}, {"name": "Rose Pearl Couture Gown", "price": 5600, "desc": "Women's blush couture gown in beaded fringe with a hand-gathered ruffled tulle cape.", "category": "Evening & Silk", "image": "img/robe-rose-perlee.jpg", "stock": 2, "look": false, "badge": "Limited edition", "sizes": ""}, {"name": "Bustier & Pinstripe Ensemble", "price": 1560, "desc": "Women's leather bustier, white poplin shirt and wide-leg pinstripe trousers.", "category": "Evening & Silk", "image": "img/ensemble-bustier-rayures.jpg", "stock": 6, "look": false, "badge": "", "sizes": ""}, {"name": "Corset & Camel Culotte", "price": 1290, "desc": "Women's black corset top with hook closure and high-waisted camel wide trousers.", "category": "Evening & Silk", "image": "img/ensemble-corset-camel.jpg", "stock": 6, "look": false, "badge": "", "sizes": ""}, {"name": "Cropped Blazer Ensemble", "price": 1740, "desc": "Women's cropped charcoal blazer, sheer bodysuit and wide-leg trousers.", "category": "Tailoring", "image": "img/ensemble-blazer-bodysuit.jpg", "stock": 5, "look": false, "badge": "", "sizes": ""}, {"name": "Ivoire Halter Top", "price": 690, "desc": "Women's ivory silk halter top with a plunging neckline and gathered peplum.", "category": "Evening & Silk", "image": "img/haut-halter-ivoire.jpg", "stock": 8, "look": false, "badge": "", "sizes": ""}];
+var CFG={catInfo:{"Dresses & Evening Gowns": {"title": "Dresses & Evening Gowns", "desc": "Silk, satin and sculpted couture for the hours after dark."}, "Coats & Outerwear": {"title": "Coats & Outerwear", "desc": "Cut in Paris, lined by hand."}, "Tailoring & Tops": {"title": "Tailoring & Tops", "desc": "The precision of the atelier, from shoulder to hem."}, "Watches & High Jewelry": {"title": "Watches & High Jewelry", "desc": "High jewelry and timepieces, crafted in Geneva and Paris."}, "Luxury Footwear": {"title": "Luxury Footwear", "desc": "Italian lasts and Parisian heels."}, "Bags & Leather Goods": {"title": "Bags & Leather Goods", "desc": "Saddle-stitched leather, finished in small editions."}},catSizes:{},brand:"Aura Noir",currency:"USD",checkoutUrl:"",whatsapp:"",freeShip:1500,sizeKind:"apparel",announce:"Complimentary express delivery|Signature luxury packaging|Complimentary alterations on every couture piece"};
+var products=[{"name": "Nuit Silk Gown", "price": 3400, "desc": "Floor-length black silk gown, bias-cut to follow the body, with a cowl neckline and fine straps.", "category": "Dresses & Evening Gowns", "image": "img/nuit-silk-gown.jpg", "stock": 7, "look": true, "lookn": 2, "badge": "Runway piece", "sizes": "", "hx": 50, "hy": 48}, {"name": "Éclipse Dress", "price": 2100, "desc": "Midnight-blue satin slip dress with a delicate cowl and a fluid hem.", "category": "Dresses & Evening Gowns", "image": "img/eclipse-dress.jpg", "stock": 6, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 46}, {"name": "Minuit Slip", "price": 1450, "desc": "Black silk-satin slip dress with lace-trimmed neckline and adjustable straps.", "category": "Dresses & Evening Gowns", "image": "img/minuit-slip.jpg", "stock": 9, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 46}, {"name": "Rouge Sculpture Gown", "price": 4200, "desc": "Sculpted red couture gown with a hand-draped bodice and architectural ruffles.", "category": "Dresses & Evening Gowns", "image": "img/robe-sculpture-rouge.jpg", "stock": 3, "look": false, "lookn": 0, "badge": "Runway piece", "sizes": "", "hx": 50, "hy": 46}, {"name": "Rose Pearl Couture Gown", "price": 5600, "desc": "Pearl-embroidered rose couture gown with a flowing train, finished by hand over 300 hours.", "category": "Dresses & Evening Gowns", "image": "img/robe-rose-perlee.jpg", "stock": 2, "look": false, "lookn": 0, "badge": "Limited edition", "sizes": "", "hx": 50, "hy": 46}, {"name": "Noir Cashmere Coat", "price": 2650, "desc": "Women's long double-faced cashmere coat, cut close at the waist, with horn buttons.", "category": "Coats & Outerwear", "image": "img/noir-cashmere-coat.jpg", "stock": 8, "look": false, "lookn": 0, "badge": "Bestseller", "sizes": "", "hx": 50, "hy": 40}, {"name": "Soir Trench", "price": 2200, "desc": "Women's belted gabardine trench with a gold-tone buckle and storm collar.", "category": "Coats & Outerwear", "image": "img/soir-trench.jpg", "stock": 5, "look": true, "lookn": 1, "badge": "", "sizes": "", "hx": 50, "hy": 34}, {"name": "Atelier Wrap Coat", "price": 1980, "desc": "Camel wool wrap coat with a tie belt and a wide shawl collar.", "category": "Coats & Outerwear", "image": "img/atelier-wrap-coat.jpg", "stock": 6, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 40}, {"name": "Cuir Moto Jacket", "price": 3100, "desc": "Black lambskin biker jacket with an asymmetric zip and silver hardware.", "category": "Coats & Outerwear", "image": "img/cuir-moto-jacket.jpg", "stock": 4, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 40}, {"name": "Belted Vest Blazer & Leather Gloves", "price": 2450, "desc": "Sleeveless tailored black blazer cinched with a leather belt, worn with long leather opera gloves.", "category": "Tailoring & Tops", "image": "img/vest-blazer-gloves.jpg", "stock": 5, "look": true, "lookn": 3, "badge": "Runway piece", "sizes": "", "hx": 50, "hy": 40}, {"name": "Obsidian Blazer", "price": 1890, "desc": "Single-breasted black wool blazer with sharp shoulders and a nipped waist.", "category": "Tailoring & Tops", "image": "img/obsidian-blazer.jpg", "stock": 6, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 38}, {"name": "Cropped Blazer Ensemble", "price": 1740, "desc": "Cropped black blazer with a fitted bodysuit and wide-leg trousers.", "category": "Tailoring & Tops", "image": "img/ensemble-blazer-bodysuit.jpg", "stock": 5, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 40}, {"name": "Ivoire Halter Top", "price": 690, "desc": "Ivory silk halter top with a gathered neckline and open back.", "category": "Tailoring & Tops", "image": "img/haut-halter-ivoire.jpg", "stock": 11, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 40}, {"name": "Aura Chronos 36", "price": 8900, "desc": "36 mm yellow-gold timepiece with a black lacquer dial, sapphire crystal and a slim gold bracelet. Swiss movement.", "category": "Watches & High Jewelry", "image": "img/aura-chronos-36.jpg", "stock": 4, "look": true, "lookn": 4, "badge": "Limited edition", "sizes": "36mm|40mm", "hx": 50, "hy": 55}, {"name": "Obsidian Chrono 40", "price": 7400, "desc": "40 mm black ceramic chronograph with gold sub-dials and a black leather strap.", "category": "Watches & High Jewelry", "image": "img/obsidian-chrono-40.jpg", "stock": 3, "look": false, "lookn": 0, "badge": "", "sizes": "36mm|40mm", "hx": 50, "hy": 55}, {"name": "Rivière Necklace", "price": 12500, "desc": "High-jewelry rivière of brilliant-cut diamonds set in 18-carat gold, made to order in Paris.", "category": "Watches & High Jewelry", "image": "img/riviere-necklace.jpg", "stock": 2, "look": false, "lookn": 0, "badge": "Signature jewelry", "sizes": "One Size (Adjustable) + Luxury Gift Box", "hx": 50, "hy": 50}, {"name": "Or Sculpted Hoops", "price": 3200, "desc": "Large sculpted 18-carat gold hoops with pavé diamonds.", "category": "Watches & High Jewelry", "image": "img/or-hoop-earrings.jpg", "stock": 6, "look": false, "lookn": 0, "badge": "", "sizes": "One Size (Adjustable) + Luxury Gift Box", "hx": 50, "hy": 50}, {"name": "Minuit Pump", "price": 980, "desc": "Black patent-leather stiletto pump with a pointed toe and a gold heel tip.", "category": "Luxury Footwear", "image": "img/minuit-pump.jpg", "stock": 9, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 50}, {"name": "Soir Ankle Boot", "price": 1150, "desc": "Black calfskin ankle boot with a slim heel and a gold buckle.", "category": "Luxury Footwear", "image": "img/soir-ankle-boot.jpg", "stock": 7, "look": false, "lookn": 0, "badge": "Bestseller", "sizes": "", "hx": 50, "hy": 50}, {"name": "Étoile Slingback", "price": 890, "desc": "Black satin slingback with a delicate gold buckle and a sculpted heel.", "category": "Luxury Footwear", "image": "img/etoile-slingback.jpg", "stock": 8, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 50}, {"name": "Noir Leather Tote", "price": 2400, "desc": "Large structured tote in black grained calfskin with gold hardware.", "category": "Bags & Leather Goods", "image": "img/noir-tote.jpg", "stock": 8, "look": false, "lookn": 0, "badge": "Bestseller", "sizes": "", "hx": 50, "hy": 50}, {"name": "Aura Top-Handle Bag", "price": 1950, "desc": "Small black calfskin top-handle bag with a gold clasp and detachable strap.", "category": "Bags & Leather Goods", "image": "img/aura-top-handle.jpg", "stock": 6, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 50}, {"name": "Minuit Clutch", "price": 1350, "desc": "Black velvet evening clutch with a gold frame clasp.", "category": "Bags & Leather Goods", "image": "img/minuit-clutch.jpg", "stock": 9, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 50}, {"name": "Soir Crossbody", "price": 2250, "desc": "Quilted black leather crossbody bag with a gold chain strap.", "category": "Bags & Leather Goods", "image": "img/soir-crossbody.jpg", "stock": 7, "look": false, "lookn": 0, "badge": "", "sizes": "", "hx": 50, "hy": 50}];
 var PAGE=24,shown=PAGE,cat="All",query="",sortBy="feat",cart=[],cur=null,curSize="";
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function money(n){try{return new Intl.NumberFormat("en-US",{style:"currency",currency:CFG.currency,maximumFractionDigits:(n%1?2:0)}).format(n)}catch(e){return "$"+n}}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("show")},2400)}
+var THEMES=[["noir-gold","Noir Gold"],["parisian-ivory","Parisian Ivory"],["warm-espresso","Warm Espresso"]],ALIAS={noir:"noir-gold",ivory:"parisian-ivory",obsidian:"warm-espresso"};
+function themeId(x){x=String(x||"").toLowerCase();x=ALIAS[x]||x;return THEMES.some(function(t){return t[0]===x})?x:""}
+var savedTheme="";try{savedTheme=themeId(localStorage.getItem("apx-theme"))}catch(e){}
+function setTheme(t,save){document.documentElement.setAttribute("data-theme",t);var bs=document.querySelectorAll("#themebar [data-th]");for(var i=0;i<bs.length;i++)bs[i].classList.toggle("on",bs[i].getAttribute("data-th")===t);if(save){try{localStorage.setItem("apx-theme",t)}catch(e){}}}
+function themeBar(){var b=$("themebar");b.hidden=false;b.innerHTML='<span>Live theme preview:</span>'+THEMES.map(function(t){return '<button type="button" data-th="'+t[0]+'"><i class="sw sw-'+t[0]+'"></i>'+t[1]+'</button>'}).join("");b.onclick=function(e){var x=e.target.closest("[data-th]");if(x)setTheme(x.getAttribute("data-th"),true)};setTheme(themeId(document.documentElement.getAttribute("data-theme"))||"noir-gold")}
+function notesHtml(p){var n=p.notes;if(!n)return"";if(typeof n==="string"){var parts=n.split(/\s*[•|]\s*/).filter(Boolean);return '<div class="notes">'+parts.map(function(s){var m=s.match(/^([A-Za-z\u00C0-\u017F ]{2,12}):\s*(.+)$/);return m?'<span><b>'+esc(m[1])+':</b> '+esc(m[2])+'</span>':'<span>'+esc(s)+'</span>'}).join("<i>•</i>")+'</div>'}return""}
+function badgeOf(p){return p.chef?"Chef’s Signature • Sommelier Pairing Available":(p.badge||"")}
+function card(x,k){var p=x.p,out=p.stock<=0,low=p.stock>0&&p.stock<=3,b=badgeOf(p),tg=out?'<span class="tag so">Sold out</span>':(b?'<span class="tag">'+esc(b)+'</span>':(low?'<span class="tag">Limited edition</span>':''));
+  return '<article class="card" style="transition-delay:'+((k%4)*70)+'ms"><div class="ph" data-q="'+x.i+'" role="button" tabindex="0" aria-label="View '+esc(p.name)+'">'+tg+'<img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+art(x.i).replace(/'/g,"%27")+'\'">'+(out?'':'<button class="qa" data-q="'+x.i+'">+ Quick add</button>')+'</div><div class="info"><small>'+esc(p.category)+'</small><h3>'+esc(p.name)+'</h3>'+notesHtml(p)+(p.detail?'<div class="detail">'+esc(p.detail)+'</div>':'')+'<span class="price">'+money(p.price)+'</span></div></article>'}
 function art(i){var h=(i*47)%60;return "data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><defs><radialGradient id="g" cx="35%" cy="20%" r="90%"><stop offset="0" stop-color="hsl('+(38+h/3)+',40%,22%)"/><stop offset="1" stop-color="#0c0d10"/></radialGradient></defs><rect width="300" height="400" fill="url(#g)"/></svg>')}
 /* sizes: "XS|S|M|L" or "50ml:120|100ml:180" */
-function sizesOf(p){var s=p.sizes;if(!s){if(CFG.sizeKind==="apparel")s="XS|S|M|L|XL";else if(CFG.sizeKind==="fragrance")s="50ml|100ml";else return[]}
+function smartSizes(c){c=String(c||"");var o=CFG.catSizes||{};if(o[c])return o[c];if(/jewel/i.test(c)&&!/watch/i.test(c))return"One Size (Adjustable) + Luxury Gift Box";if(/watch/i.test(c))return"36mm|40mm";if(/foot|shoe|boot|heel|sandal/i.test(c))return"EU 36|EU 37|EU 38|EU 39|EU 40";if(/\bbags?\b|leather goods/i.test(c))return"Standard Size • Dust Bag & Authenticity Card Included";if(/dress|gown|coat|outerwear|tailor|top|blazer|knit|jacket/i.test(c))return"XS|S|M|L|XL";return""}
+function sizesOf(p){var s=p.sizes||(CFG.sizeKind!=="fragrance"&&CFG.sizeKind!=="none"?smartSizes(p.category):"");if(!s){if(CFG.sizeKind==="apparel")s="XS|S|M|L|XL";else if(CFG.sizeKind==="fragrance")s="50ml|100ml";else return[]}
   return String(s).split("|").map(function(x){var a=x.split(":");return{l:a[0].trim(),p:a[1]?parseFloat(a[1]):null}}).filter(function(x){return x.l})}
 function priceOf(p,sz){var o=sizesOf(p).filter(function(x){return x.l===sz})[0];return o&&o.p!=null?o.p:p.price}
 /* csv */
@@ -236,27 +289,47 @@ function fromSheet(csv){csv=csv.replace(/^﻿/,"");var rows=parseCSV(csv);if(!ro
   var all=rows.map(function(r){var o={};h.forEach(function(k,i){o[k]=(r[i]||"").trim()});return o}),set={};
   var list=all.filter(function(o){var k=(o.name||"").toLowerCase().replace(/[^a-z]/g,"");if(k==="herovideo"||k==="lookbookvideo"||k==="lookbookposter"||k==="heroposter"){set[k]=o.image||o.desc||o.price;return false}return true})
    .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"})
-   .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st,look:/^(1|y|yes|true|x)$/i.test(o.look||""),badge:o.badge||"",sizes:o.sizes||""}});
+   .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st,look:/^(1|2|3|4|y|yes|true|x)$/i.test(o.look||""),lookn:parseInt(o.look,10)||0,badge:o.badge||"",sizes:o.sizes||"",notes:o.notes||"",detail:o.detail||"",story:o.story||"",chef:/^(1|y|yes|true|x)$/i.test(o.chef||""),featured:/^(1|y|yes|true|x)$/i.test(o.featured||""),hx:parseFloat(o.hx)||0,hy:parseFloat(o.hy)||0}});
   if(MODE==="micro")list=list.slice(0,10);list.settings=set;return list}
 function loadSheet(url){fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat="All";shown=PAGE;render();applyMedia(s.settings||{})}else render()}).catch(function(){render()})}
 /* render */
 var io=("IntersectionObserver" in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{rootMargin:"0px 0px -6% 0px",threshold:.05}):null;
 function visible(){var l=products.map(function(p,i){return{p:p,i:i}}).filter(function(x){return(cat==="All"||x.p.category===cat)&&(!query||(x.p.name+" "+x.p.desc+" "+x.p.category).toLowerCase().indexOf(query)>-1)});
   if(sortBy==="lo")l.sort(function(a,b){return a.p.price-b.p.price});if(sortBy==="hi")l.sort(function(a,b){return b.p.price-a.p.price});return l}
+function short(n){return String(n).replace(/^Luxury\s+/i,"").split(/\s*(?:&|and|,)\s*/i)[0]}
 function render(){
   var m={},names=[];products.forEach(function(p){if(!m[p.category]){m[p.category]=0;names.push(p.category)}m[p.category]++});
-  $("chips").innerHTML=names.length>1?['<button class="chip'+(cat==="All"?" on":"")+'" data-c="All" role="tab">All<small>'+products.length+'</small></button>'].concat(names.map(function(n){return '<button class="chip'+(cat===n?" on":"")+'" data-c="'+esc(n)+'" role="tab">'+esc(n)+'<small>'+m[n]+'</small></button>'})).join(""):"";
-  var list=visible();$("shopTitle").textContent=cat==="All"?"All pieces":cat;$("shopCount").textContent=list.length+(list.length===1?" piece":" pieces");
-  $("grid").innerHTML=list.slice(0,shown).map(function(x,k){var p=x.p,out=p.stock<=0,low=p.stock>0&&p.stock<=3,tg=out?'<span class="tag so">Sold out</span>':(p.badge?'<span class="tag">'+esc(p.badge)+'</span>':(low?'<span class="tag">Limited edition</span>':''));
-    return '<article class="card" style="transition-delay:'+((k%4)*70)+'ms"><div class="ph" data-q="'+x.i+'" role="button" tabindex="0" aria-label="View '+esc(p.name)+'">'+tg+'<img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.onerror=null;this.src=\''+art(x.i).replace(/'/g,"%27")+'\'">'+(out?'':'<button class="qa" data-q="'+x.i+'">+ Quick add</button>')+'</div><div class="info"><small>'+esc(p.category)+'</small><h3>'+esc(p.name)+'</h3><span class="price">'+money(p.price)+'</span></div></article>'}).join("")||'<p class="empty">Nothing found.</p>';
+  $("chips").innerHTML=names.length>1?['<button class="chip'+(cat==="All"?" on":"")+'" data-c="All" role="tab">All Collections<small>'+products.length+'</small></button>'].concat(names.map(function(n){return '<button class="chip'+(cat===n?" on":"")+'" data-c="'+esc(n)+'" role="tab">'+esc(n)+'<small>'+m[n]+'</small></button>'})).join(""):"";
+  var nv=$("nav");nv.innerHTML='<a href="#shop" data-c="All">Collections</a>'+(names.length>1?names.map(function(n){return '<a href="#shop" data-c="'+esc(n)+'">'+esc(short(n))+'</a>'}).join(""):"")+'<a href="#look" id="lookLink">Lookbook</a><a href="#story">Maison</a>';
+  $("mnav").innerHTML='<button id="mx" aria-label="Close">&times;</button><a href="#shop" data-c="All">Collections</a>'+names.map(function(n){return '<a href="#shop" data-c="'+esc(n)+'">'+esc(n)+'</a>'}).join("")+'<a href="#look">Lookbook</a><a href="#story">Maison</a>';
+  $("mx").onclick=function(){$("mnav").classList.remove("open")};
+  var list=visible();$("shopTitle").textContent=cat==="All"?"All Collections":cat;$("shopCount").textContent=list.length+(list.length===1?" piece":" pieces");
+  var fi=-1,fe=$("feat");if(cat==="All"&&!query&&products.length>3){fi=0;products.forEach(function(p,i){if(p.featured&&fi===0&&i>0)fi=i});if(products[fi].stock<=0)fi=-1}
+  if(fi>=0){var fp=products[fi],fb=badgeOf(fp)||"Signature piece";fe.hidden=false;fe.innerHTML='<div class="fi" data-q="'+fi+'" role="button" tabindex="0" aria-label="View '+esc(fp.name)+'"><img src="'+esc(fp.image)+'" alt="'+esc(fp.name)+'" onerror="this.onerror=null;this.src=\''+art(fi).replace(/'/g,"%27")+'\'"></div><div class="ft"><span class="seas">Piece of the season</span><h3>'+esc(fp.name)+'</h3><span class="tag solo">'+esc(fb)+'</span><p>'+esc(fp.story||fp.desc||"")+'</p>'+notesHtml(fp)+(fp.detail?'<div class="detail">'+esc(fp.detail)+'</div>':'')+'<span class="price big">'+money(fp.price)+'</span><div class="acts"><button class="btn" data-q="'+fi+'">Add to bag</button><button class="btn ghost" data-q="'+fi+'">Quick view</button></div></div>';list=list.filter(function(x){return x.i!==fi})}else{fe.hidden=true;fe.innerHTML=""}
+  var groups=[],gm={};list.forEach(function(x){var c=x.p.category;if(!gm[c]){gm[c]=[];groups.push(c)}gm[c].push(x)});
+  var multi=names.length>1;
+  $("grid").innerHTML=groups.map(function(c,gi){var info=(CFG.catInfo&&CFG.catInfo[c])||{};var ord=names.indexOf(c)+1;
+    return '<section class="catsec" id="cat-'+ord+'">'+(multi?'<div class="cdiv"><span class="eyebrow">Collection '+(ord<10?"0":"")+ord+'</span><h2>'+esc(info.title||c)+'</h2>'+(info.desc?'<p>'+esc(info.desc)+'</p>':'')+'</div>':'')+'<div class="grid'+(gm[c].length<4?" few":"")+'">'+gm[c].map(card).join("")+'</div></section>'}).join("")||'<p class="empty">Nothing found.</p>';
   var cs=$("grid").querySelectorAll(".card");for(var i=0;i<cs.length;i++){if(io)io.observe(cs[i]);else cs[i].classList.add("in")}
-  $("more").hidden=list.length<=shown;renderLook()}
+  $("more").hidden=true;renderLook()}
+var looks=[],lk=0,lkTimer=null;
+function lookPicks(){var a=products.map(function(p,i){return{p:p,i:i}}).filter(function(x){return x.p.look});a.forEach(function(x){x.o=x.p.lookn||99});a.sort(function(u,v){return u.o-v.o||u.i-v.i});if(!a.length)a=products.map(function(p,i){return{p:p,i:i}}).slice(0,4);return a.slice(0,4)}
+function defSize(i){var s=sizesOf(products[i]);if(!s.length)return"";var m=s.filter(function(x){return x.l==="S"})[0];return(m||s[0]).l}
+function setLook(k){lk=k;var h=document.querySelectorAll("#hsLayer .hs");for(var i=0;i<h.length;i++)h[i].classList.toggle("on",i===k);var c=document.querySelectorAll("#lookItems .litem");for(var j=0;j<c.length;j++)c[j].classList.toggle("cur",j===k);var s=document.querySelectorAll("#lsegs button");for(var m=0;m<s.length;m++)s[m].classList.toggle("on",m===k);var pp=$("hpop");if(pp)pp.hidden=true;if(looks[k]&&$("lookImg"))$("lookImg").src=looks[k].p.image}
+function lookTick(){if(!looks.length||lv.hidden||!lv.duration||isNaN(lv.duration))return;var k=Math.min(looks.length-1,Math.floor(lv.currentTime/(lv.duration/looks.length)));if(k!==lk)setLook(k)}
 function renderLook(){if(MODE==="micro"){$("look").hidden=true;$("lookLink").hidden=true;return}
-  var picks=products.map(function(p,i){return{p:p,i:i}}).filter(function(x){return x.p.look});if(!picks.length)picks=products.map(function(p,i){return{p:p,i:i}}).slice(0,4);
-  $("look").hidden=!picks.length;$("lookLink").hidden=!picks.length;
-  $("lookItems").innerHTML=picks.slice(0,5).map(function(x){var p=x.p,out=p.stock<=0;return '<div class="litem"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" data-q="'+x.i+'"><div><small>'+esc(p.category)+'</small><h4>'+esc(p.name)+'</h4><span class="price">'+money(p.price)+'</span></div><button class="add" data-q="'+x.i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Select")+'</button></div>'}).join("")}
+  looks=lookPicks();$("look").hidden=!looks.length;$("lookLink").hidden=!looks.length;if(!looks.length)return;
+  $("lookItems").innerHTML=looks.map(function(x,k){var p=x.p,out=p.stock<=0;return '<div class="litem" data-lk="'+k+'"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" data-q="'+x.i+'"><div><small>Look '+(k+1)+' · '+esc(p.category)+'</small><h4>'+esc(p.name)+'</h4><span class="price">'+money(p.price)+'</span></div><button class="add" data-q="'+x.i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Select")+'</button></div>'}).join("")+'<button class="btn lcta" id="lookAll" type="button">Add complete runway look to bag ('+looks.length+' pieces)</button>';
+  $("hsLayer").innerHTML=looks.map(function(x,k){return '<button type="button" class="hs" data-hs="'+k+'" style="left:'+(x.p.hx||50)+'%;top:'+(x.p.hy||42)+'%" aria-label="'+esc(x.p.name)+'">+</button>'}).join("")+'<div class="hpop" id="hpop" hidden></div>';
+  $("lsegs").innerHTML=looks.map(function(x,k){return '<button type="button" data-seg="'+k+'" aria-label="Look '+(k+1)+'"></button>'}).join("");
+  setLook(Math.min(lk,looks.length-1));clearInterval(lkTimer);lkTimer=setInterval(function(){if(lv.hidden||lv.paused&&!lv.currentTime){setLook((lk+1)%looks.length)}},4500)}
+document.addEventListener("click",function(e){var t=e.target,b;
+  if(b=t.closest("[data-hs]")){var k=+b.getAttribute("data-hs"),p=looks[k].p,pp=$("hpop");setLook(k);b.classList.add("on");pp.style.left=(p.hx||50)+"%";pp.style.top=(p.hy||42)+"%";pp.innerHTML='<h4>'+esc(p.name)+'</h4><span class="price">'+money(p.price)+'</span><button type="button" data-q="'+looks[k].i+'">Select</button>';pp.hidden=false;var it=document.querySelector('#lookItems .litem[data-lk="'+k+'"]');if(it&&it.scrollIntoView)it.scrollIntoView({block:"nearest",behavior:"smooth"});e.stopPropagation();return}
+  if(b=t.closest("[data-seg]")){var q=+b.getAttribute("data-seg");if(!lv.hidden&&lv.duration){lv.currentTime=q*lv.duration/looks.length+.05}setLook(q);return}
+  if(t.closest("#lookAll")){var n=0;looks.forEach(function(x){if(products[x.i].stock>0){add(x.i,defSize(x.i),1,true);n++}});if(n){openCart();toast(n+" pieces added")}return}
+},true);
 /* media */
-var hv=$("heroVideo"),lv=$("lookVideo");
+var hv=$("heroVideo"),lv=$("lookVideo");lv.addEventListener("timeupdate",function(){lookTick()});
 function playFilm(v,ph,url){if(!url||!/^https?:\/\/|^\//i.test(url))return;if(v.getAttribute("src")===url)return;v.src=url;v.preload="metadata";v.hidden=false;v.addEventListener("playing",function(){if(ph)ph.style.display="none"});
   if("IntersectionObserver" in window){new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)v.play().catch(function(){});else v.pause()})},{threshold:.2}).observe(v)}else v.play().catch(function(){})}
 function applyMedia(m){if(m.herovideo)playFilm(hv,$("heroPh"),m.herovideo),$("snd").hidden=false;if(m.lookbookvideo)playFilm(lv,null,m.lookbookvideo)}
@@ -273,12 +346,12 @@ function drawCart(bump){var n=items(),sub=total();$("count").textContent=n;$("su
   if(fs>0){var left=fs-sub;$("ship").innerHTML=(left>0?'You are <b style="color:var(--ink)">'+money(left)+'</b> away from complimentary shipping':'<b style="color:var(--gold)">Complimentary shipping unlocked</b>')+'<div class="bar"><i style="width:'+Math.min(100,sub/fs*100)+'%"></i></div>'}
   $("lines").innerHTML=cart.length?cart.map(function(l,i){return '<div class="line"><img src="'+esc(l.p.image)+'" alt=""><div><h4>'+esc(l.p.name)+'</h4>'+(l.size?'<span class="sm">Size · '+esc(l.size)+'</span>':'')+'<div class="row"><span class="qty"><button data-d="'+i+'" aria-label="Decrease">&minus;</button><span>'+l.qty+'</span><button data-u="'+i+'" aria-label="Increase">+</button></span><span class="price">'+money(priceOf(l.p,l.size)*l.qty)+'</span></div><button class="rm" data-rm="'+i+'">Remove</button></div></div>'}).join(""):'<p class="empty-cart">Your bag is empty.</p>';
   $("checkout").disabled=!cart.length;save()}
-function add(i,size,q){var p=products[i];if(!p||p.stock<=0)return;var s=sizesOf(p);if(s.length&&!size)size=s[0].l;var l=cart.filter(function(x){return x.p===p&&x.size===(size||"")})[0];q=q||1;
-  if(l){if(l.qty+q>p.stock){toast("Only "+p.stock+" available");return}l.qty+=q}else cart.push({p:p,size:size||"",qty:Math.min(q,p.stock)});drawCart(true);toast(p.name+" added")}
+function add(i,size,q,silent){var p=products[i];if(!p||p.stock<=0)return;var s=sizesOf(p);if(s.length&&!size)size=s[0].l;var l=cart.filter(function(x){return x.p===p&&x.size===(size||"")})[0];q=q||1;
+  if(l){if(l.qty+q>p.stock){toast("Only "+p.stock+" available");return}l.qty+=q}else cart.push({p:p,size:size||"",qty:Math.min(q,p.stock)});drawCart(true);if(!silent)toast(p.name+" added")}
 function openCart(){document.body.classList.remove("quick");document.body.classList.add("cart","lock");$("drawer").setAttribute("aria-hidden","false");$("modal").setAttribute("aria-hidden","true")}
 function closeAll(){document.body.classList.remove("cart","quick","lock");$("drawer").setAttribute("aria-hidden","true");$("modal").setAttribute("aria-hidden","true")}
 function quick(i){cur=i;var p=products[i],out=p.stock<=0,sz=sizesOf(p);curSize=sz.length?sz[0].l:"";
-  $("mbox").innerHTML='<button class="x" data-x aria-label="Close">&times;</button><div class="mi"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'"></div><div class="mt"><span class="eyebrow">'+esc(p.category)+'</span><h3>'+esc(p.name)+'</h3><span class="price" id="mp" style="font-size:1.25rem">'+money(priceOf(p,curSize))+'</span><p>'+esc(p.desc||"")+'</p>'+(sz.length?'<div class="opt"><label>'+(CFG.sizeKind==="fragrance"?"Size":"Select size")+'</label><div class="sizes">'+sz.map(function(x,k){return '<button class="sz'+(k===0?" on":"")+'" data-sz="'+esc(x.l)+'">'+esc(x.l)+'</button>'}).join("")+'</div></div>':'')+'<button class="btn" data-add="'+i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Add to bag")+'</button><div class="mdet"><span>Complimentary express delivery over the threshold</span><span>Signature packaging &middot; 30-day returns</span></div></div>';
+  $("mbox").innerHTML='<button class="x" data-x aria-label="Close">&times;</button><div class="mi"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'"></div><div class="mt"><span class="eyebrow">'+esc(p.category)+'</span><h3>'+esc(p.name)+'</h3><span class="price" id="mp" style="font-size:1.25rem">'+money(priceOf(p,curSize))+'</span><p>'+esc(p.story||p.desc||"")+'</p>'+notesHtml(p)+(p.detail?'<div class="detail">'+esc(p.detail)+'</div>':'')+(p.chef?'<span class="tag solo">'+esc(badgeOf(p))+'</span>':'')+(sz.length?'<div class="opt"><label>'+(CFG.sizeKind==="fragrance"?"Size":"Select size")+'</label><div class="sizes">'+sz.map(function(x,k){return '<button class="sz'+(k===0?" on":"")+'" data-sz="'+esc(x.l)+'">'+esc(x.l)+'</button>'}).join("")+'</div></div>':'')+'<button class="btn" data-add="'+i+'"'+(out?" disabled":"")+'>'+(out?"Sold out":"Add to bag")+'</button><div class="mdet"><span>Complimentary express delivery over the threshold</span><span>Signature packaging &middot; 30-day returns</span></div></div>';
   document.body.classList.add("quick","lock");$("modal").setAttribute("aria-hidden","false")}
 document.addEventListener("click",function(e){var t=e.target,b;
   if(b=t.closest("[data-c]")){cat=b.getAttribute("data-c");shown=PAGE;render();return}
@@ -308,10 +381,10 @@ function applyConfig(c){
   if(c.checkoutUrlEnc){try{c.checkoutUrl=decodeURIComponent(c.checkoutUrlEnc)}catch(e){}}
   if(c.checkoutUrl&&!/^https:\/\//i.test(c.checkoutUrl))c.checkoutUrl="";
   if(c.currency&&/^[A-Za-z]{3}$/.test(c.currency))CFG.currency=c.currency.toUpperCase();
-  if(c.theme&&/^(noir|ivory|obsidian)$/.test(c.theme))document.documentElement.setAttribute("data-theme",c.theme);
+  var tid=themeId(c.theme);if(c.themeBar||DEMO_MODE)themeBar();if(tid&&!(DEMO_MODE&&savedTheme))setTheme(tid);else if(savedTheme)setTheme(savedTheme);
   if(c.whatsapp)CFG.whatsapp=String(c.whatsapp);
   if(c.freeShipping!==undefined&&!isNaN(+c.freeShipping))CFG.freeShip=+c.freeShipping;
-  if(c.sizeKind&&/^(apparel|fragrance|none)$/.test(c.sizeKind))CFG.sizeKind=c.sizeKind;
+  if(c.categories&&typeof c.categories==="object")CFG.catInfo=c.categories;if(c.categorySizes&&typeof c.categorySizes==="object")CFG.catSizes=c.categorySizes;if(c.sizeKind&&/^(apparel|fragrance|none)$/.test(c.sizeKind))CFG.sizeKind=c.sizeKind;
   if(c.announce){CFG.announce=String(c.announce);annRun()}
   if(c.brand)setBrand(String(c.brand));
   if(c.tagline)$("tagline").textContent=c.tagline;
@@ -327,7 +400,7 @@ function applyConfig(c){
   if(c.sheetCsvUrl&&/^https:\/\//i.test(c.sheetCsvUrl)){products=[];render();loadSheet(c.sheetCsvUrl)}
   render();drawCart()}
 document.addEventListener("error",function(e){var t=e.target;if(t&&t.tagName==="IMG"&&!t.dataset.fb){t.dataset.fb=1;t.src=art(3)}},true);
-setBrand(CFG.brand);annRun();render();restore();drawCart();
+setBrand(CFG.brand);annRun();if(DEMO_MODE){themeBar();if(savedTheme)setTheme(savedTheme)}render();restore();drawCart();
 fetch("config.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(c){if(c)applyConfig(c)}).catch(function(){});
 })();
 </script>
