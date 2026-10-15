@@ -294,7 +294,7 @@ function fromSheet(csv){csv=csv.replace(/^\uFEFF/,"");var rows=parseCSV(csv);if(
   var list=all.filter(function(o){var k=(o.name||"").toLowerCase().replace(/[^a-z]/g,"");if(k==="herovideo"||k==="lookbookvideo"||k==="lookbookposter"||k==="heroposter"){set[k]=o.image||o.desc||o.price;return false}return true})
    .filter(function(o){return o.name&&o.price&&String(o.visible||"true").toLowerCase()!=="false"})
    .map(function(o,i){var st=o.stock===""||o.stock===undefined?99:parseInt(o.stock,10);return{name:o.name,price:parseFloat(String(o.price).replace(/[^0-9.]/g,""))||0,desc:o.desc||"",category:o.category||"Collection",image:o.image||art(i),stock:isNaN(st)?99:st,look:/^(1|y|yes|true|x)$/i.test(o.look||"")}});
-  list=list.slice(0,3);list.settings=set;return list}
+  list=list.slice(0,10);list.settings=set;return list}
 function loadSheet(url){fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var s=fromSheet(t);if(s.length){products=s;cat="All";shown=PAGE;render();applyMedia(s.settings||{})}else{render()}}).catch(function(){render()})}
 
 /* ---- render ---- */
