@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order | Apex Studio Pro</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#07080e; --bg2:#0b0d15; --panel:#10131d; --line:#232838; --gold:#d4af5f; --gold2:#f0d79a; --text:#f5f2eb; --muted:#a7a397; --err:#e88a7a; --ok:#7fc79a;
+    --serif:"Playfair Display",Georgia,serif; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(900px 500px at 80% -10%,rgba(212,175,95,.10),transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  html[lang=ar] body{font-family:Tajawal,var(--sans)}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;line-height:1.15}
+  html[lang=ar] h1,html[lang=ar] h2,html[lang=ar] h3{font-family:Amiri,var(--serif)}
+  a{color:var(--gold2)}
+  .wrap{width:min(860px,100% - 32px);margin:0 auto}
+  header{border-bottom:1px solid var(--line);background:rgba(7,8,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:5}
+  header .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0}
+  .logo{font-family:var(--serif);letter-spacing:.14em;font-size:15px;color:var(--text);text-decoration:none;white-space:nowrap}
+  .logo b{color:var(--gold);font-weight:400}
+  .lang{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font:500 13px var(--sans);cursor:pointer}
+  .lang option{background:#111;color:var(--text)}
+  .intro{padding:48px 0 18px}
+  .eyebrow{color:var(--gold);letter-spacing:.24em;text-transform:uppercase;font-size:12px;margin:0 0 12px}
+  html[lang=ar] .eyebrow{letter-spacing:0}
+  .intro h1{font-size:clamp(32px,5vw,48px)}
+  .intro p{color:var(--muted);margin:14px 0 0;max-width:60ch}
+  .steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding:0;list-style:none}
+  .steps li{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+  .steps li b{color:var(--gold);font-weight:600;margin-inline-end:6px}
+  form{padding:12px 0 80px}
+  fieldset{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:26px;margin:0 0 18px}
+  legend{padding:0 8px;font-family:var(--serif);font-size:20px}
+  html[lang=ar] legend{font-family:Amiri,var(--serif)}
+  .pk{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .pk label{position:relative;display:block;border:1px solid var(--line);border-radius:16px;padding:18px 16px;cursor:pointer;background:var(--bg2);transition:border-color .2s,background .2s}
+  .pk input{position:absolute;opacity:0;pointer-events:none}
+  .pk .nm{display:block;font-weight:600}
+  .pk .pr{display:block;font-family:var(--serif);font-size:30px;color:var(--gold2);margin:4px 0}
+  .pk .ds{display:block;font-size:13px;color:var(--muted)}
+  .pk label:has(input:checked){border-color:var(--gold);background:rgba(212,175,95,.08)}
+  .pk label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:2px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .f{display:grid;gap:7px;font-size:14px}
+  .f.full{grid-column:1/-1}
+  .f > span{color:var(--text);font-weight:500}
+  .f small{color:var(--muted);font-size:12.5px}
+  .req{color:var(--gold)}
+  input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:15px}
+  textarea{min-height:92px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+  .drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-size:14px;transition:border-color .2s}
+  .drop:hover,.drop.over{border-color:var(--gold)}
+  .drop input{display:none}
+  .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .thumbs figure{position:relative;margin:0;width:78px;height:78px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .thumbs img{width:100%;height:100%;object-fit:cover}
+  .thumbs button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer;font-size:13px;line-height:22px;padding:0}
+  .toggle{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:14px}
+  .toggle input{width:20px;height:20px;accent-color:var(--gold);margin-top:2px;flex:none}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg label{border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:14px}
+  .seg input{position:absolute;opacity:0;pointer-events:none}
+  .seg label:has(input:checked){border-color:var(--gold);color:var(--gold2)}
+  .sum{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border:1px solid var(--line);border-radius:20px;padding:20px 24px;background:var(--bg2)}
+  .sum .tot{font-family:var(--serif);font-size:32px;color:var(--gold2)}
+  .sum small{display:block;color:var(--muted);font-size:13px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 30px;border-radius:999px;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#0a0a0c;font:600 16px var(--sans);border:0;cursor:pointer;min-width:240px}
+  .btn[disabled]{opacity:.6;cursor:wait}
+  .msg{margin-top:14px;font-size:14px;min-height:20px}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+  .secure{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12.5px;margin-top:10px}
+  footer.lf{border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13px}
+  footer.lf .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px 24px}
+  footer.lf nav{display:flex;gap:18px;flex-wrap:wrap}
+  footer.lf a{color:var(--muted)}
+  .hide{display:none!important}
+  @media (max-width:720px){ .pk{grid-template-columns:1fr} .grid{grid-template-columns:1fr} fieldset{padding:20px 16px} .btn{width:100%} .intro{padding-top:32px} }
+  .stepper{display:flex;gap:10px;list-style:none;padding:0;margin:22px 0 0;flex-wrap:wrap}
+  .stepper li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 16px 7px 8px;transition:.25s}
+  [dir=rtl] .stepper li{padding:7px 8px 7px 16px}
+  .stepper li b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line);font-weight:600;font-size:12px}
+  .stepper li.on{color:var(--text);border-color:var(--gold);background:rgba(212,175,95,.08)}
+  .stepper li.on b{background:var(--gold);color:#0a0a0c;border-color:var(--gold)}
+  .stepper li.done{color:var(--gold2);cursor:pointer}
+  .stepper li.done b{background:rgba(212,175,95,.18);border-color:var(--gold);color:var(--gold2)}
+  .step{animation:sIn .45s ease}
+  @keyframes sIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+  .nav .btn{min-width:180px}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--gold)}
+  .arr{display:inline-block}[dir=rtl] .arr{transform:scaleX(-1)}
+  .thumbs figure{width:92px;height:92px}
+  .thumbs figure.vid video{width:100%;height:100%;object-fit:cover}
+  .thumbs .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:11px;display:grid;place-items:center;pointer-events:none}
+  .pb{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(0,0,0,.55)}
+  .pb i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .15s}
+  .pb.done{opacity:0;transition:opacity .6s .5s}
+  .cnt{display:inline-block;min-width:22px;text-align:center;margin-inline-start:8px;color:var(--gold2);font-weight:600}
+  .upbar{display:none;height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:14px}
+  .upbar.on{display:block}.upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .2s}
+  .sty{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .sty label{position:relative;display:block;border:1px solid var(--line);border-radius:14px;padding:10px;cursor:pointer;background:var(--bg2);transition:.2s}
+  .sty input{position:absolute;opacity:0;pointer-events:none}
+  .sty label:has(input:checked){border-color:var(--gold);background:rgba(212,175,95,.08);box-shadow:0 0 0 1px var(--gold) inset}
+  .sty label:hover{transform:translateY(-2px)}
+  .sty .nm{display:block;text-align:center;font-size:13px;margin-top:8px;font-weight:500}
+  .mock{height:98px;border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:7px;background:var(--mb)}
+  .mock i,.mock u{display:block;border-radius:4px}
+  .mock .b1{height:7px;width:38%;background:var(--ma)}
+  .mock .b2{height:28px;background:var(--mc)}
+  .mock .b3{height:5px;width:70%;background:var(--mt);opacity:.55}
+  .mock u{height:11px;width:36%;border-radius:99px;background:var(--ma);text-decoration:none}
+  .m-light{--mb:#f6f3ee;--ma:#25221c;--mc:#e0d7c6;--mt:#6d675b}
+  .m-dark{--mb:#0b0c12;--ma:#d4af5f;--mc:#1d2030;--mt:#b9b4a6}
+  .m-bold{--mb:linear-gradient(135deg,#ff3d81,#7c3aed);--ma:#fff;--mc:rgba(255,255,255,.3);--mt:#fff}
+  .summary{display:grid;gap:0}
+  .summary div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .summary div:last-child{border:0}.summary span{color:var(--muted)}.summary b{font-weight:500;text-align:end}
+  @media (max-width:720px){ .sty{grid-template-columns:1fr 1fr 1fr;gap:8px}.sty label{padding:6px}.nav .btn{min-width:0;flex:1}.mock{height:76px}.stepper li span{display:none}.stepper li.on span{display:inline} }
+  .fileprog{display:none;margin:14px 0 4px;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+  .fileprog.on{display:flex}.fileprog .bar{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .fileprog .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .25s}
+  .thumbs .ok{position:absolute;left:5px;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ok);color:#06210f;font-size:12px;font-weight:700;display:grid;place-items:center}
+  .thumbs figure.bad{outline:2px solid var(--err);cursor:pointer}
+  .thumbs .retry{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:24px}
+</style>
+</head>
+<body><div style="background:#E5C158;color:#000;text-align:center;padding:8px;font:600 13px sans-serif">PREVIEW COPY: orders are NOT sent from this page</div>
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">APEX <b>DIGITAL</b> AGENCY</a>
+    <select id="lang" class="lang" aria-label="Language">
+      <option value="ar" lang="ar">العربية</option><option value="en" lang="en">English</option><option value="fr" lang="fr">Français</option><option value="es" lang="es">Español</option><option value="it" lang="it">Italiano</option>
+    </select>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="eyebrow" data-t="eyebrow"></p>
+    <h1 data-t="h1"></h1>
+    <p data-t="lead"></p>
+    <ol class="stepper" id="stepper"><li data-go="1"><b>1</b><span data-t="st1"></span></li><li data-go="2"><b>2</b><span data-t="st2"></span></li><li data-go="3"><b>3</b><span data-t="st3"></span></li></ol>
+  </section>
+
+  <form id="f" novalidate>
+    <div class="step" data-step="1">
+    <fieldset>
+      <legend data-t="lg_pkg"></legend>
+      <div class="pk">
+        <label><input type="radio" name="package" value="89"><span class="nm">Single Hook</span><span class="pr">$89</span><span class="ds" data-t="d49"></span></label>
+        <label><input type="radio" name="package" value="200"><span class="nm">Conversion Funnel</span><span class="pr">$200</span><span class="ds" data-t="d200"></span></label>
+        <label><input type="radio" name="package" value="500"><span class="nm">Multi-Product Scaler</span><span class="pr">$500</span><span class="ds" data-t="d500"></span></label>
+      </div>
+      <div class="p2-only hide" style="margin-top:12px"><label class="toggle"><input type="checkbox" name="vip" value="yes"><span><span data-t="vip"></span></span></label></div>
+      <div style="margin-top:16px"><label class="toggle"><input type="checkbox" name="express" value="yes"><span><span data-t="express"></span> <b id="exPrice" style="color:var(--gold2)"></b><br><small style="color:var(--muted)" data-t="express_x"></small></span></label></div>
+    </fieldset>
+    <div class="nav"><span></span><button type="button" class="btn" data-next><span data-t="next"></span> <span class="arr">→</span></button></div>
+    <div class="msg" role="status"></div>
+    </div>
+
+    <div class="step hide" data-step="2">
+    <fieldset>
+      <legend data-t="lg_you"></legend>
+      <div class="grid">
+        <label class="f"><span><span data-t="brand"></span> <i class="req">*</i></span><input type="text" name="brand" required maxlength="80" autocomplete="organization"></label>
+        <label class="f"><span><span data-t="email"></span> <i class="req">*</i></span><input type="email" name="email" required autocomplete="email"><small data-t="email_x"></small></label>
+        <label class="f full store-only"><span data-t="wa"></span><input type="text" name="contact" maxlength="200" placeholder="+33 6 12 34 56 78 · https://yourshop.com/order"><small data-t="wa_x"></small></label>
+        <div class="f full"><span data-t="logo"></span>
+          <label class="drop" data-for="logo"><input type="file" accept="image/*"  data-slot="logo"><span data-t="logo_drop"></span></label>
+          <small data-t="logo_x"></small><div class="thumbs" id="th-logo"></div></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="store-only">
+      <legend data-t="sty_h"></legend>
+      <div class="grid"><label class="f full"><span data-t="store_lang"></span>
+        <select name="store_lang"><option value="Arabic">العربية</option><option value="English">English</option><option value="French">Français</option><option value="Spanish">Español</option><option value="Italian">Italiano</option></select><small data-t="store_lang_x"></small></label></div>
+      <p style="color:var(--muted);font-size:13.5px;margin:18px 0 10px" data-t="sty_x"></p>
+      <div class="sty"><label><input type="radio" name="style" value="1"><div class="mock m-light"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty1"></span></label><label><input type="radio" name="style" value="2" checked><div class="mock m-dark"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty2"></span></label><label><input type="radio" name="style" value="3"><div class="mock m-bold"><i class="b1"></i><i class="b2"></i><i class="b3"></i><u></u></div><span class="nm" data-t="sty3"></span></label></div>
+    </fieldset>
+
+    <fieldset>
+      <legend data-t="lg_p1"></legend>
+      <div class="grid">
+        <label class="f full"><span><span data-t="pname"></span> <i class="req">*</i></span><input type="text" name="product1" required maxlength="120"></label>
+        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i><span class="cnt" id="cnt-p1"></span></span>
+          <label class="drop" data-for="p1"><input type="file" accept="image/*,video/*" multiple data-slot="p1"><span data-t="drop"></span></label>
+          <small data-t="photos_x"></small><div class="thumbs" id="th-p1"></div></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="p2-only">
+      <legend data-t="lg_p2"></legend>
+      <div class="grid">
+        <label class="f full"><span><span data-t="pname"></span> <i class="req">*</i></span><input type="text" name="product2" maxlength="120"></label>
+        <div class="f full"><span><span data-t="photos"></span> <i class="req">*</i><span class="cnt" id="cnt-p2"></span></span>
+          <label class="drop" data-for="p2"><input type="file" accept="image/*,video/*" multiple data-slot="p2"><span data-t="drop"></span></label>
+          <div class="thumbs" id="th-p2"></div></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend data-t="lg_ad"></legend>
+      <div class="grid">
+        <label class="f"><span data-t="platform"></span>
+          <select name="platform"><option value="tiktok">TikTok · 9:16</option><option value="instagram">Instagram · 1:1</option><option value="youtube">YouTube · 16:9</option></select><small data-t="platform_x"></small></label>
+        <label class="f"><span data-t="vlang"></span>
+          <select name="language"><option value="Arabic">العربية</option><option value="English">English</option><option value="French">Français</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Moroccan Darija">الدارجة المغربية</option></select></label>
+        <div class="f"><span data-t="voice"></span>
+          <div class="seg"><label><input type="radio" name="voice" value="female" checked><span data-t="female"></span></label><label><input type="radio" name="voice" value="male"><span data-t="male"></span></label></div></div>
+        <label class="f"><span data-t="tone"></span><input type="text" name="tone" maxlength="120" data-ph="tone_ph"></label>
+        <label class="f full"><span data-t="offer"></span><textarea name="offer" maxlength="400"></textarea><small data-t="offer_x"></small></label>
+        <label class="f full"><span data-t="refs"></span><textarea name="refs" maxlength="800" placeholder="https://"></textarea><small data-t="refs_x"></small></label>
+      </div>
+    </fieldset>
+    <div class="fileprog" id="fileprog"><div class="bar"><i></i></div><span></span></div>
+    <div class="nav"><button type="button" class="btn ghost" data-back><span class="arr">←</span> <span data-t="back"></span></button><button type="button" class="btn" data-next><span data-t="next"></span> <span class="arr">→</span></button></div>
+    <div class="msg" role="status"></div>
+    </div>
+
+    <div class="step hide" data-step="3">
+    <fieldset><legend data-t="lg_sum"></legend><div class="summary" id="summary"></div></fieldset>
+    <label class="toggle" style="margin:0 4px 16px"><input type="checkbox" name="terms" required><span data-t="terms"></span></label>
+    <div class="sum">
+      <div><small data-t="total"></small><div class="tot" id="tot">$0</div></div>
+      <div style="text-align:end">
+        <button class="btn" type="submit" id="go"><span data-t="pay"></span> <span class="arr">→</span></button>
+        <div class="secure">🔒 <span data-t="secure"></span></div>
+      </div>
+    </div>
+    <div class="upbar" id="upbar"><i></i></div>
+    <div class="msg" role="status"></div>
+    <div class="nav" style="margin-top:14px"><button type="button" class="btn ghost" data-back><span class="arr">←</span> <span data-t="back"></span></button><span></span></div>
+    </div>
+  </form>
+</main>
+
+<footer class="lf"><div class="wrap"><span>&copy; Apex Studio Pro</span><nav><a href="/privacy/" data-t="f_priv"></a><a href="/terms/" data-t="f_terms"></a><a href="/refund/" data-t="f_refund"></a></nav></div></footer>
+<script>
+/* ===== CONFIG: order intake webhook (Make). The webhook answers with {"checkout_url": "..."} ===== */
+var ORDER_HOOK = '';
+var EXPRESS = {89:29, 200:39, 500:49};
+
+var T = {
+ en:{vip:"I agree to feature my store/ads in Apex Studio Pro's campaigns for free international exposure (Optional)",f_priv:'Privacy Policy',f_terms:'Terms of Service',f_refund:'Refund Policy',title:'Order your video ads | Apex Studio Pro',eyebrow:'Order',h1:'Start your order',lead:'Fill in the details below, then pay securely. Production starts automatically right after payment.',s1:'Your details and photos',s2:'Secure payment',s3:'Delivery to your inbox',
+  recv:'Order received. We will email you shortly with the next step and your payment link.',
+  lg_pkg:'Choose your package',d49:'1 cinematic video ad',d200:'2 different video ads + your custom offer page (store)',d500:'4 video ads for 2 products + your custom offer page (store)',express:'Express 24-hour delivery',express_x:'Your order is produced first and delivered within 24 hours.',
+  lg_you:'About you',brand:'Brand name',email:'Email',email_x:'We send your videos and links here.',wa:'WhatsApp number or order link',wa_x:'The order button of your offer page will lead your customers here.',
+  lg_p1:'Product 1',lg_p2:'Product 2',pname:'Product name',photos:'Product photos',drop:'Tap to add photos or drop them here',photos_x:'1 to 3 clear photos of the same product, at least 1000 px. JPG or PNG.',
+  lg_ad:'Your ad',vlang:'Voiceover language',voice:'Voice',female:'Female',male:'Male',offer:'Offer or key message (optional)',offer_x:'Example: -20% this week, free delivery in Casablanca. We never invent offers.',
+  total:'Total',pay:'Continue to secure payment',secure:'Secure checkout by Lemon Squeezy. Card, PayPal, Apple Pay.',terms:'I agree to the <a href=\'/terms/\' target=\'_blank\'>Terms</a> and the <a href=\'/refund/\' target=\'_blank\'>Refund Policy</a>, I ask for production to start right after payment (no refund once work has started), and I confirm I own the rights to these photos.',
+  e_pkg:'Choose a package.',e_req:'Please fill in the required fields.',e_email:'Please enter a valid email.',e_ph1:'Add at least one photo of product 1.',e_ph2:'Add at least one photo of product 2.',e_terms:'Please accept the terms.',e_big:'The photos are too large. Remove one and try again.',e_net:'Sending failed. Check your connection and try again.',e_off:'Online ordering opens very soon. Write to us and we will take your order now.',
+  sending:'Preparing your order…',redirect:'Order saved. Opening the secure payment page…'},
+ fr:{vip:'J’accepte que ma boutique et mes publicités soient présentées dans les campagnes d’Apex Studio Pro pour une visibilité internationale gratuite (facultatif)',f_priv:'Politique de confidentialité',f_terms:'Conditions d’utilisation',f_refund:'Politique de remboursement',title:'Commander vos publicités vidéo | Apex Studio Pro',eyebrow:'Commande',h1:'Lancez votre commande',lead:'Remplissez les informations ci-dessous, puis payez en toute sécurité. La production démarre automatiquement juste après le paiement.',s1:'Vos informations et photos',s2:'Paiement sécurisé',s3:'Livraison dans votre boîte mail',
+  recv:'Commande reçue. Nous vous écrirons très bientôt avec l’étape suivante et votre lien de paiement.',
+  lg_pkg:'Choisissez votre formule',d49:'1 publicité vidéo cinématique',d200:'2 publicités vidéo différentes + votre page d’offre (boutique)',d500:'4 publicités vidéo pour 2 produits + votre page d’offre (boutique)',express:'Livraison express 24 h',express_x:'Votre commande passe en priorité et vous est livrée sous 24 heures.',
+  lg_you:'Vous',brand:'Nom de la marque',email:'E-mail',email_x:'Nous vous envoyons vos vidéos et vos liens à cette adresse.',wa:'Numéro WhatsApp ou lien de commande',wa_x:'Le bouton de commande de votre page d’offre mènera vos clients ici.',
+  lg_p1:'Produit 1',lg_p2:'Produit 2',pname:'Nom du produit',photos:'Photos du produit',drop:'Touchez pour ajouter des photos ou déposez-les ici',photos_x:'1 à 3 photos nettes du même produit, 1000 px minimum. JPG ou PNG.',
+  lg_ad:'Votre publicité',vlang:'Langue de la voix off',voice:'Voix',female:'Féminine',male:'Masculine',offer:'Offre ou message clé (facultatif)',offer_x:'Exemple : -20 % cette semaine, livraison offerte à Casablanca. Nous n’inventons jamais d’offre.',
+  total:'Total',pay:'Continuer vers le paiement sécurisé',secure:'Paiement sécurisé par Lemon Squeezy. Carte, PayPal, Apple Pay.',terms:'J’accepte les <a href=\'/terms/\' target=\'_blank\'>Conditions</a> et la <a href=\'/refund/\' target=\'_blank\'>Politique de remboursement</a>, je demande que la production démarre dès le paiement (aucun remboursement une fois le travail commencé) et je confirme détenir les droits sur ces photos.',
+  e_pkg:'Choisissez une formule.',e_req:'Veuillez remplir les champs obligatoires.',e_email:'Veuillez saisir un e-mail valide.',e_ph1:'Ajoutez au moins une photo du produit 1.',e_ph2:'Ajoutez au moins une photo du produit 2.',e_terms:'Veuillez accepter les conditions.',e_big:'Les photos sont trop lourdes. Retirez-en une et réessayez.',e_net:'L’envoi a échoué. Vérifiez votre connexion et réessayez.',e_off:'La commande en ligne ouvre très bientôt. Écrivez-nous et nous prendrons votre commande dès maintenant.',
+  sending:'Préparation de votre commande…',redirect:'Commande enregistrée. Ouverture de la page de paiement sécurisé…'},
+ es:{vip:'Acepto que mi tienda y mis anuncios aparezcan en las campañas de Apex Studio Pro para obtener exposición internacional gratuita (opcional)',f_priv:'Política de privacidad',f_terms:'Términos del servicio',f_refund:'Política de reembolso',title:'Pide tus anuncios en vídeo | Apex Studio Pro',eyebrow:'Pedido',h1:'Empieza tu pedido',lead:'Completa los datos y paga de forma segura. La producción empieza automáticamente justo después del pago.',s1:'Tus datos y fotos',s2:'Pago seguro',s3:'Entrega en tu correo',
+  recv:'Pedido recibido. Te escribiremos enseguida con el siguiente paso y tu enlace de pago.',
+  lg_pkg:'Elige tu paquete',d49:'1 anuncio en vídeo cinematográfico',d200:'2 anuncios en vídeo distintos + tu página de ofertas (tienda)',d500:'4 anuncios en vídeo para 2 productos + tu página de ofertas (tienda)',express:'Entrega exprés en 24 h',express_x:'Tu pedido se produce primero y se entrega en 24 horas.',
+  lg_you:'Sobre ti',brand:'Nombre de la marca',email:'Correo electrónico',email_x:'Aquí te enviamos tus vídeos y enlaces.',wa:'Número de WhatsApp o enlace de pedido',wa_x:'El botón de pedido de tu página de ofertas llevará a tus clientes aquí.',
+  lg_p1:'Producto 1',lg_p2:'Producto 2',pname:'Nombre del producto',photos:'Fotos del producto',drop:'Toca para añadir fotos o suéltalas aquí',photos_x:'De 1 a 3 fotos nítidas del mismo producto, mínimo 1000 px. JPG o PNG.',
+  lg_ad:'Tu anuncio',vlang:'Idioma de la voz en off',voice:'Voz',female:'Femenina',male:'Masculina',offer:'Oferta o mensaje clave (opcional)',offer_x:'Ejemplo: -20 % esta semana, envío gratis en Madrid. Nunca inventamos ofertas.',
+  total:'Total',pay:'Continuar al pago seguro',secure:'Pago seguro con Lemon Squeezy. Tarjeta, PayPal, Apple Pay.',terms:'Acepto los <a href=\'/terms/\' target=\'_blank\'>Términos</a> y la <a href=\'/refund/\' target=\'_blank\'>Política de reembolso</a>, solicito que la producción empiece justo después del pago (sin reembolso una vez iniciado el trabajo) y confirmo que tengo los derechos de estas fotos.',
+  e_pkg:'Elige un paquete.',e_req:'Completa los campos obligatorios.',e_email:'Introduce un correo válido.',e_ph1:'Añade al menos una foto del producto 1.',e_ph2:'Añade al menos una foto del producto 2.',e_terms:'Acepta los términos.',e_big:'Las fotos pesan demasiado. Quita una e inténtalo de nuevo.',e_net:'El envío ha fallado. Revisa tu conexión e inténtalo de nuevo.',e_off:'Los pedidos en línea abren muy pronto. Escríbenos y tomamos tu pedido ahora.',
+  sending:'Preparando tu pedido…',redirect:'Pedido guardado. Abriendo la página de pago seguro…'},
+ it:{vip:'Accetto che il mio negozio e i miei annunci vengano presentati nelle campagne di Apex Studio Pro per una visibilità internazionale gratuita (facoltativo)',f_priv:'Informativa sulla privacy',f_terms:'Termini di servizio',f_refund:'Politica di rimborso',title:'Ordina i tuoi video ads | Apex Studio Pro',eyebrow:'Ordine',h1:'Inizia il tuo ordine',lead:'Compila i dati qui sotto e paga in modo sicuro. La produzione parte automaticamente subito dopo il pagamento.',s1:'I tuoi dati e le foto',s2:'Pagamento sicuro',s3:'Consegna via email',
+  recv:'Ordine ricevuto. Ti scriviamo a breve con il passaggio successivo e il link di pagamento.',
+  lg_pkg:'Scegli il pacchetto',d49:'1 video pubblicitario cinematografico',d200:'2 video pubblicitari diversi + la tua pagina offerte (negozio)',d500:'4 video pubblicitari per 2 prodotti + la tua pagina offerte (negozio)',express:'Consegna express in 24 ore',express_x:'Il tuo ordine viene prodotto per primo e consegnato entro 24 ore.',
+  lg_you:'Su di te',brand:'Nome del brand',email:'Email',email_x:'Ti inviamo qui i video e i link.',wa:'Numero WhatsApp o link d’ordine',wa_x:'Il pulsante d’ordine della tua pagina offerte porterà qui i tuoi clienti.',
+  lg_p1:'Prodotto 1',lg_p2:'Prodotto 2',pname:'Nome del prodotto',photos:'Foto del prodotto',drop:'Tocca per aggiungere foto o trascinale qui',photos_x:'Da 1 a 3 foto nitide dello stesso prodotto, almeno 1000 px. JPG o PNG.',
+  lg_ad:'La tua pubblicità',vlang:'Lingua della voce fuori campo',voice:'Voce',female:'Femminile',male:'Maschile',offer:'Offerta o messaggio chiave (facoltativo)',offer_x:'Esempio: -20% questa settimana, consegna gratuita a Milano. Non inventiamo mai offerte.',
+  total:'Totale',pay:'Continua al pagamento sicuro',secure:'Pagamento sicuro con Lemon Squeezy. Carta, PayPal, Apple Pay.',terms:'Accetto i <a href=\'/terms/\' target=\'_blank\'>Termini</a> e la <a href=\'/refund/\' target=\'_blank\'>Politica di rimborso</a>, chiedo che la produzione inizi subito dopo il pagamento (nessun rimborso a lavoro iniziato) e confermo di avere i diritti su queste foto.',
+  e_pkg:'Scegli un pacchetto.',e_req:'Compila i campi obbligatori.',e_email:'Inserisci un’email valida.',e_ph1:'Aggiungi almeno una foto del prodotto 1.',e_ph2:'Aggiungi almeno una foto del prodotto 2.',e_terms:'Accetta i termini.',e_big:'Le foto sono troppo pesanti. Rimuovine una e riprova.',e_net:'Invio non riuscito. Controlla la connessione e riprova.',e_off:'Gli ordini online aprono a breve. Scrivici e prendiamo subito il tuo ordine.',
+  sending:'Preparazione dell’ordine…',redirect:'Ordine salvato. Apertura della pagina di pagamento sicuro…'},
+ ar:{vip:'أوافق على عرض متجري/إعلاناتي ضمن حملات Apex Studio Pro للحصول على ظهور دولي مجاني (اختياري)',f_priv:'سياسة الخصوصية',f_terms:'شروط الاستخدام',f_refund:'سياسة الاسترداد',title:'اطلب إعلاناتك بالفيديو | Apex Studio Pro',eyebrow:'الطلب',h1:'ابدأ طلبك',lead:'املأ المعلومات أسفله ثم ادفع بأمان. يبدأ الإنتاج تلقائياً مباشرة بعد الدفع.',s1:'معلوماتك وصورك',s2:'دفع آمن',s3:'التسليم إلى بريدك',
+  recv:'تم استلام طلبك. سنراسلك قريباً عبر البريد بالخطوة التالية ورابط الدفع.',
+  lg_pkg:'اختر باقتك',d49:'إعلان فيديو سينمائي واحد',d200:'إعلانان مختلفان + صفحة عروض مخصصة احترافية (متجر خاص بمنتجك)',d500:'4 إعلانات لمنتجين + صفحة عروض مخصصة احترافية (متجر خاص بمنتجك)',express:'تسليم سريع خلال 24 ساعة',express_x:'يُنجز طلبك بالأولوية ويُسلَّم خلال 24 ساعة.',
+  lg_you:'معلوماتك',brand:'اسم العلامة التجارية',email:'البريد الإلكتروني',email_x:'نرسل إليه الفيديوهات والروابط.',wa:'رقم واتساب أو رابط الطلب',wa_x:'زر الطلب في صفحة عروضك سيوجّه عملاءك إلى هنا.',
+  lg_p1:'المنتج 1',lg_p2:'المنتج 2',pname:'اسم المنتج',photos:'صور المنتج',drop:'اضغط لإضافة الصور أو اسحبها إلى هنا',photos_x:'من 1 إلى 3 صور واضحة لنفس المنتج، 1000 بكسل على الأقل. JPG أو PNG.',
+  lg_ad:'إعلانك',vlang:'لغة التعليق الصوتي',voice:'الصوت',female:'نسائي',male:'رجالي',offer:'العرض أو الرسالة الأساسية (اختياري)',offer_x:'مثال: خصم 20٪ هذا الأسبوع، توصيل مجاني في الدار البيضاء. لا نخترع أي عرض.',
+  total:'المجموع',pay:'المتابعة إلى الدفع الآمن',secure:'دفع آمن عبر Lemon Squeezy: بطاقة بنكية، PayPal، Apple Pay.',terms:'أوافق على <a href=\'/terms/\' target=\'_blank\'>الشروط</a> و<a href=\'/refund/\' target=\'_blank\'>سياسة الاسترداد</a>، وأطلب بدء الإنتاج فور الدفع (لا استرداد بعد بدء العمل)، وأؤكد أنني أملك حقوق هذه الصور.',
+  e_pkg:'اختر باقة.',e_req:'يرجى ملء الخانات الإلزامية.',e_email:'يرجى إدخال بريد إلكتروني صحيح.',e_ph1:'أضف صورة واحدة على الأقل للمنتج 1.',e_ph2:'أضف صورة واحدة على الأقل للمنتج 2.',e_terms:'يرجى الموافقة على الشروط.',e_big:'حجم الصور كبير جداً. احذف صورة وأعد المحاولة.',e_net:'تعذّر الإرسال. تحقّق من الاتصال وأعد المحاولة.',e_off:'الطلب عبر الإنترنت سيُفتح قريباً جداً. راسلنا وسنأخذ طلبك الآن.',
+  sending:'جارٍ تجهيز طلبك…',redirect:'تم حفظ الطلب. جارٍ فتح صفحة الدفع الآمن…'}
+};
+var T2={
+en:{e_up:'A file failed to upload. Tap it to retry, or remove it.',lead:'Three quick steps: choose your package, share your project, then pay securely. Production starts right after payment.',st1:'Package',st2:'Project details',st3:'Payment',next:'Continue',back:'Back',
+store_lang:'Store language',store_lang_x:'The language your offer page will be written in.',
+logo:'Your logo (optional)',logo_drop:'Tap to add your logo or drop it here',logo_x:'No logo? Write your brand name above and we will design one for you, free of charge.',
+platform:'Ad platform',platform_x:'We set the video format for the platform you choose.',
+tone:'Voiceover tone (optional)',tone_ph:'Warm, luxurious, energetic, calm…',refs:'Reference links (optional)',refs_x:'Ads, pages or accounts you like. One link per line.',
+sty_h:'Store design style',sty_x:'Pick the look of your offer page.',sty1:'Modern Light',sty2:'Premium Dark',sty3:'Bold & Vibrant',
+photos:'Photos and videos',drop:'Tap to add photos or videos, or drop them here',photos_x:'Add as many as you like. Clear, well-lit photos and short clips work best.',
+e_ph1:'Add at least one photo or video of product 1.',e_ph2:'Add at least one photo or video of product 2.',
+lg_sum:'Review your order',r_pkg:'Package',r_brand:'Brand',r_email:'Email',r_prod:'Products',r_files:'Files',r_ad:'Ad format',r_store:'Store',r_express:'Express delivery',up:'Uploading',proc:'Preparing files…'},
+fr:{e_up:'Un fichier n’a pas pu être envoyé. Touchez-le pour réessayer ou retirez-le.',lead:'Trois étapes rapides : choisissez votre formule, présentez votre projet, puis payez en toute sécurité. La production démarre juste après le paiement.',st1:'Formule',st2:'Détails du projet',st3:'Paiement',next:'Continuer',back:'Retour',
+store_lang:'Langue de la boutique',store_lang_x:'La langue dans laquelle sera rédigée votre page d’offre.',
+logo:'Votre logo (facultatif)',logo_drop:'Touchez pour ajouter votre logo ou déposez-le ici',logo_x:'Pas de logo ? Écrivez le nom de votre marque ci-dessus et nous en créerons un pour vous, gratuitement.',
+platform:'Plateforme publicitaire',platform_x:'Nous adaptons le format de la vidéo à la plateforme choisie.',
+tone:'Ton de la voix off (facultatif)',tone_ph:'Chaleureux, luxueux, énergique, calme…',refs:'Liens de référence (facultatif)',refs_x:'Publicités, pages ou comptes que vous aimez. Un lien par ligne.',
+sty_h:'Style de design de la boutique',sty_x:'Choisissez l’allure de votre page d’offre.',sty1:'Clair moderne',sty2:'Sombre premium',sty3:'Audacieux et vibrant',
+photos:'Photos et vidéos',drop:'Touchez pour ajouter des photos ou vidéos, ou déposez-les ici',photos_x:'Ajoutez-en autant que vous voulez. Des photos nettes et bien éclairées et de courts clips fonctionnent le mieux.',
+e_ph1:'Ajoutez au moins une photo ou vidéo du produit 1.',e_ph2:'Ajoutez au moins une photo ou vidéo du produit 2.',
+lg_sum:'Vérifiez votre commande',r_pkg:'Formule',r_brand:'Marque',r_email:'E-mail',r_prod:'Produits',r_files:'Fichiers',r_ad:'Format publicitaire',r_store:'Boutique',r_express:'Livraison express',up:'Envoi en cours',proc:'Préparation des fichiers…'},
+es:{e_up:'Un archivo no se pudo subir. Tócalo para reintentar o elimínalo.',lead:'Tres pasos rápidos: elige tu paquete, cuéntanos tu proyecto y paga de forma segura. La producción empieza justo después del pago.',st1:'Paquete',st2:'Detalles del proyecto',st3:'Pago',next:'Continuar',back:'Atrás',
+store_lang:'Idioma de la tienda',store_lang_x:'El idioma en que se redactará tu página de ofertas.',
+logo:'Tu logotipo (opcional)',logo_drop:'Toca para añadir tu logotipo o suéltalo aquí',logo_x:'¿Sin logotipo? Escribe el nombre de tu marca arriba y te diseñamos uno gratis.',
+platform:'Plataforma del anuncio',platform_x:'Adaptamos el formato del vídeo a la plataforma que elijas.',
+tone:'Tono de la voz en off (opcional)',tone_ph:'Cálido, lujoso, enérgico, sereno…',refs:'Enlaces de referencia (opcional)',refs_x:'Anuncios, páginas o cuentas que te gusten. Un enlace por línea.',
+sty_h:'Estilo de diseño de la tienda',sty_x:'Elige el aspecto de tu página de ofertas.',sty1:'Claro moderno',sty2:'Oscuro premium',sty3:'Atrevido y vibrante',
+photos:'Fotos y vídeos',drop:'Toca para añadir fotos o vídeos, o suéltalos aquí',photos_x:'Añade todos los que quieras. Funcionan mejor las fotos nítidas y bien iluminadas y los clips cortos.',
+e_ph1:'Añade al menos una foto o vídeo del producto 1.',e_ph2:'Añade al menos una foto o vídeo del producto 2.',
+lg_sum:'Revisa tu pedido',r_pkg:'Paquete',r_brand:'Marca',r_email:'Correo',r_prod:'Productos',r_files:'Archivos',r_ad:'Formato del anuncio',r_store:'Tienda',r_express:'Entrega exprés',up:'Subiendo',proc:'Preparando archivos…'},
+it:{e_up:'Un file non è stato caricato. Toccalo per riprovare o rimuovilo.',lead:'Tre passaggi rapidi: scegli il pacchetto, descrivi il progetto e paga in modo sicuro. La produzione parte subito dopo il pagamento.',st1:'Pacchetto',st2:'Dettagli del progetto',st3:'Pagamento',next:'Continua',back:'Indietro',
+store_lang:'Lingua del negozio',store_lang_x:'La lingua in cui sarà scritta la tua pagina offerte.',
+logo:'Il tuo logo (facoltativo)',logo_drop:'Tocca per aggiungere il logo o trascinalo qui',logo_x:'Nessun logo? Scrivi sopra il nome del brand e ne creeremo uno per te, gratis.',
+platform:'Piattaforma pubblicitaria',platform_x:'Adattiamo il formato del video alla piattaforma scelta.',
+tone:'Tono della voce (facoltativo)',tone_ph:'Caldo, lussuoso, energico, calmo…',refs:'Link di riferimento (facoltativo)',refs_x:'Annunci, pagine o profili che ti piacciono. Un link per riga.',
+sty_h:'Stile di design del negozio',sty_x:'Scegli l’aspetto della tua pagina offerte.',sty1:'Chiaro moderno',sty2:'Scuro premium',sty3:'Audace e vivace',
+photos:'Foto e video',drop:'Tocca per aggiungere foto o video, oppure trascinali qui',photos_x:'Aggiungine quanti vuoi. Funzionano meglio foto nitide e ben illuminate e clip brevi.',
+e_ph1:'Aggiungi almeno una foto o un video del prodotto 1.',e_ph2:'Aggiungi almeno una foto o un video del prodotto 2.',
+lg_sum:'Controlla il tuo ordine',r_pkg:'Pacchetto',r_brand:'Brand',r_email:'Email',r_prod:'Prodotti',r_files:'File',r_ad:'Formato annuncio',r_store:'Negozio',r_express:'Consegna express',up:'Caricamento',proc:'Preparazione dei file…'},
+ar:{e_up:'تعذّر رفع أحد الملفات. اضغط عليه لإعادة المحاولة أو احذفه.',lead:'ثلاث خطوات سريعة: اختر باقتك، أخبرنا عن مشروعك، ثم ادفع بأمان. يبدأ الإنتاج مباشرة بعد الدفع.',st1:'الباقة',st2:'تفاصيل المشروع',st3:'الدفع',next:'متابعة',back:'رجوع',
+store_lang:'لغة المتجر',store_lang_x:'اللغة التي ستُكتب بها صفحة عروضك.',
+logo:'شعارك (اختياري)',logo_drop:'اضغط لإضافة شعارك أو اسحبه إلى هنا',logo_x:'إذا لم تكن تملك شعاراً، اكتب اسم علامتك وسنصممه لك مجاناً.',
+platform:'منصة الإعلان',platform_x:'نضبط قياس الفيديو حسب المنصة التي تختارها.',
+tone:'نبرة التعليق الصوتي (اختياري)',tone_ph:'دافئة، فاخرة، حماسية، هادئة…',refs:'الروابط المرجعية (اختياري)',refs_x:'إعلانات أو صفحات أو حسابات تعجبك. رابط واحد في كل سطر.',
+sty_h:'طابع تصميم المتجر',sty_x:'اختر مظهر صفحة عروضك.',sty1:'عصري فاتح',sty2:'داكن فاخر',sty3:'جريء ونابض',
+photos:'الصور والفيديوهات',drop:'اضغط لإضافة صور أو فيديوهات أو اسحبها إلى هنا',photos_x:'أضف ما تشاء من الملفات. الصور الواضحة جيدة الإضاءة والمقاطع القصيرة تعطي أفضل نتيجة.',
+e_ph1:'أضف صورة أو فيديو واحداً على الأقل للمنتج 1.',e_ph2:'أضف صورة أو فيديو واحداً على الأقل للمنتج 2.',
+lg_sum:'راجع طلبك',r_pkg:'الباقة',r_brand:'العلامة',r_email:'البريد',r_prod:'المنتجات',r_files:'الملفات',r_ad:'قياس الإعلان',r_store:'المتجر',r_express:'التسليم السريع',up:'جارٍ الرفع',proc:'جارٍ تجهيز الملفات…'}
+};
+Object.keys(T2).forEach(function(l){ Object.assign(T[l],T2[l]); });
+var L='en', f=document.getElementById('f'), step=1;
+var files={p1:[],p2:[],logo:[]};
+var PKG={89:'Single Hook',200:'Conversion Funnel',500:'Multi-Product Scaler'};
+var PLAT={tiktok:'TikTok · 9:16',instagram:'Instagram · 1:1',youtube:'YouTube · 16:9'};
+function $(s){ return document.querySelector(s); }
+function setLang(l){
+  if(!T[l]) l='en'; L=l; var t=T[l];
+  document.documentElement.lang=l; document.documentElement.dir=l==='ar'?'rtl':'ltr'; document.title=t.title;
+  document.querySelectorAll('[data-t]').forEach(function(e){ var v=t[e.getAttribute('data-t')]; if(v!=null) e.innerHTML=v; });
+  document.querySelectorAll('[data-ph]').forEach(function(e){ var v=t[e.getAttribute('data-ph')]; if(v!=null) e.placeholder=v; });
+  document.getElementById('lang').value=l;
+  try{ localStorage.setItem('apex_lang',l); }catch(e){}
+  if(step===3) buildSummary();
+}
+function pkg(){ var r=f.querySelector('input[name=package]:checked'); return r?+r.value:0; }
+function update(){
+  var p=pkg();
+  document.querySelectorAll('.store-only').forEach(function(e){ e.classList.toggle('hide',!(p===200||p===500)); });
+  document.querySelectorAll('.p2-only').forEach(function(e){ e.classList.toggle('hide',p!==500); });
+  document.getElementById('exPrice').textContent=p?'(+$'+EXPRESS[p]+')':'';
+  document.getElementById('tot').textContent='$'+(p+(p&&f.express.checked?EXPRESS[p]:0));
+}
+f.addEventListener('change',update);
+document.getElementById('lang').addEventListener('change',function(e){ setLang(e.target.value); });
+
+/* ---------- steps ---------- */
+function show(n){
+  step=n;
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.toggle('hide',+s.dataset.step!==n); });
+  document.querySelectorAll('#stepper li').forEach(function(li){ var k=+li.dataset.go; li.classList.toggle('on',k===n); li.classList.toggle('done',k<n); });
+  if(n===3) buildSummary();
+  var y=document.getElementById('stepper').getBoundingClientRect().top+window.scrollY-80; window.scrollTo({top:y,behavior:'smooth'});
+}
+function err(k){ var m=$('.step[data-step="'+step+'"] .msg'); m.className='msg err'; m.innerHTML=T[L][k]||k; return false; }
+function clr(){ document.querySelectorAll('.msg').forEach(function(m){ m.className='msg'; m.textContent=''; }); }
+function ok1(){ if(!pkg()) return err('e_pkg'); return true; }
+function ok2(){
+  var p=pkg();
+  if(!f.brand.value.trim()||!f.product1.value.trim()||(p===500&&!f.product2.value.trim())) return err('e_req');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.value.trim())) return err('e_email');
+  if(!files.p1.length) return err('e_ph1');
+  if(p===500&&!files.p2.length) return err('e_ph2');
+  var A=all(); if(A.some(function(x){ return x.pct<100||x.state==='wait'||x.state==='up'; })) return err('proc');
+  if(A.some(function(x){ return x.state==='err'; })) return err('e_up');
+  return true;
+}
+document.querySelectorAll('[data-next]').forEach(function(b){ b.addEventListener('click',function(){ clr(); if(step===1&&ok1()) show(2); else if(step===2&&ok2()) show(3); }); });
+document.querySelectorAll('[data-back]').forEach(function(b){ b.addEventListener('click',function(){ clr(); show(step-1); }); });
+document.querySelectorAll('#stepper li').forEach(function(li){ li.addEventListener('click',function(){ var k=+li.dataset.go; if(k<step){ clr(); show(k); } }); });
+
+/* ---------- media: drag & drop, thumbnails, progress ---------- */
+/* ---- direct-to-cloud upload (Cloudinary, unsigned preset, chunked). Files never pass through Make. ---- */
+var CLOUD={name:'z4wubaot', preset:'apex_digital_uploads', folder:''};   // Cloudinary cloud name + unsigned upload preset (public values)
+var CHUNK=6*1024*1024, queue=[], running=0, MAXPAR=2;
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+function cloudUpload(it){
+  var file=it.blob, total=file.size, id=uid(), pos=0, tries=0;
+  var url='https://api.cloudinary.com/v1_1/'+encodeURIComponent(CLOUD.name)+'/auto/upload';
+  return new Promise(function(res,rej){
+    function retry(){ if(it.cancel) return rej('cancel'); if(++tries>6) return rej('fail'); setTimeout(next,Math.min(9000,600*Math.pow(2,tries))); }
+    function next(){
+      if(it.cancel) return rej('cancel');
+      var end=Math.min(pos+CHUNK,total), fd=new FormData(), x=new XMLHttpRequest();
+      fd.append('file',file.slice(pos,end),it.file.name||'file'); fd.append('upload_preset',CLOUD.preset); if(CLOUD.folder) fd.append('folder',CLOUD.folder);
+      it.xhr=x; x.open('POST',url); x.timeout=180000;
+      x.setRequestHeader('X-Unique-Upload-Id',id); x.setRequestHeader('Content-Range','bytes '+pos+'-'+(end-1)+'/'+total);
+      x.upload.onprogress=function(e){ it.sent=pos+e.loaded; tick(); };
+      x.onload=function(){
+        if(x.status>=200&&x.status<300){ tries=0; pos=end; it.sent=pos; tick();
+          if(pos>=total){ try{ var j=JSON.parse(x.responseText); if(!j.secure_url) throw 0; res(j.secure_url); }catch(e){ rej('fail'); } } else next();
+        } else if(x.status>=400&&x.status<500&&x.status!==408&&x.status!==429){ rej('fail'); } else retry();
+      };
+      x.onerror=retry; x.ontimeout=retry; x.send(fd);
+    }
+    next();
+  });
+}
+function pump(){
+  while(running<MAXPAR&&queue.length){
+    var job=queue.shift(); if(job.it.cancel) continue; running++;
+    job.it.state='up';
+    cloudUpload(job.it).then(function(u){ this.it.remote=u; this.it.state='ok'; }.bind(job),function(e){ if(e!=='cancel') this.it.state='err'; }.bind(job))
+      .then(function(){ running--; render(this.slot); tick(); pump(); }.bind(job));
+  }
+}
+function enqueue(slot,it){ if(!CLOUD.name) return; it.state='wait'; it.sent=0; queue.push({slot:slot,it:it}); pump(); }
+function all(){ return files.p1.concat(files.p2,files.logo); }
+function tick(){
+  var box=document.getElementById('fileprog'); if(!CLOUD.name){ return; }
+  var L2=all(), tot=0, sent=0, ok=0; L2.forEach(function(i){ tot+=i.blob.size; sent+=i.state==='ok'?i.blob.size:(i.sent||0); if(i.state==='ok') ok++; });
+  if(!L2.length||ok===L2.length&&!L2.some(function(i){return i.state==='err';})&&!running&&!queue.length){ box.classList.remove('on'); }
+  else { box.classList.add('on'); var v=tot?Math.round(sent/tot*100):0; box.firstChild.firstChild.style.width=v+'%'; box.lastChild.textContent=T[L].up+' '+ok+'/'+L2.length+' · '+v+'%'; }
+  L2.forEach(function(i){ if(i.fig){ var b=i.fig.querySelector('.pb i'); if(b&&(i.state==='up'||i.state==='wait')) b.style.width=Math.max(4,Math.round((i.sent||0)/i.blob.size*100))+'%'; } });
+}
+function render(slot){
+  var box=document.getElementById('th-'+slot); box.innerHTML='';
+  files[slot].forEach(function(it,i){
+    var fig=document.createElement('figure'), b=document.createElement('button'), pb=document.createElement('div');
+    var m=document.createElement(it.vid?'video':'img'); it.fig=fig;
+    if(it.vid){ m.muted=true; m.preload='metadata'; m.playsInline=true; m.src=it.url+'#t=0.2'; fig.className='vid'; } else m.src=it.url;
+    b.type='button'; b.textContent='×'; b.setAttribute('aria-label','remove');
+    b.onclick=function(e){ e.stopPropagation(); it.cancel=true; if(it.xhr) try{ it.xhr.abort(); }catch(x){} files[slot].splice(i,1); render(slot); tick(); };
+    var busy=it.pct<100||it.state==='up'||it.state==='wait';
+    pb.className='pb'+(busy?'':' done'); pb.innerHTML='<i style="width:'+(it.pct<100?it.pct:Math.max(4,Math.round((it.sent||0)/it.blob.size*100)))+'%"></i>';
+    fig.appendChild(m); fig.appendChild(b); fig.appendChild(pb);
+    if(it.vid){ var pl=document.createElement('span'); pl.className='play'; pl.textContent='▶'; fig.appendChild(pl); }
+    if(it.state==='ok'){ var ck=document.createElement('span'); ck.className='ok'; ck.textContent='✓'; fig.appendChild(ck); }
+    if(it.state==='err'){ fig.classList.add('bad'); var rt=document.createElement('span'); rt.className='retry'; rt.textContent='↻'; fig.appendChild(rt); fig.onclick=function(){ it.cancel=false; it.state='wait'; it.sent=0; queue.push({slot:slot,it:it}); render(slot); pump(); }; }
+    box.appendChild(fig);
+  });
+  var c=document.getElementById('cnt-'+slot); if(c) c.textContent=files[slot].length?files[slot].length:'';
+}
+function compress(file){
+  return new Promise(function(res){
+    var u=URL.createObjectURL(file), img=new Image(); img.onload=function(){
+      var s=Math.min(1,2200/Math.max(img.width,img.height)), c=document.createElement('canvas');
+      c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+      var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+      c.toBlob(function(b){ URL.revokeObjectURL(u); res(b||file); },'image/jpeg',0.9);
+    }; img.onerror=function(){ res(file); }; img.src=u;
+  });
+}
+function addFiles(slot,list){
+  [].slice.call(list).forEach(function(x){
+    var img=/^image\//.test(x.type), vid=/^video\//.test(x.type);
+    if(!img&&!vid) return;
+    if(slot==='logo'){ if(!img) return; files.logo.forEach(function(o){ o.cancel=true; if(o.xhr) try{o.xhr.abort();}catch(e){} }); files.logo=[]; }
+    var it={file:x,blob:x,vid:vid,url:URL.createObjectURL(x),pct:vid||slot==='logo'||/svg|gif/.test(x.type)?100:12};
+    files[slot].push(it);
+    if(it.pct<100){
+      var tk=setInterval(function(){ if(it.pct<85){ it.pct+=9; render(slot); } },120);
+      compress(x).then(function(b){ clearInterval(tk); it.blob=b; it.pct=100; render(slot); enqueue(slot,it); });
+    } else enqueue(slot,it);
+  });
+  render(slot);
+}
+document.querySelectorAll('.drop input').forEach(function(inp){
+  var slot=inp.dataset.slot, lab=inp.parentNode;
+  inp.addEventListener('change',function(){ addFiles(slot,inp.files); inp.value=''; });
+  lab.addEventListener('dragover',function(e){ e.preventDefault(); lab.classList.add('over'); });
+  lab.addEventListener('dragleave',function(){ lab.classList.remove('over'); });
+  lab.addEventListener('drop',function(e){ e.preventDefault(); lab.classList.remove('over'); addFiles(slot,e.dataTransfer.files); });
+});
+
+/* ---------- summary ---------- */
+function buildSummary(){
+  var t=T[L], p=pkg(), box=document.getElementById('summary'); box.innerHTML='';
+  function row(k,v){ if(!v) return; var d=document.createElement('div'), a=document.createElement('span'), b=document.createElement('b'); a.textContent=t[k]; b.textContent=v; d.appendChild(a); d.appendChild(b); box.appendChild(d); }
+  row('r_pkg',PKG[p]+' · $'+p);
+  if(f.express.checked) row('r_express','+$'+EXPRESS[p]);
+  row('r_brand',f.brand.value.trim()); row('r_email',f.email.value.trim());
+  row('r_prod',[f.product1.value.trim(),p===500?f.product2.value.trim():''].filter(Boolean).join(' · '));
+  row('r_files',String(files.p1.length+(p===500?files.p2.length:0)));
+  row('r_ad',PLAT[f.platform.value]);
+  if(p===200||p===500){ var st=f.querySelector('input[name=style]:checked'); row('r_store',f.store_lang.options[f.store_lang.selectedIndex].text+' · '+t['sty'+(st?st.value:2)]); }
+}
+
+/* ---------- submit: text + file URLs only (no files in the payload) ---------- */
+f.addEventListener('submit',function(ev){
+  ev.preventDefault(); clr(); var t=T[L], p=pkg();
+  if(!ok1()) return show(1); if(!ok2()) return show(2);
+  if(!f.terms.checked) return err('e_terms');
+  if(!ORDER_HOOK||!CLOUD.name) return err('e_off');
+  var go=document.getElementById('go'), m=$('.step[data-step="3"] .msg');
+  go.disabled=true; m.className='msg'; m.textContent=t.sending;
+  var store=(p===200||p===500), st=f.querySelector('input[name=style]:checked');
+  function urls(slot,vid){ return files[slot].filter(function(i){ return !!i.vid===vid; }).map(function(i){ return i.remote; }); }
+  var data={package:String(p),vip_comarketing:(p===500&&f.vip.checked)?'yes':'no',express:f.express.checked?'yes':'no',brand:f.brand.value.trim(),email:f.email.value.trim(),
+    contact:store?f.contact.value.trim():'',product1:f.product1.value.trim(),product2:p===500?f.product2.value.trim():'',
+    language:f.language.value,voice:f.voice.value,voice_tone:f.tone.value.trim(),offer:f.offer.value.trim(),references:f.refs.value.trim(),
+    ad_platform:PLAT[f.platform.value],store_language:store?f.store_lang.value:'',store_style:store?(['','Modern Light','Premium Dark','Bold & Vibrant'][st?st.value:2]):'',
+    logo_url:files.logo.length?files.logo[0].remote:'',site_lang:L,
+    p1_photo_urls:urls('p1',false).join('\n'),p1_video_urls:urls('p1',true).join('\n'),
+    p2_photo_urls:p===500?urls('p2',false).join('\n'):'',p2_video_urls:p===500?urls('p2',true).join('\n'):''};
+  urls('p1',false).slice(0,3).forEach(function(u,i){ data['p1photo'+(i+1)]=u; }); if(p===500) urls('p2',false).slice(0,2).forEach(function(u,i){ data['p2photo'+(i+1)]=u; });
+  urls('p1',true).slice(0,2).forEach(function(u,i){ data['p1video'+(i+1)]=u; });
+  data.slug=(data.brand.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28)||'store')+'-'+Math.random().toString(36).slice(2,6);
+  data.products=[data.product1,data.product2].filter(Boolean).join('\n'); data.order_url=data.contact; data.folder_id=''; data.tier=String(p);
+  data.files_json=JSON.stringify({p1:{photos:urls('p1',false),videos:urls('p1',true)},p2:p===500?{photos:urls('p2',false),videos:urls('p2',true)}:null,logo:data.logo_url||null});
+  var body=new URLSearchParams(); Object.keys(data).forEach(function(k){ body.append(k,data[k]); });
+  fetch(ORDER_HOOK,{method:'POST',body:body}).then(function(r){ if(!r.ok) throw 0; return r.text().then(function(x){ try{ return JSON.parse(x); }catch(e){ return {}; } }); }).then(function(j){
+    if(j&&j.checkout_url){ m.className='msg ok'; m.textContent=t.redirect; location.href=j.checkout_url; return; }
+    m.className='msg ok'; m.textContent=t.recv;
+  }).catch(function(){ go.disabled=false; err('e_net'); });
+});
+(function(){
+  var q=new URLSearchParams(location.search), l=q.get('lang'), p=q.get('package'); if(p==='49') p='89';
+  try{ l=l||localStorage.getItem('apex_lang'); }catch(e){}
+  if(!l){ var n=(navigator.language||'en').slice(0,2); l=T[n]?n:'en'; }
+  var map={ar:'Arabic',en:'English',fr:'French',es:'Spanish',it:'Italian'};
+  setLang(l); f.language.value=map[L]||'English'; f.store_lang.value=map[L]||'English';
+  if(p){ var r=f.querySelector('input[name=package][value="'+p+'"]'); if(r) r.checked=true; }
+  update(); show(1); window.scrollTo(0,0);
+})();
+</script>
+</body>
+</html>
