@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Order your film | Apex Studio Pro</title>
+<style>
+:root{--bg:#0b0b0c;--panel:#141416;--line:#2a2a2e;--bone:#f3efe6;--mist:#a8a49a;--gold:#E5C158;--err:#ff7b6b;--ok:#7bd88f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--bone);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+.banner{background:var(--gold);color:#000;text-align:center;padding:8px 12px;font:600 13px system-ui}
+h1{font:400 clamp(28px,6vw,40px)/1.15 Georgia,"Times New Roman",serif;margin:28px 0 6px}
+h2{font:400 22px Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mist);margin:0 0 24px}
+fieldset{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:18px;margin:0 0 18px}
+legend{padding:0 8px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+label{display:block;margin:12px 0 4px;font-size:14px}
+.req::after{content:" *";color:var(--gold)}
+.hint{color:var(--mist);font-size:13px;margin:2px 0 0}
+input[type=text],input[type=email],select,textarea{width:100%;background:#0f0f11;color:var(--bone);border:1px solid var(--line);border-radius:4px;padding:12px;font:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+textarea{min-height:90px}
+.pk{display:block;border:1px solid var(--line);border-radius:6px;padding:14px;margin:8px 0;cursor:pointer}
+.pk input{margin-right:10px;accent-color:#E5C158}
+.pk b{color:var(--bone)}
+.pk span{display:block;color:var(--mist);font-size:13px;margin-left:26px}
+.pk.on{border-color:var(--gold);background:#1a1810}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-size:14px}
+.chk input{margin-top:5px;accent-color:#E5C158;flex:none}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:10px}
+.thumbs div{position:relative;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs button{position:absolute;top:2px;right:2px;background:#000c;color:#fff;border:0;border-radius:50%;width:22px;height:22px;cursor:pointer}
+.thumbs small{position:absolute;left:0;bottom:0;right:0;background:#000b;font-size:10px;padding:1px 3px;color:var(--err)}
+.drop{display:block;border:1px dashed var(--gold);border-radius:6px;padding:18px;text-align:center;color:var(--gold);cursor:pointer}
+.drop input{display:none}
+.msg{min-height:20px;font-size:14px;margin:6px 0}
+.msg.err{color:var(--err)}
+.fe{color:var(--err);font-size:13px;margin:4px 0 0}
+.btn{display:block;width:100%;background:var(--gold);color:#000;border:0;border-radius:4px;padding:15px;font:600 16px system-ui;cursor:pointer;margin-top:10px}
+.btn:disabled{opacity:.5}
+a{color:var(--gold)}
+#done{display:none;text-align:center;border:1px solid var(--gold);background:var(--panel);border-radius:8px;padding:28px 18px}
+#done .num{font:600 26px ui-monospace,Menlo,monospace;color:var(--gold);letter-spacing:.06em;margin:10px 0}
+#done dl{text-align:left;margin:18px auto;max-width:460px;font-size:14px}
+#done dt{color:var(--mist);margin-top:8px}
+#done dd{margin:0}
+</style>
+</head>
+<body>
+<div class="banner" id="pv">PREVIEW COPY: nothing is sent or charged from this page</div>
+<div class="wrap">
+<form id="f" novalidate>
+<h1>Tell us about your brand.</h1>
+<p class="sub">Five answers are enough. Anything you leave blank is decided by our creative director and listed for you as an assumption.</p>
+
+<fieldset id="s_pkg"><legend>1 · Package</legend>
+<label class="pk"><input type="radio" name="package" value="89"><b>Cinematic Pack · $89</b><span>One 15-second film.</span></label>
+<label class="pk"><input type="radio" name="package" value="200"><b>Micro-Store · $200</b><span>One 30-second film and your store.</span></label>
+<label class="pk"><input type="radio" name="package" value="500"><b>Flagship Store · $500</b><span>A 30-second story film, a 20-second collection film and your store.</span></label>
+<div class="fe" id="e_package"></div>
+</fieldset>
+
+<fieldset id="s_you"><legend>2 · Your brand</legend>
+<label class="req" for="brand">Brand name</label>
+<input type="text" id="brand" name="brand" maxlength="80" autocomplete="organization">
+<div class="fe" id="e_brand"></div>
+<label class="req" for="email">Email</label>
+<input type="email" id="email" name="email" maxlength="120" autocomplete="email">
+<div class="fe" id="e_email"></div>
+<label class="req" for="sector">Sector</label>
+<select id="sector" name="sector">
+<option value="">Choose…</option>
+<option value="fashion">Fashion</option>
+<option value="perfume">Perfume</option>
+<option value="restaurant">Restaurant</option>
+<option value="jewelry_watches">Jewelry &amp; watches</option>
+<option value="beauty">Beauty</option>
+</select>
+<div class="fe" id="e_sector"></div>
+</fieldset>
+
+<fieldset id="s_ph"><legend>3 · Product photos</legend>
+<label class="drop" for="files">Tap to add 3 to 10 photos<input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+<p class="hint">JPG, PNG or WebP. Up to 10 photos, 8 MB each. Sharp photos on a plain background work best (shorter side at least 800 px).</p>
+<div class="thumbs" id="thumbs"></div>
+<div class="fe" id="e_files"></div>
+</fieldset>
+
+<fieldset id="s_opt"><legend>4 · Optional</legend>
+<p class="hint">Skip anything you like. We decide it and tell you what we chose.</p>
+<label for="lang">Language of the whispered lines</label>
+<select id="lang" name="lang"><option value="">Director decides</option><option>English</option><option>Français</option><option>العربية</option><option>Español</option><option>Italiano</option></select>
+<label for="tone">Tone or mood</label>
+<input type="text" id="tone" name="tone" maxlength="120" placeholder="e.g. quiet, nocturnal, warm">
+<label for="offer">What should the film end on?</label>
+<textarea id="offer" name="offer" maxlength="500" placeholder="A product, an address, a website…"></textarea>
+<label for="refs">Reference links</label>
+<textarea id="refs" name="refs" maxlength="600" placeholder="https://"></textarea>
+</fieldset>
+
+<fieldset id="s_ok"><legend>5 · Confirmations</legend>
+<label class="chk"><input type="checkbox" id="c_terms"><span>I accept the <a href="/terms/" target="_blank" rel="noopener">Terms</a> and the <a href="/privacy/" target="_blank" rel="noopener">Privacy policy</a>.</span></label>
+<label class="chk"><input type="checkbox" id="c_refund"><span>I have read the <a href="/refund/" target="_blank" rel="noopener">Refund policy</a>.</span></label>
+<label class="chk"><input type="checkbox" id="c_rights"><span>I own the photos I upload, or have the right to use them, including the rights of any person who appears in them.</span></label>
+<label class="chk"><input type="checkbox" id="c_ai"><span>I understand that the scenes in my film are generated with artificial intelligence from my photos.</span></label>
+<div class="fe" id="e_ok"></div>
+</fieldset>
+
+<div class="msg" id="msg" role="status"></div>
+<button class="btn" id="go" type="submit">Review and send my order</button>
+</form>
+
+<section id="done" aria-live="polite">
+<h2 id="d_h">Order received</h2>
+<div class="num" id="d_num"></div>
+<p id="d_p"></p>
+<dl id="d_dl"></dl>
+<p class="hint" id="d_note"></p>
+</section>
+</div>
+<script>
+(function(){
+var CFG={ORDER_HOOK:'',CLOUD_NAME:'',UPLOAD_PRESET:''};
+var MAX_FILES=10,MIN_FILES=3,MAX_MB=8,MIN_SIDE=800,TYPES=['image/jpeg','image/png','image/webp'];
+var PK={'89':'Cinematic Pack ($89)','200':'Micro-Store ($200)','500':'Flagship Store ($500)'};
+var SEC={fashion:'Fashion',perfume:'Perfume',restaurant:'Restaurant',jewelry_watches:'Jewelry & watches',beauty:'Beauty'};
+var files=[];
+var $=function(i){return document.getElementById(i)};
+var f=$('f');
+if(CFG.ORDER_HOOK) $('pv').style.display='none';
+
+document.querySelectorAll('.pk input').forEach(function(r){r.addEventListener('change',function(){
+  document.querySelectorAll('.pk').forEach(function(l){l.classList.toggle('on',l.querySelector('input').checked)});$('e_package').textContent='';});});
+
+function fmt(b){return (b/1048576).toFixed(1)+' MB'}
+function render(){
+  var t=$('thumbs');t.innerHTML='';
+  files.forEach(function(o,i){
+    var d=document.createElement('div');var im=document.createElement('img');im.src=o.url;im.alt='Photo '+(i+1);d.appendChild(im);
+    var b=document.createElement('button');b.type='button';b.textContent='×';b.setAttribute('aria-label','Remove photo '+(i+1));
+    b.onclick=function(){URL.revokeObjectURL(o.url);files.splice(i,1);render()};d.appendChild(b);
+    if(o.warn){var s=document.createElement('small');s.textContent=o.warn;d.appendChild(s)}
+    t.appendChild(d);
+  });
+}
+$('files').addEventListener('change',function(e){
+  var errs=[];
+  Array.prototype.forEach.call(e.target.files,function(file){
+    if(files.length>=MAX_FILES){errs.push('Only '+MAX_FILES+' photos are allowed.');return}
+    if(TYPES.indexOf(file.type)<0){errs.push(file.name+': use JPG, PNG or WebP.');return}
+    if(file.size>MAX_MB*1048576){errs.push(file.name+': '+fmt(file.size)+' is over '+MAX_MB+' MB.');return}
+    var o={file:file,url:URL.createObjectURL(file),warn:''};files.push(o);
+    var im=new Image();im.onload=function(){if(Math.min(im.naturalWidth,im.naturalHeight)<MIN_SIDE){o.warn='low resolution';render()}};im.src=o.url;
+  });
+  e.target.value='';render();
+  $('e_files').textContent=errs.length?errs.slice(0,3).join(' '):'';
+});
+
+function setErr(id,m){$(id).textContent=m||''}
+function orderNo(){
+  var d=new Date(),p=function(n){return String(n).padStart(2,'0')};
+  var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r='',x=new Uint8Array(4);crypto.getRandomValues(x);
+  for(var i=0;i<4;i++)r+=a[x[i]%a.length];
+  return 'APX-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+r;
+}
+function validate(){
+  var ok=true,first=null;
+  function bad(id,m,el){setErr(id,m);ok=false;if(!first)first=el||$(id)}
+  ['e_package','e_brand','e_email','e_sector','e_files','e_ok'].forEach(function(i){setErr(i,'')});
+  if(!f.querySelector('input[name=package]:checked')) bad('e_package','Choose a package.',$('s_pkg'));
+  if(!$('brand').value.trim()) bad('e_brand','Enter your brand name.',$('brand'));
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('email').value.trim())) bad('e_email','Enter a valid email address.',$('email'));
+  if(!$('sector').value) bad('e_sector','Choose your sector.',$('sector'));
+  if(files.length<MIN_FILES) bad('e_files','Add at least '+MIN_FILES+' photos (you have '+files.length+').',$('s_ph'));
+  if(!($('c_terms').checked&&$('c_refund').checked&&$('c_rights').checked&&$('c_ai').checked)) bad('e_ok','Please tick all four confirmations to continue.',$('s_ok'));
+  if(first){first.scrollIntoView({behavior:'smooth',block:'center'});}
+  return ok;
+}
+f.addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var m=$('msg');m.className='msg';m.textContent='';
+  if(!validate()){m.className='msg err';m.textContent='Some answers need your attention.';return}
+  var pk=f.querySelector('input[name=package]:checked').value;
+  var no=orderNo();
+  var payload={order_number:no,package:pk,brand:$('brand').value.trim(),email:$('email').value.trim(),sector:$('sector').value,
+    photo_count:files.length,photo_names:files.map(function(o){return o.file.name}),
+    lang:$('lang').value||null,tone:$('tone').value.trim()||null,offer:$('offer').value.trim()||null,refs:$('refs').value.trim()||null,
+    consents:{terms:true,refund:true,image_rights:true,ai_generated:true,at:new Date().toISOString()}};
+  function done(sent){
+    f.style.display='none';var d=$('done');d.style.display='block';
+    $('d_num').textContent=no;
+    $('d_h').textContent=sent?'Order received':'Preview: this order was not sent';
+    $('d_p').textContent=sent?('Thank you. A confirmation with this number is on its way to '+payload.email+'.'):'In the live version your order number would appear here and a confirmation email would be sent to '+payload.email+'.';
+    var dl=$('d_dl');dl.innerHTML='';
+    [['Package',PK[pk]],['Brand',payload.brand],['Sector',SEC[payload.sector]],['Photos',payload.photo_count+' uploaded'],['Decided by the director',[payload.lang?'':'whisper language',payload.tone?'':'tone',payload.offer?'':'closing line'].filter(Boolean).join(', ')||'nothing']].forEach(function(r){
+      var a=document.createElement('dt');a.textContent=r[0];var b=document.createElement('dd');b.textContent=r[1];dl.appendChild(a);dl.appendChild(b)});
+    $('d_note').textContent='Keep your order number. You will approve the story ideas by email before anything is produced.';
+    d.scrollIntoView({behavior:'smooth'});
+  }
+  if(!CFG.ORDER_HOOK||!CFG.CLOUD_NAME){window.__lastPayload=payload;done(false);return}
+  var go=$('go');go.disabled=true;m.textContent='Sending your order…';
+  Promise.all(files.map(function(o){var fd=new FormData();fd.append('file',o.file);fd.append('upload_preset',CFG.UPLOAD_PRESET);
+    return fetch('https://api.cloudinary.com/v1_1/'+CFG.CLOUD_NAME+'/image/upload',{method:'POST',body:fd}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return j.secure_url})}))
+  .then(function(urls){payload.photo_urls=urls;return fetch(CFG.ORDER_HOOK,{method:'POST',body:JSON.stringify(payload)})})
+  .then(function(r){if(!r.ok)throw 0;done(true)})
+  .catch(function(){go.disabled=false;m.className='msg err';m.textContent='We could not send your order. Nothing was charged. Please try again.'});
+});
+})();
+</script>
+</body>
+</html>
