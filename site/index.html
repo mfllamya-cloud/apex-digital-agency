@@ -363,7 +363,7 @@
 <span data-i18n="49"><strong style="color: var(--bone)">No store setup included.</strong> Content only.</span>
 </div>
 <div class="mt-auto pt-9">
-<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="50" data-plan="cinematic" href="#">Get the Cinematic Pack</a>
+<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="50" data-plan="cinematic" href="/order/">Get the Cinematic Pack</a>
 </div>
 </article>
 <!-- Tier 2 -->
@@ -384,7 +384,7 @@
 <li class="flex gap-3"><svg aria-hidden="true" class="check" fill="none" viewbox="0 0 20 20"><path d="m4 10.5 4 4 8-9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg><span><strong data-i18n="59">Free fast hosting for life</strong></span></li>
 </ul>
 <div class="mt-auto pt-9">
-<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="60" data-plan="micro" href="#">Start with the Micro-Store</a>
+<a class="btn-ghost block text-center rounded-sm px-6 py-3.5 font-medium" data-i18n="60" data-plan="micro" href="/order/fashion/?plan=micro">Start with the Micro-Store</a>
 <a class="demo-link" data-i18n="61" href="/p/demo-maison-alaric/#store">View the live demo store →</a>
 </div>
 </article>
@@ -416,7 +416,7 @@
 <p class="mt-1.5 text-sm leading-relaxed mist" data-i18n="75">A custom marketing and pricing strategy for your brand, written by our elite strategists.</p>
 </div>
 <div class="mt-auto pt-9">
-<a class="btn-gold block text-center rounded-sm px-6 py-3.5" data-i18n="76" data-plan="flagship" href="#">Claim the Flagship Store</a>
+<a class="btn-gold block text-center rounded-sm px-6 py-3.5" data-i18n="76" data-plan="flagship" href="/order/fashion/?plan=flagship">Claim the Flagship Store</a>
 <a class="demo-link" data-i18n="61" href="/p/demo-aura-noir/">View the live demo store →</a>
 <p class="mt-4 flex gap-2.5 text-xs leading-relaxed" style="color: var(--gold)">
 <span aria-hidden="true" class="scarcity-dot"></span>
@@ -535,6 +535,8 @@
   document.querySelectorAll("[data-plan]").forEach(function (a) {
     a.addEventListener("click", function (e) {
       var k = a.getAttribute("data-plan"), p = PLANS[k];
+      if (k === "micro" || k === "flagship") { e.preventDefault(); location.href = "/order/fashion/?plan=" + k; return; }
+      if (k === "cinematic") { e.preventDefault(); location.href = "/order/"; return; }
       if (p.pay) { a.setAttribute("href", p.pay); return; }   /* live payment link connected */
       e.preventDefault();
       document.getElementById("ckTitle").textContent = p.name;
