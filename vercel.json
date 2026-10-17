@@ -1,1 +1,19 @@
-{"$schema": "https://openapi.vercel.sh/vercel.json", "framework": null, "installCommand": "npm install", "buildCommand": "echo static landing page", "outputDirectory": "site", "rewrites": [{"source": "/api/(.*)", "destination": "/api"}, {"source": "/(.*)", "destination": "/index.html"}]}
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm install",
+  "buildCommand": "echo static landing page",
+  "outputDirectory": "site",
+  "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "(?<slug>store-[a-z0-9]+)\\.apexstudiopro\\.com" }], "destination": "/s/:slug/index.html" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "(?<slug>store-[a-z0-9]+)\\.apexstudiopro\\.com" }], "destination": "/s/:slug/:path*" },
+    { "source": "/", "has": [{ "type": "host", "value": "(?<d>(?:[a-z0-9-]+\\.)+[a-z]{2,})" }],
+      "missing": [{ "type": "host", "value": ".*apexstudiopro\\.com" }, { "type": "host", "value": ".*\\.vercel\\.app" }],
+      "destination": "/d/:d/index.html" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "(?<d>(?:[a-z0-9-]+\\.)+[a-z]{2,})" }],
+      "missing": [{ "type": "host", "value": ".*apexstudiopro\\.com" }, { "type": "host", "value": ".*\\.vercel\\.app" }],
+      "destination": "/d/:d/:path*" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/home.html" }
+  ]
+}
