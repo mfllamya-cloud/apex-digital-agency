@@ -4,6 +4,14 @@
   "installCommand": "npm install",
   "buildCommand": "echo static landing page",
   "outputDirectory": "site",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "(?<slug>store-[a-z0-9]+)\\.apexstudiopro\\.com" }],
+      "destination": "/s/:slug/",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }
